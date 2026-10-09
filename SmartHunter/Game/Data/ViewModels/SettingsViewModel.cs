@@ -120,6 +120,18 @@ namespace SmartHunter.Game.Data.ViewModels
                 () => C.Overlay.MonsterWidget.UseNetworkServer, v => C.Overlay.MonsterWidget.UseNetworkServer = v, true);
 
             const string Overlay = "Overlay";
+            Choice(Overlay, "Overlay size", "Scales every widget. Scroll over a widget while editing the layout to size it on its own.",
+                new[] { ("0.9", "90%"), ("1", "100%"), ("1.15", "115%"), ("1.3", "130%") },
+                () => C.Overlay.UiScale.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture),
+                v => C.Overlay.UiScale = float.Parse(v, System.Globalization.CultureInfo.InvariantCulture));
+            Choice(Overlay, "Background shading", "The soft dark layer behind widget text. Normal keeps text readable over bright skies and snow.",
+                new[] { ("Normal", "Normal"), ("Light", "Light"), ("Off", "Off") },
+                () => C.Overlay.Shading, v => C.Overlay.Shading = v);
+            Toggle(Overlay, "Colorblind-friendly colors", "Player colors that stay distinct with red-green color blindness.",
+                () => C.Overlay.ColorblindColors, v => C.Overlay.ColorblindColors = v);
+            Choice(Overlay, "F1 hides the overlay", null,
+                new[] { ("Hold", "While held"), ("Toggle", "Press to toggle") },
+                () => C.Overlay.HideKeyToggles ? "Toggle" : "Hold", v => C.Overlay.HideKeyToggles = v == "Toggle");
             Toggle(Overlay, "Hide when the game isn't focused", null,
                 () => C.Overlay.HideWhenGameWindowIsInactive, v => C.Overlay.HideWhenGameWindowIsInactive = v);
             Toggle(Overlay, "Discord status", "Shows what you're doing on your Discord profile.",

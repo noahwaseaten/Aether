@@ -6,6 +6,10 @@ namespace SmartHunter.Game.Config
         public float ScaleMax = 2f;
         public float ScaleStep = 0.1f;
         public bool HideWhenGameWindowIsInactive = false;
+        public float UiScale = 1f;                 // multiplies every widget's own scale
+        public string Shading = "Normal";          // Off, Light, Normal: the dark layer behind widget text
+        public bool ColorblindColors = false;      // player colours that stay apart with red-green colour blindness
+        public bool HideKeyToggles = false;        // the hide key toggles instead of hiding while held
         public int UpdatesPerSecond = 10; // bars ease between reads, so 10 looks as smooth as 20 at half the cost
 
         // Positions for a 1920x1080 screen; Reset layout scales them to the actual one

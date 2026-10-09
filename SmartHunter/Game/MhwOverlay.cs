@@ -19,10 +19,12 @@ namespace SmartHunter.Game
     public class MhwOverlay : Overlay
     {
         MhwMemoryUpdater m_MemoryUpdater;
+        bool m_HideKeyDown;
 
         public MhwOverlay(Window mainWindow, params WidgetWindow[] widgetWindows) : base(mainWindow, widgetWindows)
         {
-            ConfigHelper.Main.Loaded += (s, e) => { UpdateWidgetsFromConfig(); };
+            ConfigHelper.Main.Loaded += (s, e) => { UpdateWidgetsFromConfig(); OverlayViewModel.Instance.ApplyDisplaySettings(); };
+            OverlayViewModel.Instance.ApplyDisplaySettings();
             ConfigHelper.Localization.Loaded += (s, e) => { RefreshWidgetsLayout(); };
             ConfigHelper.MonsterData.Loaded += (s, e) => { RefreshWidgetsLayout(); };
             ConfigHelper.PlayerData.Loaded += (s, e) => { RefreshWidgetsLayout(); };
@@ -81,7 +83,16 @@ namespace SmartHunter.Game
             }
             else if (control == InputControl.HideWidgets)
             {
-                OverlayViewModel.Instance.HideWidgetsRequested = isDown;
+                // Toggle mode flips on the press only; holding the key repeats "down" events
+                if (!ConfigHelper.Main.Values.Overlay.HideKeyToggles)
+                {
+                    OverlayViewModel.Instance.HideWidgetsRequested = isDown;
+                }
+                else if (isDown && !m_HideKeyDown)
+                {
+                    OverlayViewModel.Instance.HideWidgetsRequested = !OverlayViewModel.Instance.HideWidgetsRequested;
+                }
+                m_HideKeyDown = isDown;
             }
             else if (control == InputControl.CopyTeamDamage && isDown)
             {

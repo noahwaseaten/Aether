@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using SmartHunter.Core.Data;
 using SmartHunter.Game.Data.WidgetContexts;
@@ -97,6 +98,43 @@ namespace SmartHunter.Game.Data.ViewModels
             Reset(CalloutWidget, defaults.CalloutWidget);
             Reset(RecapWidget, defaults.RecapWidget);
             ConfigHelper.Main.Save();
+        }
+
+        double m_UiScale = 1;
+        public double UiScale
+        {
+            get { return m_UiScale; }
+            set { SetProperty(ref m_UiScale, value); }
+        }
+
+        double m_ShadeOpacity = 1;
+        public double ShadeOpacity
+        {
+            get { return m_ShadeOpacity; }
+            set { SetProperty(ref m_ShadeOpacity, value); }
+        }
+
+        // Okabe-Ito colours: orange, sky blue, yellow and purple stay distinct for the common kinds of colour blindness
+        static readonly string[] s_DefaultPlayerColors = { "#E5484D", "#4C8DFF", "#F5C542", "#3DD68C" };
+        static readonly string[] s_ColorblindPlayerColors = { "#E69F00", "#56B4E9", "#F0E442", "#CC79A7" };
+
+        public void ApplyDisplaySettings()
+        {
+            var overlay = ConfigHelper.Main.Values.Overlay;
+            UiScale = Math.Max(0.5, Math.Min(2, overlay.UiScale));
+            ShadeOpacity = overlay.Shading == "Off" ? 0 : overlay.Shading == "Light" ? 0.55 : 1;
+
+            var app = System.Windows.Application.Current;
+            if (app == null) return;
+            var colors = overlay.ColorblindColors ? s_ColorblindPlayerColors : s_DefaultPlayerColors;
+            for (int i = 0; i < colors.Length; i++)
+            {
+                var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(colors[i]);
+                var brush = new System.Windows.Media.SolidColorBrush(color);
+                brush.Freeze();
+                app.Resources["B_Player" + i] = brush;
+                app.Resources["A_Color_Player_" + i] = color;
+            }
         }
 
         public OverlayViewModel()

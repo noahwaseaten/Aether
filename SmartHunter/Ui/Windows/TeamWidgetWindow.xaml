@@ -29,7 +29,20 @@
     <Grid Name="Root" UseLayoutRounding="True" Margin="25" MinWidth="50" MinHeight="50">
         <Grid>
             <Grid.LayoutTransform>
-                <ScaleTransform ScaleX="{Binding TeamWidget.Scale}" ScaleY="{Binding TeamWidget.Scale}" />
+                <ScaleTransform>
+                    <ScaleTransform.ScaleX>
+                        <MultiBinding Converter="{StaticResource A_Converter_Multiply}">
+                            <Binding Path="TeamWidget.Scale" />
+                            <Binding Path="UiScale" />
+                        </MultiBinding>
+                    </ScaleTransform.ScaleX>
+                    <ScaleTransform.ScaleY>
+                        <MultiBinding Converter="{StaticResource A_Converter_Multiply}">
+                            <Binding Path="TeamWidget.Scale" />
+                            <Binding Path="UiScale" />
+                        </MultiBinding>
+                    </ScaleTransform.ScaleY>
+                </ScaleTransform>
             </Grid.LayoutTransform>
 
             <!--Edit mode: the room this widget takes when it's full, so it can be placed before anything is in it-->

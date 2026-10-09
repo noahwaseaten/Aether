@@ -29,7 +29,20 @@
     <Grid UseLayoutRounding="True" Margin="25" MinWidth="260" MinHeight="50">
         <Grid>
             <Grid.LayoutTransform>
-                <ScaleTransform ScaleX="{Binding MonsterWidget.Scale}" ScaleY="{Binding MonsterWidget.Scale}" />
+                <ScaleTransform>
+                    <ScaleTransform.ScaleX>
+                        <MultiBinding Converter="{StaticResource A_Converter_Multiply}">
+                            <Binding Path="MonsterWidget.Scale" />
+                            <Binding Path="UiScale" />
+                        </MultiBinding>
+                    </ScaleTransform.ScaleX>
+                    <ScaleTransform.ScaleY>
+                        <MultiBinding Converter="{StaticResource A_Converter_Multiply}">
+                            <Binding Path="MonsterWidget.Scale" />
+                            <Binding Path="UiScale" />
+                        </MultiBinding>
+                    </ScaleTransform.ScaleY>
+                </ScaleTransform>
             </Grid.LayoutTransform>
 
             <!--Edit mode: the room this widget takes when it's full, so it can be placed before anything is in it-->

@@ -13,6 +13,7 @@
                     xmlns:data="clr-namespace:SmartHunter.Game.Data"
                     xmlns:widgetContexts="clr-namespace:SmartHunter.Game.Data.WidgetContexts"
                     xmlns:Windows="clr-namespace:SmartHunter.Ui.Windows"
+                    xmlns:viewModels="clr-namespace:SmartHunter.Game.Data.ViewModels"
 
                     xmlns:oxy="http://oxyplot.org/wpf"
                     xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
@@ -39,6 +40,7 @@
     <converters:WeaponTypeToNameConverter x:Key="A_Converter_WeaponTypeToName" />
     <converters:IconKeyToImageConverter x:Key="A_Converter_IconKeyToImage" />
     <converters:SecondsToClockConverter x:Key="A_Converter_SecondsToClock" />
+    <converters:MultiplyConverter x:Key="A_Converter_Multiply" />
     <converters:MonsterIconConverter x:Key="A_Converter_MonsterIcon" />
     <converters:FractionToOffsetConverter x:Key="A_Converter_FractionToOffset" />
 
@@ -814,28 +816,28 @@
             </DataTrigger>
 
             <DataTrigger Binding="{Binding ., Converter={StaticResource A_Converter_PlayerToPlayerIndex}}" Value="0">
-                <Setter TargetName="WeaponIcon" Property="Fill" Value="{StaticResource B_Player0}" />
-                <Setter TargetName="Dot" Property="Fill" Value="{StaticResource B_Player0}" />
-                <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_Player0}" />
-                <Setter TargetName="HitFlash" Property="Fill" Value="{StaticResource B_Player0}" />
+                <Setter TargetName="WeaponIcon" Property="Fill" Value="{DynamicResource B_Player0}" />
+                <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource B_Player0}" />
+                <Setter TargetName="Fill" Property="Fill" Value="{DynamicResource B_Player0}" />
+                <Setter TargetName="HitFlash" Property="Fill" Value="{DynamicResource B_Player0}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding ., Converter={StaticResource A_Converter_PlayerToPlayerIndex}}" Value="1">
-                <Setter TargetName="WeaponIcon" Property="Fill" Value="{StaticResource B_Player1}" />
-                <Setter TargetName="Dot" Property="Fill" Value="{StaticResource B_Player1}" />
-                <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_Player1}" />
-                <Setter TargetName="HitFlash" Property="Fill" Value="{StaticResource B_Player1}" />
+                <Setter TargetName="WeaponIcon" Property="Fill" Value="{DynamicResource B_Player1}" />
+                <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource B_Player1}" />
+                <Setter TargetName="Fill" Property="Fill" Value="{DynamicResource B_Player1}" />
+                <Setter TargetName="HitFlash" Property="Fill" Value="{DynamicResource B_Player1}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding ., Converter={StaticResource A_Converter_PlayerToPlayerIndex}}" Value="2">
-                <Setter TargetName="WeaponIcon" Property="Fill" Value="{StaticResource B_Player2}" />
-                <Setter TargetName="Dot" Property="Fill" Value="{StaticResource B_Player2}" />
-                <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_Player2}" />
-                <Setter TargetName="HitFlash" Property="Fill" Value="{StaticResource B_Player2}" />
+                <Setter TargetName="WeaponIcon" Property="Fill" Value="{DynamicResource B_Player2}" />
+                <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource B_Player2}" />
+                <Setter TargetName="Fill" Property="Fill" Value="{DynamicResource B_Player2}" />
+                <Setter TargetName="HitFlash" Property="Fill" Value="{DynamicResource B_Player2}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding ., Converter={StaticResource A_Converter_PlayerToPlayerIndex}}" Value="3">
-                <Setter TargetName="WeaponIcon" Property="Fill" Value="{StaticResource B_Player3}" />
-                <Setter TargetName="Dot" Property="Fill" Value="{StaticResource B_Player3}" />
-                <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_Player3}" />
-                <Setter TargetName="HitFlash" Property="Fill" Value="{StaticResource B_Player3}" />
+                <Setter TargetName="WeaponIcon" Property="Fill" Value="{DynamicResource B_Player3}" />
+                <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource B_Player3}" />
+                <Setter TargetName="Fill" Property="Fill" Value="{DynamicResource B_Player3}" />
+                <Setter TargetName="HitFlash" Property="Fill" Value="{DynamicResource B_Player3}" />
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
@@ -991,7 +993,7 @@
                     </CollectionViewSource.SortDescriptions>
                 </CollectionViewSource>
             </Grid.Resources>
-            <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" OpacityMask="{StaticResource B_ScrimFeather}" Margin="-24 -12 -24 -12" />
+            <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" Opacity="{Binding ShadeOpacity, Source={x:Static viewModels:OverlayViewModel.Instance}}" OpacityMask="{StaticResource B_ScrimFeather}" Margin="-24 -12 -24 -12" />
             <ItemsControl x:Name="MonstersControl" ItemsSource="{Binding Source={StaticResource CollectionViewSource}}" />
         </Grid>
         <DataTemplate.Triggers>
@@ -1041,7 +1043,7 @@
                 </CollectionViewSource>
             </Border.Resources>
             <Grid x:Name="Layer">
-            <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" OpacityMask="{StaticResource B_ScrimFeather}" />
+            <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" Opacity="{Binding ShadeOpacity, Source={x:Static viewModels:OverlayViewModel.Instance}}" OpacityMask="{StaticResource B_ScrimFeather}" />
             <StackPanel x:Name="Body" Effect="{StaticResource A_Effect_Halo}" MinWidth="200" Margin="18 14 44 14">
                 <ContentControl Content="{Binding Sharpness}" />
                 <ItemsControl x:Name="StatusEffectsControl" ItemsSource="{Binding Source={StaticResource CollectionViewSource}}" Style="{StaticResource A_Style_ItemsControl_PlayerStatusEffects}" />
@@ -1094,7 +1096,7 @@
             </Border.Resources>
 
             <Grid x:Name="Layer">
-            <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" OpacityMask="{StaticResource B_ScrimFeather}" />
+            <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" Opacity="{Binding ShadeOpacity, Source={x:Static viewModels:OverlayViewModel.Instance}}" OpacityMask="{StaticResource B_ScrimFeather}" />
             <StackPanel x:Name="Body" Effect="{StaticResource A_Effect_Halo}" Margin="18 14 44 14">
                 <DockPanel LastChildFill="False">
                     <TextBlock Text="DAMAGE" Style="{StaticResource T_Label}" />
@@ -1277,20 +1279,20 @@
                 <Setter TargetName="Crown" Property="Visibility" Value="Visible" />
             </DataTrigger>
             <DataTrigger Binding="{Binding ColorIndex}" Value="0">
-                <Setter TargetName="Icon" Property="Fill" Value="{StaticResource B_Player0}" />
-                <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_Player0}" />
+                <Setter TargetName="Icon" Property="Fill" Value="{DynamicResource B_Player0}" />
+                <Setter TargetName="Fill" Property="Fill" Value="{DynamicResource B_Player0}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding ColorIndex}" Value="1">
-                <Setter TargetName="Icon" Property="Fill" Value="{StaticResource B_Player1}" />
-                <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_Player1}" />
+                <Setter TargetName="Icon" Property="Fill" Value="{DynamicResource B_Player1}" />
+                <Setter TargetName="Fill" Property="Fill" Value="{DynamicResource B_Player1}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding ColorIndex}" Value="2">
-                <Setter TargetName="Icon" Property="Fill" Value="{StaticResource B_Player2}" />
-                <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_Player2}" />
+                <Setter TargetName="Icon" Property="Fill" Value="{DynamicResource B_Player2}" />
+                <Setter TargetName="Fill" Property="Fill" Value="{DynamicResource B_Player2}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding ColorIndex}" Value="3">
-                <Setter TargetName="Icon" Property="Fill" Value="{StaticResource B_Player3}" />
-                <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_Player3}" />
+                <Setter TargetName="Icon" Property="Fill" Value="{DynamicResource B_Player3}" />
+                <Setter TargetName="Fill" Property="Fill" Value="{DynamicResource B_Player3}" />
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
