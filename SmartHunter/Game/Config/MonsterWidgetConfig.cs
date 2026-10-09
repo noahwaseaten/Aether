@@ -21,13 +21,15 @@ namespace SmartHunter.Game.Config
         public bool ShowUnchangedStatusEffects = false;
         public float HideStatusEffectsAfterSeconds = 12f;
 
-        public bool ShowSize = true;
+        public bool ShowSize = false; // the crown already says when the size matters
         public bool ShowCrown = true;
         public bool ShowBars = true;
         public bool ShowNumbers = true;
         public bool ShowPercents = false;
         public bool UseAnimations = false;
-        public bool ShowOnlySelectedMonster = true;
+        public bool ShowOnlySelectedMonster = true; // replaced by MonsterFilter, kept so old Config.json files still load
+        // "Fighting": the map-pinned monster, else the one you last hit. "Pinned": only the map-pinned one. "All": every large monster.
+        public string MonsterFilter = "Fighting";
         public bool AlwaysShowParts = false;
         public bool UseNetworkServer = true;
 

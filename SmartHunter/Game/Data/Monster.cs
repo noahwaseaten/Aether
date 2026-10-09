@@ -210,7 +210,7 @@ namespace SmartHunter.Game.Data
             set { SetProperty(ref m_IsFocused, value); }
         }
 
-        // Hidden because ShowOnlySelectedMonster is on and another monster has focus
+        // Hidden by the "Show monsters" setting: not the one you pinned or are fighting
         bool m_IsSuppressed;
         public bool IsSuppressed
         {

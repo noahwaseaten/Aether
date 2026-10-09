@@ -116,15 +116,16 @@ namespace SmartHunter.Game.Data.WidgetContexts
         public void UpdateFocus(ulong selectedAddress)
         {
             var alive = Monsters.Where(m => m.IsAlive).ToList();
-            var focus = alive.FirstOrDefault(m => selectedAddress != 0 && m.Address == selectedAddress)
-                ?? alive.Where(m => m.LastDamagedTime.HasValue).OrderByDescending(m => m.LastDamagedTime).FirstOrDefault()
-                ?? (alive.Count == 1 ? alive[0] : null);
+            var pinned = alive.FirstOrDefault(m => selectedAddress != 0 && m.Address == selectedAddress);
+            var fought = alive.Where(m => m.LastDamagedTime.HasValue).OrderByDescending(m => m.LastDamagedTime).FirstOrDefault();
+            string filter = ConfigHelper.Main.Values.Overlay.MonsterWidget.MonsterFilter;
 
-            bool onlyFocused = ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowOnlySelectedMonster;
+            // Pinned: nothing until you pin one. Fighting and All: the pin, else the last one hit, else the only one around.
+            var focus = filter == "Pinned" ? pinned : pinned ?? fought ?? (alive.Count == 1 ? alive[0] : null);
             foreach (var monster in Monsters)
             {
                 monster.IsFocused = monster == focus;
-                monster.IsSuppressed = onlyFocused && focus != null && monster != focus;
+                monster.IsSuppressed = filter != "All" && monster != focus;
             }
             foreach (var monster in Monsters)
             {

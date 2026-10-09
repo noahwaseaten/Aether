@@ -161,7 +161,7 @@ namespace SmartHunter.Game
                     //ulong monsterRootPtr = MemoryHelper.LoadEffectiveAddressRelative(Process, m_MonsterPattern.MatchedAddresses.First()) - 0x36CE0; // yeah i know this is basically a static pointer
                     ulong monsterBaseList = MemoryHelper.ReadMultiLevelPointer(traceUniquePointers, Process, monsterRootPtr, 0x698, 0x0, 0x138, 0x0);
                     ulong mapBaseAddress = 0x0;
-                    if (ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowOnlySelectedMonster && m_SelectedMonsterPattern.MatchedAddresses.Any())
+                    if (m_SelectedMonsterPattern.MatchedAddresses.Any())
                     {
                         ulong mapPtr = MemoryHelper.LoadEffectiveAddressRelative(Process, m_SelectedMonsterPattern.MatchedAddresses.First());
                         mapBaseAddress = MemoryHelper.Read<ulong>(Process, mapPtr);

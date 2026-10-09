@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics;
 using System.Reflection;
 using SmartHunter.Core;
@@ -62,11 +63,28 @@ namespace SmartHunter.Game.Data.ViewModels
             Settings.Add(setting);
         }
 
+        // A button row showing the current option; each click moves to the next one
+        void Choice(string group, string name, string description, (string Value, string Label)[] options, Func<string> get, Action<string> set)
+        {
+            string LabelOf(string value) => (options.FirstOrDefault(o => o.Value == value).Label) ?? options[0].Label;
+            Setting setting = null;
+            setting = new Setting(group, name, description, LabelOf(get()), new Command(_ =>
+            {
+                int next = (Array.FindIndex(options, o => o.Value == get()) + 1) % options.Length;
+                set(options[next].Value);
+                ConfigHelper.Main.Save();
+                setting.ActionLabel = LabelOf(get());
+            }));
+            Settings.Add(setting);
+        }
+
         public SettingsViewModel()
         {
             const string Monster = "Monsters";
             Toggle(Monster, "Show widget", "Health, parts and status of large monsters.", () => C.Overlay.MonsterWidget.IsVisible, v => C.Overlay.MonsterWidget.IsVisible = v);
-            Toggle(Monster, "Only the monster you're fighting", "Hides the others. Follows your map pin, or else the last monster you hit.", () => C.Overlay.MonsterWidget.ShowOnlySelectedMonster, v => C.Overlay.MonsterWidget.ShowOnlySelectedMonster = v);
+            Choice(Monster, "Show monsters", "Fighting: your map pin, else the last one you hit. Pinned: only your map pin. All: every large monster, the others as one line each.",
+                new[] { ("Fighting", "Fighting"), ("Pinned", "Pinned only"), ("All", "All") },
+                () => C.Overlay.MonsterWidget.MonsterFilter, v => C.Overlay.MonsterWidget.MonsterFilter = v);
             Toggle(Monster, "Show monsters you haven't hit", null, () => C.Overlay.MonsterWidget.ShowUnchangedMonsters, v => C.Overlay.MonsterWidget.ShowUnchangedMonsters = v);
             Toggle(Monster, "Health bar", null, () => C.Overlay.MonsterWidget.ShowBars, v => C.Overlay.MonsterWidget.ShowBars = v);
             Toggle(Monster, "Health numbers", null, () => C.Overlay.MonsterWidget.ShowNumbers, v => C.Overlay.MonsterWidget.ShowNumbers = v);

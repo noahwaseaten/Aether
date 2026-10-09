@@ -105,24 +105,11 @@
     <!--Readability without a box: darkness that melts into the scene-->
     <LinearGradientBrush x:Key="B_Scrim" StartPoint="0,0" EndPoint="1,0">
         <GradientStop Color="#00000000" Offset="0" />
-        <GradientStop Color="#73000000" Offset="0.08" />
-        <GradientStop Color="#59000000" Offset="0.6" />
-        <GradientStop Color="#00000000" Offset="1" />
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="B_ScrimRight" StartPoint="1,0" EndPoint="0,0">
-        <GradientStop Color="#00000000" Offset="0" />
-        <GradientStop Color="#73000000" Offset="0.08" />
-        <GradientStop Color="#59000000" Offset="0.6" />
-        <GradientStop Color="#00000000" Offset="1" />
-    </LinearGradientBrush>
-    <!--Monster widget shade: dark enough for 4.5:1 text contrast over bright skies, still with no hard edge-->
-    <LinearGradientBrush x:Key="B_MonsterShade" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#00000000" Offset="0" />
         <GradientStop Color="#A6000000" Offset="0.06" />
         <GradientStop Color="#99000000" Offset="0.88" />
         <GradientStop Color="#00000000" Offset="1" />
     </LinearGradientBrush>
-    <LinearGradientBrush x:Key="B_MonsterShadeRight" StartPoint="1,0" EndPoint="0,0">
+    <LinearGradientBrush x:Key="B_ScrimRight" StartPoint="1,0" EndPoint="0,0">
         <GradientStop Color="#00000000" Offset="0" />
         <GradientStop Color="#A6000000" Offset="0.06" />
         <GradientStop Color="#99000000" Offset="0.88" />
@@ -178,12 +165,12 @@
         <Setter Property="TextAlignment" Value="Center" />
     </Style>
     <Style x:Key="T_Label" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
-        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="{StaticResource B_Accent}" />
     </Style>
     <Style x:Key="T_Body" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
-        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontSize" Value="14" />
     </Style>
     <Style x:Key="T_Big" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="20" />
@@ -191,12 +178,12 @@
         <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     </Style>
     <Style x:Key="T_Muted" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
-        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="FontSize" Value="13" />
         <Setter Property="Foreground" Value="{StaticResource B_TextMuted}" />
         <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     </Style>
     <Style x:Key="T_Value" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
-        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
         <Setter Property="MinWidth" Value="32" />
@@ -515,7 +502,6 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <DockPanel>
-                <TextBlock x:Name="Num" DockPanel.Dock="Right" Style="{StaticResource T_CellValue}" Text="{Binding Health.Current, StringFormat={}{0:N0}}" />
                 <TextBlock x:Name="Count" DockPanel.Dock="Right" Style="{StaticResource T_CellValue}" FontWeight="Bold" Foreground="{StaticResource B_Accent}" Text="{Binding TimesBrokenCount, StringFormat=×{0}}" Visibility="Collapsed" />
                 <TextBlock x:Name="NameBlock" Text="{Binding Name}" Style="{StaticResource T_Cell}" />
             </DockPanel>
@@ -547,9 +533,6 @@
             <DataTrigger Binding="{Binding DataContext.ShowBars, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="False">
                 <Setter TargetName="Bar" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
-            <DataTrigger Binding="{Binding DataContext.ShowNumbers, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="False">
-                <Setter TargetName="Num" Property="Visibility" Value="Collapsed" />
-            </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
 
@@ -566,11 +549,8 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Grid Width="52" Height="52" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0 1 0 0">
-                    <Ellipse Fill="#B3101114" />
-                    <Image Source="{Binding Id, Converter={StaticResource A_Converter_MonsterIcon}}" Margin="4" RenderOptions.BitmapScalingMode="HighQuality" />
-                    <Ellipse x:Name="PortraitRing" Stroke="{StaticResource B_Accent}" StrokeThickness="1.5" Opacity="0.8" />
-                </Grid>
+                <Image Source="{Binding Id, Converter={StaticResource A_Converter_MonsterIcon}}" Width="50" Height="50" VerticalAlignment="Top" HorizontalAlignment="Left"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
 
                 <StackPanel Grid.Column="1">
                     <DockPanel>
@@ -608,7 +588,6 @@
                         <Rectangle Fill="{StaticResource B_MonsterHealth}" behaviors:SmoothBar.Fraction="{Binding Health.Fraction}" />
                         <Rectangle x:Name="CaptureMark" Width="2" Height="16" Margin="{Binding CaptureFraction, Converter={StaticResource A_Converter_FractionToOffset}, ConverterParameter=402}"
                                    HorizontalAlignment="Left" VerticalAlignment="Center" Fill="{StaticResource B_Accent}" Stroke="#CC000000" StrokeThickness="0.5" Visibility="Collapsed" />
-                        <Rectangle x:Name="Danger" Fill="{StaticResource B_Danger}" Opacity="0" Visibility="Collapsed" Height="1" VerticalAlignment="Bottom" Margin="0 0 0 -3" />
                     </Grid>
 
                     <DockPanel Margin="0 4 0 0" LastChildFill="False">
@@ -645,13 +624,13 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Grid Width="26" Height="26" HorizontalAlignment="Left">
-                    <Ellipse Fill="#B3101114" />
-                    <Image Source="{Binding Id, Converter={StaticResource A_Converter_MonsterIcon}}" Margin="2" RenderOptions.BitmapScalingMode="HighQuality" />
-                    <Ellipse x:Name="CompactRing" Stroke="{StaticResource B_TextMuted}" StrokeThickness="1" Opacity="0.6" />
-                </Grid>
+                <Image Source="{Binding Id, Converter={StaticResource A_Converter_MonsterIcon}}" Width="26" Height="26" HorizontalAlignment="Left"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Name}" Style="{StaticResource T_Body}" Foreground="{StaticResource B_TextMuted}" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Name}" Style="{StaticResource T_Body}" Foreground="{StaticResource B_TextMuted}" />
+                        <TextBlock x:Name="CompactRage" Text="ENRAGED" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Danger}" Margin="8 0 0 0" Visibility="Collapsed" />
+                    </StackPanel>
                     <Grid Height="3" Margin="0 3 0 0">
                         <Rectangle Fill="{StaticResource B_Track}" />
                         <Rectangle Fill="{StaticResource B_MonsterHealth}" Opacity="0.8" behaviors:SmoothBar.Fraction="{Binding Health.Fraction}" />
@@ -697,15 +676,7 @@
 
             <DataTrigger Binding="{Binding IsEnraged}" Value="True">
                 <Setter TargetName="Enraged" Property="Visibility" Value="Visible" />
-                <Setter TargetName="Danger" Property="Visibility" Value="Visible" />
-                <Setter TargetName="PortraitRing" Property="Stroke" Value="{StaticResource B_Danger}" />
-                <Setter TargetName="CompactRing" Property="Stroke" Value="{StaticResource B_Danger}" />
-                <DataTrigger.EnterActions>
-                    <BeginStoryboard x:Name="Rage" Storyboard="{StaticResource A_Storyboard_Danger}" />
-                </DataTrigger.EnterActions>
-                <DataTrigger.ExitActions>
-                    <StopStoryboard BeginStoryboardName="Rage" />
-                </DataTrigger.ExitActions>
+                <Setter TargetName="CompactRage" Property="Visibility" Value="Visible" />
             </DataTrigger>
             <DataTrigger Binding="{Binding IsExhausted}" Value="True">
                 <Setter TargetName="Exhausted" Property="Visibility" Value="Visible" />
@@ -766,9 +737,9 @@
     <!--Team Widget: one row per hunter, drawn straight onto the game-->
 
     <DataTemplate DataType="{x:Type data:Player}">
-        <Grid x:Name="Root" Margin="0 3 0 4">
+        <Grid x:Name="Root" Margin="0 4 0 5">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="26" />
+                <ColumnDefinition Width="30" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
@@ -778,13 +749,13 @@
             </Grid.RowDefinitions>
 
             <!--Weapon silhouette in the hunter's colour; flashes when they land a hit-->
-            <Grid Grid.RowSpan="2" Width="20" Height="20" HorizontalAlignment="Left" VerticalAlignment="Center">
+            <Grid Grid.RowSpan="2" Width="22" Height="22" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <Ellipse x:Name="HitFlash" Width="22" Height="22" Opacity="0" RenderTransformOrigin="0.5,0.5">
                     <Ellipse.RenderTransform>
                         <ScaleTransform />
                     </Ellipse.RenderTransform>
                 </Ellipse>
-                <Rectangle x:Name="WeaponIcon" Width="20" Height="20">
+                <Rectangle x:Name="WeaponIcon" Width="22" Height="22">
                     <Rectangle.OpacityMask>
                         <ImageBrush ImageSource="{Binding WeaponIcon, Converter={StaticResource A_Converter_IconKeyToImage}}" Stretch="Uniform" />
                     </Rectangle.OpacityMask>
@@ -793,9 +764,9 @@
             </Grid>
 
             <TextBlock x:Name="NameBlock" Grid.Column="1" Text="{Binding Name}" Style="{StaticResource T_Body}" MaxWidth="140" HorizontalAlignment="Left" />
-            <TextBlock x:Name="DamageBlock" Grid.Column="2" Style="{StaticResource T_Value}" MinWidth="56" Margin="14 0 0 0" Text="{Binding Damage, StringFormat={}{0:N0}}" />
+            <TextBlock x:Name="DamageBlock" Grid.Column="2" Style="{StaticResource T_Value}" FontSize="15" MinWidth="64" Margin="14 0 0 0" Text="{Binding Damage, StringFormat={}{0:N0}}" />
 
-            <Grid x:Name="Bar" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Height="2" Margin="0 4 0 0">
+            <Grid x:Name="Bar" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Height="3" Margin="0 4 0 0">
                 <Rectangle Fill="{StaticResource B_Track}" />
                 <Rectangle x:Name="Fill" behaviors:SmoothBar.Fraction="{Binding BarFraction}" />
             </Grid>
@@ -878,14 +849,14 @@
                 <TranslateTransform X="-12" />
             </Grid.RenderTransform>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="26" />
+                <ColumnDefinition Width="30" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Grid Width="20" Height="20" HorizontalAlignment="Left">
-                <Ellipse x:Name="Danger" Width="30" Height="30" Margin="-5" Fill="{StaticResource B_DangerGlow}" Opacity="0" Visibility="Collapsed" />
-                <Image x:Name="Icon" Source="{Binding IconKey, Converter={StaticResource A_Converter_IconKeyToImage}}" Width="20" Height="20" />
+            <Grid Width="22" Height="22" HorizontalAlignment="Left">
+                <Ellipse x:Name="Danger" Width="32" Height="32" Margin="-5" Fill="{StaticResource B_DangerGlow}" Opacity="0" Visibility="Collapsed" />
+                <Image x:Name="Icon" Source="{Binding IconKey, Converter={StaticResource A_Converter_IconKeyToImage}}" Width="22" Height="22" />
                 <ContentControl x:Name="Ring" Content="{Binding Time}" Width="12" Height="12" ContentTemplate="{StaticResource A_DataTemplate_CircleProgress}" Foreground="{StaticResource B_Text}" Visibility="Collapsed" />
             </Grid>
             <TextBlock x:Name="NameBlock" Grid.Column="1" Text="{Binding DisplayName}" Style="{StaticResource T_Body}" />
@@ -963,7 +934,7 @@
                 <TextBlock DockPanel.Dock="Right" Style="{StaticResource T_Value}" MinWidth="0" Text="{Binding HitsLeft}" />
                 <TextBlock DockPanel.Dock="Right" Style="{StaticResource T_Muted}" Foreground="{Binding LevelBrush}" Margin="0 0 6 0" Text="{Binding LevelName}" />
             </DockPanel>
-            <Grid x:Name="Bar" Width="150" Height="5" Margin="0 5 0 0" HorizontalAlignment="Left">
+            <Grid x:Name="Bar" Width="150" Height="6" Margin="0 5 0 0" HorizontalAlignment="Left">
                 <ItemsControl ItemsSource="{Binding Segments}" Opacity="0.22">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
@@ -1020,7 +991,7 @@
                     </CollectionViewSource.SortDescriptions>
                 </CollectionViewSource>
             </Grid.Resources>
-            <Border x:Name="Scrim" Background="{StaticResource B_MonsterShade}" OpacityMask="{StaticResource B_ScrimFeather}" Margin="-24 -12 -24 -12" />
+            <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" OpacityMask="{StaticResource B_ScrimFeather}" Margin="-24 -12 -24 -12" />
             <ItemsControl x:Name="MonstersControl" ItemsSource="{Binding Source={StaticResource CollectionViewSource}}" />
         </Grid>
         <DataTemplate.Triggers>
@@ -1032,7 +1003,7 @@
                 <Setter TargetName="Scrim" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
             <DataTrigger Binding="{Binding Widget.IsRightAligned, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="True">
-                <Setter TargetName="Scrim" Property="Background" Value="{StaticResource B_MonsterShadeRight}" />
+                <Setter TargetName="Scrim" Property="Background" Value="{StaticResource B_ScrimRight}" />
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
@@ -1182,7 +1153,7 @@
         <Setter Property="Visibility" Value="Collapsed" />
     </Style>
     <Style x:Key="T_Tag" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
-        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="Bold" />
     </Style>
 

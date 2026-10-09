@@ -9,7 +9,12 @@ namespace SmartHunter.Core
         public string Description { get; }
         public bool RequiresRestart { get; }
         public bool IsToggle { get; }
-        public string ActionLabel { get; }
+        string m_ActionLabel;
+        public string ActionLabel
+        {
+            get { return m_ActionLabel; }
+            set { SetProperty(ref m_ActionLabel, value); }
+        }
         public Command TriggerAction { get; }
 
         bool m_Value;
@@ -37,7 +42,7 @@ namespace SmartHunter.Core
             Group = group;
             Name = name;
             Description = description;
-            ActionLabel = actionLabel;
+            m_ActionLabel = actionLabel;
             TriggerAction = action;
         }
     }
