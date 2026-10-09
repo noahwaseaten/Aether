@@ -52,6 +52,25 @@ namespace SmartHunter.Core
             monster.UpdateAndGetStatusEffect(2, rage, 1, 0, 30, 0, 1);
             Check(!monster.IsEnraged, "rage ran out");
 
+            // Busy fights: only the most recently hit rows show, and clients without host data show none
+            var monsters = OverlayViewModel.Instance.MonsterWidget.Context;
+            var busy = new Monster(3, "em001_00", 1000, 1000, 1, 1);
+            for (int i = 0; i < 8; i++)
+            {
+                busy.UpdateAndGetPart((ulong)(100 + i), false, 500, 500, 0);
+                busy.UpdateAndGetPart((ulong)(100 + i), false, 500, 400, 0);
+            }
+            busy.RankRows();
+            int shownParts = 0;
+            foreach (var part in busy.Parts) if (part.IsVisible) shownParts++;
+            Check(shownParts == Game.Data.WidgetContexts.MonsterWidgetContext.MaxPartRows, "8 damaged parts show only the 6 most recent");
+            monsters.WaitingForHost = true;
+            busy.RankRows();
+            shownParts = 0;
+            foreach (var part in busy.Parts) if (part.IsVisible) shownParts++;
+            Check(shownParts == 0, "client without host data hides parts");
+            monsters.WaitingForHost = false;
+
             // Team damage: a hunter leaving must not shift the others into the wrong slot
             var team = OverlayViewModel.Instance.TeamWidget.Context;
             team.ClearPlayers();

@@ -58,6 +58,18 @@ namespace SmartHunter.Game.Data.WidgetContexts
             set { SetProperty(ref m_AlwaysShowParts, value); }
         }
 
+        // Online and not the host, with no host numbers coming through the sync server. The game only refreshes a
+        // client's part HP and ailment buildup every few minutes, so those rows stay hidden instead of showing stale jumps.
+        bool m_WaitingForHost;
+        public bool WaitingForHost
+        {
+            get { return m_WaitingForHost; }
+            set { SetProperty(ref m_WaitingForHost, value); }
+        }
+
+        public const int MaxPartRows = 6;
+        public const int MaxStatusRows = 5;
+
         bool m_HasVisibleMonsters;
         public bool HasVisibleMonsters
         {
@@ -113,6 +125,10 @@ namespace SmartHunter.Game.Data.WidgetContexts
             {
                 monster.IsFocused = monster == focus;
                 monster.IsSuppressed = onlyFocused && focus != null && monster != focus;
+            }
+            foreach (var monster in Monsters)
+            {
+                monster.RankRows();
             }
             HasVisibleMonsters = Monsters.Any(m => m.IsVisible);
         }

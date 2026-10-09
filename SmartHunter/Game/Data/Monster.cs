@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using SmartHunter.Core;
@@ -317,6 +318,22 @@ namespace SmartHunter.Game.Data
             }
 
             return statusEffect;
+        }
+
+        // A big fight can have 10+ parts and statuses moving at once. Show the ones hit most recently.
+        public void RankRows()
+        {
+            Rank(Parts.Cast<TimedVisibility>().ToList(), p => ((MonsterPart)p).IsCandidate, (p, v) => ((MonsterPart)p).IsRanked = v, Data.WidgetContexts.MonsterWidgetContext.MaxPartRows);
+            Rank(StatusEffects.Cast<TimedVisibility>().ToList(), s => ((MonsterStatusEffect)s).IsCandidate, (s, v) => ((MonsterStatusEffect)s).IsRanked = v, Data.WidgetContexts.MonsterWidgetContext.MaxStatusRows);
+        }
+
+        static void Rank(List<TimedVisibility> rows, Func<TimedVisibility, bool> isCandidate, Action<TimedVisibility, bool> setRanked, int max)
+        {
+            var shown = new HashSet<TimedVisibility>(rows.Where(isCandidate).OrderByDescending(r => r.LastChangedTime ?? r.InitialTime).Take(max));
+            foreach (var row in rows)
+            {
+                setRanked(row, shown.Contains(row));
+            }
         }
 
         public void UpdateLocalization()

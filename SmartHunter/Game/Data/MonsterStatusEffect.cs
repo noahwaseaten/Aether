@@ -51,14 +51,31 @@ namespace SmartHunter.Game.Data
             }
         }
 
-        public bool IsVisible
+        // Ailment buildup (poison, paralysis...) is host-only data; rage, stamina and exhaustion live on the monster itself
+        public bool IsCandidate
         {
             get
             {
-                return IsIncluded(GroupId) && IsTimeVisible(ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowUnchangedStatusEffects, ConfigHelper.Main.Values.Overlay.MonsterWidget.HideStatusEffectsAfterSeconds)
-                    && ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowStatusEffects;
+                bool hostOnly = GroupId == "StatusEffect" && Data.ViewModels.OverlayViewModel.Instance.MonsterWidget.Context.WaitingForHost;
+                return !hostOnly && IsIncluded(GroupId) && ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowStatusEffects
+                    && IsTimeVisible(ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowUnchangedStatusEffects, ConfigHelper.Main.Values.Overlay.MonsterWidget.HideStatusEffectsAfterSeconds);
             }
         }
+
+        bool m_IsRanked;
+        public bool IsRanked
+        {
+            get { return m_IsRanked; }
+            set
+            {
+                if (SetProperty(ref m_IsRanked, value))
+                {
+                    NotifyPropertyChanged(nameof(IsVisible));
+                }
+            }
+        }
+
+        public bool IsVisible => IsCandidate && IsRanked;
 
         public MonsterStatusEffect(Monster owner, ulong address, int index, float maxBuildup, float currentBuildup, float maxDuration, float currentDuration, int timesActivatedCount)
         {

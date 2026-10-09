@@ -137,11 +137,21 @@ namespace SmartHunter.Game.Data.ViewModels
 
             var rathian = MonsterWidget.Context.UpdateAndGetMonster(1, "em001_00", 21000, 21000, 1.1f, 1);
             rathian.UpdateHealth(21000, 12890);
-            for (int i = 0; i < 3; i++)
+            // A crowded fight: more parts than fit, plus statuses, to preview the row cap
+            for (int i = 0; i < 8; i++)
             {
                 rathian.UpdateAndGetPart((ulong)(10 + i), i == 0, 900, 900, 0);
-                rathian.UpdateAndGetPart((ulong)(10 + i), i == 0, 900, 900 - 280 * (i + 1), i == 1 ? 1 : 0);
+                rathian.UpdateAndGetPart((ulong)(10 + i), i == 0, 900, 880 - 100 * i, i == 1 ? 1 : 0);
             }
+            var statusEffects = ConfigHelper.MonsterData.Values.StatusEffects;
+            void Status(string groupId, float buildup, float duration)
+            {
+                int index = System.Array.FindIndex(statusEffects, e => e.GroupId == groupId);
+                rathian.UpdateAndGetStatusEffect((ulong)(50 + index), index, 300, 0, 30, 30, 0);
+                rathian.UpdateAndGetStatusEffect((ulong)(50 + index), index, 300, buildup, 30, duration, 1);
+            }
+            Status("Rage", 0, 18);
+            Status("Stamina", 180, 30);
             MonsterWidget.Context.UpdateAndGetMonster(2, "em007_00", 18000, 15100, 1, 1);
             MonsterWidget.Context.UpdateFocus(0);
 

@@ -391,14 +391,14 @@
         <Setter Property="ItemsPanel">
             <Setter.Value>
                 <ItemsPanelTemplate>
-                    <WrapPanel ItemWidth="190" />
+                    <WrapPanel />
                 </ItemsPanelTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
     <DataTemplate DataType="{x:Type data:MonsterStatusEffect}">
-        <Grid x:Name="Root" Margin="0 7 16 0" Visibility="Collapsed" Opacity="0">
+        <Grid x:Name="Root" Width="184" Margin="0 7 16 0" Visibility="Collapsed" Opacity="0">
             <Grid.RenderTransform>
                 <TranslateTransform Y="6" />
             </Grid.RenderTransform>
@@ -489,7 +489,7 @@
     </DataTemplate>
 
     <DataTemplate DataType="{x:Type data:MonsterPartSoften}">
-        <Grid x:Name="Root" Margin="0 7 16 0" Visibility="Collapsed" Opacity="0">
+        <Grid x:Name="Root" Width="184" Margin="0 7 16 0" Visibility="Collapsed" Opacity="0">
             <Grid.RenderTransform>
                 <TranslateTransform Y="6" />
             </Grid.RenderTransform>
@@ -538,7 +538,7 @@
     </DataTemplate>
 
     <DataTemplate DataType="{x:Type data:MonsterPart}">
-        <Grid x:Name="Root" Margin="0 7 16 0" Visibility="Collapsed" Opacity="0">
+        <Grid x:Name="Root" Width="184" Margin="0 7 16 0" Visibility="Collapsed" Opacity="0">
             <Grid.RenderTransform>
                 <TranslateTransform Y="6" />
             </Grid.RenderTransform>
@@ -636,6 +636,8 @@
                 </TextBlock.Text>
             </TextBlock>
 
+            <TextBlock x:Name="WaitingHint" Style="{StaticResource T_Muted}" FontSize="11" Margin="0 6 0 0" TextWrapping="Wrap" Visibility="Collapsed"
+                       Text="Parts and ailments come from the host. They show up when the host runs Aether with party sync on." />
             <StackPanel x:Name="Details">
                 <ItemsControl x:Name="PartsControl" ItemsSource="{Binding Source={StaticResource CollectionViewSource}}" Style="{StaticResource A_Style_ItemsControl_MonsterRows}" />
                 <ItemsControl ItemsSource="{Binding StatusEffects}" Style="{StaticResource A_Style_ItemsControl_MonsterRows}" />
@@ -661,6 +663,14 @@
                     <BeginStoryboard x:Name="Hide" Storyboard="{StaticResource A_Storyboard_Hide}" />
                 </DataTrigger.EnterActions>
             </DataTrigger>
+
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding DataContext.WaitingForHost, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="True" />
+                    <Condition Binding="{Binding IsFocused}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="WaitingHint" Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
 
             <!--Not the one you're fighting: a single quiet line-->
             <DataTrigger Binding="{Binding IsFocused}" Value="False">

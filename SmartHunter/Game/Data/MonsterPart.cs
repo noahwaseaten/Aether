@@ -42,15 +42,31 @@ namespace SmartHunter.Game.Data
             }
         }
 
-        public bool IsVisible
+        // Would show if there were room; Monster.RankRows picks which candidates fit
+        public bool IsCandidate
         {
             get
             {
                 var config = ConfigHelper.Main.Values.Overlay.MonsterWidget;
-                return config.ShowParts && IsIncluded(GroupId)
+                return config.ShowParts && IsIncluded(GroupId) && !Data.ViewModels.OverlayViewModel.Instance.MonsterWidget.Context.WaitingForHost
                     && (config.AlwaysShowParts || IsTimeVisible(config.ShowUnchangedParts, config.HidePartsAfterSeconds));
             }
         }
+
+        bool m_IsRanked;
+        public bool IsRanked
+        {
+            get { return m_IsRanked; }
+            set
+            {
+                if (SetProperty(ref m_IsRanked, value))
+                {
+                    NotifyPropertyChanged(nameof(IsVisible));
+                }
+            }
+        }
+
+        public bool IsVisible => IsCandidate && IsRanked;
 
         public MonsterPart(Monster owner, ulong address, bool isRemovable, float maxHealth, float currentHealth, int timesBrokenCount)
         {

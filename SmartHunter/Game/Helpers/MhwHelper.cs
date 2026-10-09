@@ -783,6 +783,9 @@ namespace SmartHunter.Game.Helpers
                 // Only the host's game has exact part HP and ailment buildup. When the host's numbers are arriving
                 // through the sync server they win; otherwise our own memory is the best estimate we have.
                 bool hostDataArriving = (DateTime.Now - lastPulledMonsterData).TotalSeconds < 20;
+                var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
+                bool isClient = game.IsValid && game.IsPlayerOnline() && !game.IsCurrentPlayerLobbyHost();
+                OverlayViewModel.Instance.MonsterWidget.Context.WaitingForHost = isClient && !hostDataArriving;
                 if (!hostDataArriving)
                 {
                     UpdateMonsterParts(process, monster);
