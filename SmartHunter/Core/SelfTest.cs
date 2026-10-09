@@ -64,6 +64,26 @@ namespace SmartHunter.Core
             game.PartyLeaderName = "";
             Check(!game.IsCurrentPlayerLobbyHost(), "leader unknown with others around: don't claim host");
 
+            // Junk from the third-party sync server is bounded and can't throw
+            var synced = new Monster(5, "em001_00", 1000, 1000, 1, 1);
+            var junkParts = new Dictionary<string, int[]>();
+            for (int i = 1; i <= 5000; i++) junkParts[i.ToString()] = new[] { 0, 100, 50, 0 };
+            junkParts["abc"] = new[] { 0, 1, 1, 0 };
+            junkParts["-3"] = new[] { 0, 1, 1, 0 };
+            junkParts["7"] = new[] { 0 };
+            var junkStatuses = new Dictionary<string, int[]> { { "99999", new[] { 1, 1, 1, 1, 1 } }, { "x", new[] { 1 } }, { "1", null } };
+            bool threw = false;
+            try
+            {
+                MhwHelper.UpdateMonsterParts(junkParts, synced);
+                MhwHelper.UpdateMonsterStatusEffects(junkStatuses, synced);
+            }
+            catch (Exception)
+            {
+                threw = true;
+            }
+            Check(!threw && synced.Parts.Count <= 48 && synced.StatusEffects.Count == 0, "junk sync data is bounded and ignored");
+
             // Busy fights: only the most recently hit rows show, and clients without host data show none
             var monsters = OverlayViewModel.Instance.MonsterWidget.Context;
             var busy = new Monster(3, "em001_00", 1000, 1000, 1, 1);

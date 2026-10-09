@@ -704,11 +704,14 @@ namespace SmartHunter.Game.Helpers
                                                 {
                                                     var monster = m.First();
                                                     var monsterData = monstersData[monster.Id];
-                                                    var monsterPartsData = monsterData["parts"];
-                                                    var monsterStatusesData = monsterData["statuses"];
-
-                                                    UpdateMonsterParts(monsterPartsData, monster);
-                                                    UpdateMonsterStatusEffects(monsterStatusesData, monster);
+                                                    if (monsterData != null && monsterData.TryGetValue("parts", out var monsterPartsData) && monsterPartsData != null)
+                                                    {
+                                                        UpdateMonsterParts(monsterPartsData, monster);
+                                                    }
+                                                    if (monsterData != null && monsterData.TryGetValue("statuses", out var monsterStatusesData) && monsterStatusesData != null)
+                                                    {
+                                                        UpdateMonsterStatusEffects(monsterStatusesData, monster);
+                                                    }
                                                     UpdateMonsterPartsSoften(process, monster);
                                                 }
                                             }
@@ -869,7 +872,7 @@ namespace SmartHunter.Game.Helpers
             return (action.Contains("Die") && !action.Contains("DieSleep")) || (action.Contains("Dead") && !action.Contains("Deadly"));
         }
 
-        private static void UpdateMonsterParts(Dictionary<string, int[]> parts, Monster monster)
+        internal static void UpdateMonsterParts(Dictionary<string, int[]> parts, Monster monster)
         {
             // Keys are 1-based positions in the host's part list. The client builds its list from them in that order,
             // so part names line up with the host's even when this game discovered its parts differently.
@@ -878,18 +881,29 @@ namespace SmartHunter.Game.Helpers
             {
                 monster.Parts.Clear();
             }
-            foreach (var entry in parts.OrderBy(e => int.Parse(e.Key)))
+            // The sync server is a third party: only accept as many parts as the game can have, in the shape we expect
+            int maxParts = DataOffsets.MonsterPartCollection.MaxItemCount + DataOffsets.MonsterRemovablePartCollection.MaxItemCount;
+            var valid = parts
+                .Select(e => new { Ok = int.TryParse(e.Key, out int key), Key = key, Values = e.Value })
+                .Where(e => e.Ok && e.Key >= 1 && e.Key <= maxParts && e.Values != null && e.Values.Length >= 4)
+                .OrderBy(e => e.Key);
+            foreach (var entry in valid)
             {
-                monster.UpdateAndGetPart(ulong.Parse(entry.Key), entry.Value[0] == 1, entry.Value[1], entry.Value[2], entry.Value[3]);
+                monster.UpdateAndGetPart((ulong)entry.Key, entry.Values[0] == 1, entry.Values[1], entry.Values[2], entry.Values[3]);
             }
         }
 
-        private static void UpdateMonsterStatusEffects(Dictionary<string, int[]> statuses, Monster monster)
+        internal static void UpdateMonsterStatusEffects(Dictionary<string, int[]> statuses, Monster monster)
         {
             foreach (KeyValuePair<string, int[]> entry in statuses)
             {
-                // Keyed by status index; keep our real address so memory reads still work if the host stops sending
-                int index = int.Parse(entry.Key);
+                // Keyed by status index; keep our real address so memory reads still work if the host stops sending.
+                // Indexes outside the status table, or short entries, are ignored (the server is a third party).
+                if (!int.TryParse(entry.Key, out int index) || index < 0 || index >= ConfigHelper.MonsterData.Values.StatusEffects.Length
+                    || entry.Value == null || entry.Value.Length < 5)
+                {
+                    continue;
+                }
                 ulong address = monster.StatusEffects.FirstOrDefault(st => st.Index == index)?.Address ?? 0;
                 monster.UpdateAndGetStatusEffect(address, index, entry.Value[0], entry.Value[1], entry.Value[2], entry.Value[3], entry.Value[4]);
             }
