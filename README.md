@@ -18,7 +18,7 @@ To move widgets, click Edit layout in the Aether window or hold Left Alt in game
 
 ## Reading the monster widget
 
-Each part has its own damage pool. The bar is what's left in it. Every time it empties the monster flinches and the pool refills. A part with dots breaks once all its dots are filled (one dot per time the pool has to empty), then it shows BROKEN. Parts without dots only flinch. "Cut:" parts like the tail come off the first time their pool empties, then show CUT.
+Each part has its own damage pool. The bar is what's left in it. Every time it empties the monster flinches and the pool refills. A part with dots breaks once all its dots are filled (one dot per time the pool has to empty), then it shows BROKEN. Parts without dots only flinch. "Cut:" parts like the tail come off the first time their pool empties, then turn grey.
 
 The element icons next to the name are the monster's weaknesses: bright is 3 stars, dim is 2.
 

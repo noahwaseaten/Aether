@@ -196,7 +196,7 @@ namespace SmartHunter.Game.Data.ViewModels
             Status("Rage", null, 0, 18, 2);
             Status("Stamina", null, 180, 30, 0);
             rathian.CaptureFraction = 0.3f;
-            MonsterWidget.Context.ShowNotice("Getting parts and ailments from Kabuto's game.", 3600);
+            MonsterWidget.Context.ShowNotice("Getting parts and ailments from Kabuto's game.", 8);
             MonsterWidget.Context.UpdateAndGetMonster(2, "em007_00", 18000, 15100, 1, 1);
             MonsterWidget.Context.UpdateAndGetMonster(4, "em044_00", 12000, 4200, 1, 1);
             MonsterWidget.Context.UpdateFocus(0);

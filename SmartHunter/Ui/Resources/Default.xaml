@@ -555,12 +555,13 @@
                 <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_TextMuted}" />
                 <Setter TargetName="NameBlock" Property="Foreground" Value="{StaticResource B_TextMuted}" />
             </DataTrigger>
+            <!--Cut parts: "Cut: Tail" already says it, so just grey out-->
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding IsBroken}" Value="True" />
                     <Condition Binding="{Binding IsRemovable}" Value="True" />
                 </MultiDataTrigger.Conditions>
-                <Setter TargetName="Tag" Property="Text" Value="CUT" />
+                <Setter TargetName="Tag" Property="Visibility" Value="Collapsed" />
             </MultiDataTrigger>
             <DataTrigger Binding="{Binding DataContext.ShowBars, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="False">
                 <Setter TargetName="Bar" Property="Visibility" Value="Collapsed" />

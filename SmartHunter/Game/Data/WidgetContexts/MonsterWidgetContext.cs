@@ -75,12 +75,20 @@ namespace SmartHunter.Game.Data.WidgetContexts
             get { return m_Notice; }
             private set { SetProperty(ref m_Notice, value); }
         }
-        DateTime m_NoticeUntil;
+        // Its own timer, so the banner always goes away even when nothing else updates the widget
+        System.Windows.Threading.DispatcherTimer m_NoticeTimer;
 
         public void ShowNotice(string text, double seconds)
         {
             Notice = text;
-            m_NoticeUntil = DateTime.Now.AddSeconds(seconds);
+            if (m_NoticeTimer == null)
+            {
+                m_NoticeTimer = new System.Windows.Threading.DispatcherTimer();
+                m_NoticeTimer.Tick += (s, e) => { m_NoticeTimer.Stop(); Notice = null; };
+            }
+            m_NoticeTimer.Stop();
+            m_NoticeTimer.Interval = TimeSpan.FromSeconds(seconds);
+            m_NoticeTimer.Start();
         }
 
         public const int MaxPartRows = 6;
@@ -146,10 +154,6 @@ namespace SmartHunter.Game.Data.WidgetContexts
             foreach (var monster in Monsters)
             {
                 monster.RankRows();
-            }
-            if (Notice != null && DateTime.Now > m_NoticeUntil)
-            {
-                Notice = null;
             }
             HasVisibleMonsters = Monsters.Any(m => m.IsVisible);
         }
