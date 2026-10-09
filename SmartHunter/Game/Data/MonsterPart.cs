@@ -48,7 +48,7 @@ namespace SmartHunter.Game.Data
             get
             {
                 var config = ConfigHelper.Main.Values.Overlay.MonsterWidget;
-                return config.ShowParts && IsIncluded(GroupId) && !Data.ViewModels.OverlayViewModel.Instance.MonsterWidget.Context.WaitingForHost
+                return config.ShowParts && IsIncluded(GroupId)
                     && (config.AlwaysShowParts || IsTimeVisible(config.ShowUnchangedParts, config.HidePartsAfterSeconds));
             }
         }
@@ -85,6 +85,8 @@ namespace SmartHunter.Game.Data
             if (e.PropertyName == nameof(TimesBrokenCount))
             {
                 UpdateLastChangedTime();
+                NotifyPropertyChanged(nameof(IsBroken));
+                NotifyPropertyChanged(nameof(BreakPips));
             }
         }
 
@@ -93,6 +95,35 @@ namespace SmartHunter.Game.Data
             if (e.PropertyName == nameof(Progress.Current))
             {
                 UpdateLastChangedTime();
+            }
+        }
+
+        // How many times this part's damage pool has to be emptied before it breaks (cut parts: once).
+        // 0 = it only flinches, -1 = unknown. TimesBrokenCount is how many times it has been emptied so far.
+        public int BreakThreshold
+        {
+            get
+            {
+                if (IsRemovable)
+                {
+                    return 1;
+                }
+                int index = m_Owner.Parts.Where(part => !part.IsRemovable).ToList().IndexOf(this);
+                return PartData.BreakThresholds.TryGetValue(m_Owner.Id, out var thresholds) && index >= 0 && index < thresholds.Length ? thresholds[index] : -1;
+            }
+        }
+
+        public bool IsBroken => BreakThreshold > 0 && TimesBrokenCount >= BreakThreshold;
+        public bool CanBreak => BreakThreshold > 0;
+        public bool IsThresholdUnknown => BreakThreshold < 0;
+
+        // One pip per break step, filled as the pool gets emptied (only for parts that take more than one)
+        public bool[] BreakPips
+        {
+            get
+            {
+                int threshold = BreakThreshold;
+                return !IsRemovable && threshold > 1 ? Enumerable.Range(0, threshold).Select(i => i < TimesBrokenCount).ToArray() : new bool[0];
             }
         }
 

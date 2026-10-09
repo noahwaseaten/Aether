@@ -196,10 +196,10 @@ namespace SmartHunter.Game.Data.ViewModels
             Status("Rage", null, 0, 18, 2);
             Status("Stamina", null, 180, 30, 0);
             rathian.CaptureFraction = 0.3f;
+            MonsterWidget.Context.ShowNotice("Getting parts and ailments from Kabuto's game.", 3600);
             MonsterWidget.Context.UpdateAndGetMonster(2, "em007_00", 18000, 15100, 1, 1);
-            MonsterWidget.Context.UpdateAndGetMonster(4, "em044_00", 12000, 4200, 1, 1).UpdateHealth(12000, 4100);
+            MonsterWidget.Context.UpdateAndGetMonster(4, "em044_00", 12000, 4200, 1, 1);
             MonsterWidget.Context.UpdateFocus(0);
-            foreach (var m in MonsterWidget.Context.Monsters) m.IsFocused = m == rathian;
 
             PlayerWidget.Context.Sharpness.Update(new[] { 60, 100, 150, 200, 260, 0, 0 }, 230, 260);
 

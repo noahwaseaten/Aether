@@ -16,6 +16,12 @@ Aether updates itself when a new release is out.
 
 To move widgets, click Edit layout in the Aether window or hold Left Alt in game. Drag to move, scroll to resize. F1 hides everything while you hold it.
 
+## Reading the monster widget
+
+Each part has its own damage pool. The bar is what's left in it. Every time it empties the monster flinches and the pool refills. A part with dots breaks once all its dots are filled (one dot per time the pool has to empty), then it shows BROKEN. Parts without dots only flinch. "Cut:" parts like the tail come off the first time their pool empties, then show CUT.
+
+The element icons next to the name are the monster's weaknesses: bright is 3 stars, dim is 2.
+
 ## Party sync
 
 MHW only gives exact part HP and ailment buildup to the host, and it doesn't track damage on expeditions. If everyone in the party runs Aether with party sync on (the default), the host's numbers get shared through the SmartHunter sync server. If the host isn't running Aether, you'll still see monster health, rage and stamina, just not parts.

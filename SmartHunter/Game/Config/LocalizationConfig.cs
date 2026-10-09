@@ -164,10 +164,10 @@ namespace SmartHunter.Config
             { "LOC_PART_TAIL_LEFT_GOLD", "Golden Left Tail" },
             { "LOC_PART_TAIL_RIGHT_GOLD", "Golden Right Tail" },
             { "LOC_REMOVABLE_PART_UKNOWN", "Unknown Removable Part" },
-            { "LOC_REMOVABLE_PART_TAIL", "Removable Tail" },
-            { "LOC_REMOVABLE_PART_HORNS", "Removable Horns" },
-            { "LOC_REMOVABLE_PART_HORNS_2", "Removable Horn Chip" },
-            { "LOC_REMOVABLE_PART_BALOON", "Removable Baloon" },
+            { "LOC_REMOVABLE_PART_TAIL", "Cut: Tail" },
+            { "LOC_REMOVABLE_PART_HORNS", "Cut: Horns" },
+            { "LOC_REMOVABLE_PART_HORNS_2", "Cut: Horn chip" },
+            { "LOC_REMOVABLE_PART_BALOON", "Cut: Balloon" },
 
             //To test monster parts
             { "LOC_PART_0", "0" },

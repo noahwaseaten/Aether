@@ -17,6 +17,14 @@ namespace SmartHunter.Game.Data
         Gold
     }
 
+    // Bindable shape for the skin (WPF can't bind tuple fields)
+    public class Weakness
+    {
+        public string Element { get; }
+        public int Stars { get; }
+        public Weakness(string element, int stars) { Element = element; Stars = stars; }
+    }
+
     public class Monster : TimedVisibility
     {
         public ulong Address { get; private set; }
@@ -182,6 +190,12 @@ namespace SmartHunter.Game.Data
             }
         }
         public bool HasCaptureMark => CaptureFraction > 0 && CaptureFraction < 1;
+
+        // Elements it takes the most damage from, as icon keys with star counts (2 and 3 stars only)
+        public Weakness[] Weaknesses =>
+            PartData.Weaknesses.TryGetValue(Id ?? "", out var weaknesses)
+                ? weaknesses.Where(w => w.Stars >= 2).Select(w => new Weakness(w.Element, w.Stars)).ToArray()
+                : new Weakness[0];
         public ObservableCollection<MonsterPart> Parts { get; private set; }
         public ObservableCollection<MonsterPartSoften> PartSoftens { get; private set; }
         public ObservableCollection<MonsterStatusEffect> StatusEffects { get; private set; }

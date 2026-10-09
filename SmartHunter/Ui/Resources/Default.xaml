@@ -41,6 +41,7 @@
     <converters:IconKeyToImageConverter x:Key="A_Converter_IconKeyToImage" />
     <converters:SecondsToClockConverter x:Key="A_Converter_SecondsToClock" />
     <converters:MultiplyConverter x:Key="A_Converter_Multiply" />
+    <converters:IsNotNullConverter x:Key="A_Converter_IsNotNull" />
     <converters:MonsterIconConverter x:Key="A_Converter_MonsterIcon" />
     <converters:FractionToOffsetConverter x:Key="A_Converter_FractionToOffset" />
 
@@ -504,7 +505,26 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <DockPanel>
-                <TextBlock x:Name="Count" DockPanel.Dock="Right" Style="{StaticResource T_CellValue}" FontWeight="Bold" Foreground="{StaticResource B_Accent}" Text="{Binding TimesBrokenCount, StringFormat=×{0}}" Visibility="Collapsed" />
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!--Breaks after its pool is emptied N times: one pip per time-->
+                    <ItemsControl x:Name="Pips" ItemsSource="{Binding BreakPips}" VerticalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Ellipse x:Name="Pip" Width="7" Height="7" Margin="3 0 0 0" Stroke="{StaticResource B_Accent}" StrokeThickness="1.2" />
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding}" Value="True">
+                                        <Setter TargetName="Pip" Property="Fill" Value="{StaticResource B_Accent}" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock x:Name="Tag" Text="BROKEN" Style="{StaticResource T_Label}" Margin="5 0 0 0" Visibility="Collapsed" />
+                    <TextBlock x:Name="Count" Style="{StaticResource T_CellValue}" Text="{Binding TimesBrokenCount, StringFormat=emptied ×{0}}" Visibility="Collapsed" />
+                </StackPanel>
                 <TextBlock x:Name="NameBlock" Text="{Binding Name}" Style="{StaticResource T_Cell}" />
             </DockPanel>
             <Grid x:Name="Bar" Grid.Row="1" Height="3" Margin="0 3 0 0">
@@ -521,16 +541,26 @@
                 <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_Accent}" />
                 <Setter TargetName="NameBlock" Property="Foreground" Value="{StaticResource B_Accent}" />
             </DataTrigger>
-            <DataTrigger Binding="{Binding TimesBrokenCount, Converter={StaticResource A_Converter_NumberGreater}}" Value="True">
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsThresholdUnknown}" Value="True" />
+                    <Condition Binding="{Binding TimesBrokenCount, Converter={StaticResource A_Converter_NumberGreater}}" Value="True" />
+                </MultiDataTrigger.Conditions>
                 <Setter TargetName="Count" Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
+            <!--Broken or cut: grey bar, and the tag says which (not colour alone)-->
+            <DataTrigger Binding="{Binding IsBroken}" Value="True">
+                <Setter TargetName="Tag" Property="Visibility" Value="Visible" />
+                <Setter TargetName="Pips" Property="Visibility" Value="Collapsed" />
+                <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_TextMuted}" />
+                <Setter TargetName="NameBlock" Property="Foreground" Value="{StaticResource B_TextMuted}" />
             </DataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsBroken}" Value="True" />
                     <Condition Binding="{Binding IsRemovable}" Value="True" />
-                    <Condition Binding="{Binding TimesBrokenCount, Converter={StaticResource A_Converter_NumberGreater}}" Value="True" />
                 </MultiDataTrigger.Conditions>
-                <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_TextMuted}" />
-                <Setter TargetName="NameBlock" Property="Foreground" Value="{StaticResource B_TextMuted}" />
+                <Setter TargetName="Tag" Property="Text" Value="CUT" />
             </MultiDataTrigger>
             <DataTrigger Binding="{Binding DataContext.ShowBars, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="False">
                 <Setter TargetName="Bar" Property="Visibility" Value="Collapsed" />
@@ -569,6 +599,9 @@
                                     <TextBlock Style="{StaticResource T_Chip}" FontWeight="SemiBold" Margin="5 0 0 0" Text="{Binding Fatigue.Duration.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
                                 </StackPanel>
                             </Border>
+                            <Border x:Name="Estimate" Style="{StaticResource A_Style_Chip}" Background="#33FFFFFF">
+                                <TextBlock Text="ESTIMATE" Style="{StaticResource T_Chip}" Foreground="{StaticResource B_Text}" />
+                            </Border>
                             <TextBlock x:Name="HealthPct" Style="{StaticResource T_Big}" FontSize="20" Margin="10 0 0 0" Text="{Binding Health.Fraction, Converter={StaticResource A_Converter_FractionToPercentage}}" />
                         </StackPanel>
                         <TextBlock Text="{Binding Name}" Style="{StaticResource T_MonsterName}" />
@@ -581,6 +614,24 @@
                             </ContentControl.Foreground>
                         </ContentControl>
                         <TextBlock x:Name="Size" Style="{StaticResource T_Muted}" Margin="6 0 0 0" Text="{Binding Size, StringFormat={}{0:N0}}" />
+                        <!--Weak to: element icons, 3 stars bright, 2 stars dimmer-->
+                        <ItemsControl ItemsSource="{Binding Weaknesses}" Margin="10 0 0 0" VerticalAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Image x:Name="Element" Source="{Binding Element, Converter={StaticResource A_Converter_IconKeyToImage}}" Width="18" Height="18" Margin="0 0 3 0" />
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Stars}" Value="2">
+                                            <Setter TargetName="Element" Property="Opacity" Value="0.55" />
+                                            <Setter TargetName="Element" Property="Width" Value="15" />
+                                            <Setter TargetName="Element" Property="Height" Value="15" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </DockPanel>
 
                     <!--Health with a gold tick at the capture threshold-->
@@ -610,8 +661,6 @@
                         </StackPanel>
                     </DockPanel>
 
-                    <TextBlock x:Name="WaitingHint" Style="{StaticResource T_Muted}" FontSize="13" Margin="0 6 0 0" TextWrapping="Wrap" Visibility="Collapsed"
-                               Text="Parts and ailments come from the host. They show up when the host runs Aether with party sync on." />
 
                     <ItemsControl ItemsSource="{Binding VisibleAilments}" ItemsPanel="{StaticResource A_Panel_Wrap}" Margin="0 4 0 0" />
                     <ItemsControl ItemsSource="{Binding VisibleParts}" ItemsPanel="{StaticResource A_Panel_Wrap}" />
@@ -670,10 +719,10 @@
 
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding DataContext.WaitingForHost, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="True" />
+                    <Condition Binding="{Binding DataContext.IsEstimate, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="True" />
                     <Condition Binding="{Binding IsFocused}" Value="True" />
                 </MultiDataTrigger.Conditions>
-                <Setter TargetName="WaitingHint" Property="Visibility" Value="Visible" />
+                <Setter TargetName="Estimate" Property="Visibility" Value="Visible" />
             </MultiDataTrigger>
 
             <DataTrigger Binding="{Binding IsEnraged}" Value="True">
@@ -994,12 +1043,24 @@
                 </CollectionViewSource>
             </Grid.Resources>
             <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" Opacity="{Binding ShadeOpacity, Source={x:Static viewModels:OverlayViewModel.Instance}}" OpacityMask="{StaticResource B_ScrimFeather}" Margin="-24 -12 -24 -12" />
-            <ItemsControl x:Name="MonstersControl" ItemsSource="{Binding Source={StaticResource CollectionViewSource}}" />
+            <StackPanel>
+                <Border x:Name="Notice" Width="462" HorizontalAlignment="Left" Margin="0 0 0 10" Padding="12 8 12 8" CornerRadius="6"
+                        Background="#EB101114" BorderBrush="{StaticResource B_Accent}" BorderThickness="1" Visibility="Collapsed">
+                    <DockPanel>
+                        <TextBlock Text="SYNC" Style="{StaticResource T_Label}" DockPanel.Dock="Left" VerticalAlignment="Top" Margin="0 1 10 0" />
+                        <TextBlock Text="{Binding Notice}" Style="{StaticResource T_Body}" TextWrapping="Wrap" />
+                    </DockPanel>
+                </Border>
+                <ItemsControl x:Name="MonstersControl" ItemsSource="{Binding Source={StaticResource CollectionViewSource}}" />
+            </StackPanel>
         </Grid>
         <DataTemplate.Triggers>
             <Trigger Property="pfComponentModel:DesignerProperties.IsInDesignMode" Value="True">
                 <Setter TargetName="MonstersControl" Property="ItemsSource" Value="{Binding Monsters}" />
             </Trigger>
+            <DataTrigger Binding="{Binding Notice, Converter={StaticResource A_Converter_IsNotNull}}" Value="True">
+                <Setter TargetName="Notice" Property="Visibility" Value="Visible" />
+            </DataTrigger>
             <!--Nothing to show: no shade either-->
             <DataTrigger Binding="{Binding HasVisibleMonsters}" Value="False">
                 <Setter TargetName="Scrim" Property="Visibility" Value="Collapsed" />

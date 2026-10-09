@@ -168,6 +168,7 @@ namespace SmartHunter.Game
                     }
 
                     MhwHelper.UpdateMonsterWidget(Process, monsterBaseList, mapBaseAddress);
+                    MhwHelper.UpdateSyncNotice();
                 }
                 else if (OverlayViewModel.Instance.MonsterWidget.Context.Monsters.Any())
                 {

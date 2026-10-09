@@ -824,7 +824,7 @@ namespace SmartHunter.Game.Helpers
                 var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
                 bool isClient = game.IsValid && game.IsPlayerOnline() && !game.IsCurrentPlayerLobbyHost();
                 bool hostDataArriving = isClient && (DateTime.Now - lastPulledMonsterData).TotalSeconds < 60;
-                OverlayViewModel.Instance.MonsterWidget.Context.WaitingForHost = isClient && !hostDataArriving;
+                OverlayViewModel.Instance.MonsterWidget.Context.IsEstimate = isClient && !hostDataArriving;
                 if (!hostDataArriving)
                 {
                     // Parts built from host data have key addresses; read from memory, they need rediscovering
@@ -843,6 +843,62 @@ namespace SmartHunter.Game.Helpers
             }
 
             return monster;
+        }
+
+        // Tells you, once per lobby, where the monster numbers come from
+        static string s_NoticeKey;
+        static DateTime s_ClientSince;
+        public static void UpdateSyncNotice()
+        {
+            var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
+            var context = OverlayViewModel.Instance.MonsterWidget.Context;
+            if (!game.IsValid || !game.IsPlayerOnline() || !game.IsPlayerInLobby() || game.IsPlayerAlone() || !context.Monsters.Any())
+            {
+                s_ClientSince = DateTime.MinValue;
+                return;
+            }
+
+            string host = game.PartyLeaderName.Length > 0 ? game.PartyLeaderName : "The host";
+            bool sync = ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer;
+            string kind = null, text = null;
+            double seconds = 6;
+            if (game.IsCurrentPlayerLobbyHost())
+            {
+                if (sync && game.playersCheckDone)
+                {
+                    kind = "host";
+                    text = "You're the host. Sharing monster data with your party.";
+                }
+            }
+            else
+            {
+                if (s_ClientSince == DateTime.MinValue)
+                {
+                    s_ClientSince = DateTime.Now;
+                }
+                bool hostDataArriving = (DateTime.Now - lastPulledMonsterData).TotalSeconds < 60;
+                if (sync && hostDataArriving)
+                {
+                    kind = "synced";
+                    text = $"Getting parts and ailments from {host}'s game.";
+                }
+                else if (!sync || (DateTime.Now - s_ClientSince).TotalSeconds > 20)
+                {
+                    kind = "estimate";
+                    seconds = 12;
+                    text = sync
+                        ? $"{host} isn't sharing data (they need Aether with party sync on). Parts and ailments are your game's estimate and can be off."
+                        : "Party sync is off, so parts and ailments are your game's estimate and can be off. Turn it on in Settings > Party sync.";
+                }
+            }
+
+            string key = kind + "|" + game.key;
+            if (kind != null && key != s_NoticeKey)
+            {
+                s_NoticeKey = key;
+                context.ShowNotice(text, seconds);
+                Log.WriteLine(text);
+            }
         }
 
         // Current action's reference name, e.g. "nActEm001::Die" (HunterPie's GetMonsterAction)

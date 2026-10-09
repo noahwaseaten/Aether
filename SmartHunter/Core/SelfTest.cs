@@ -96,12 +96,26 @@ namespace SmartHunter.Core
             int shownParts = 0;
             foreach (var part in busy.Parts) if (part.IsVisible) shownParts++;
             Check(shownParts == Game.Data.WidgetContexts.MonsterWidgetContext.MaxPartRows, "8 damaged parts show only the 6 most recent");
-            monsters.WaitingForHost = true;
+            monsters.IsEstimate = true;
             busy.RankRows();
             shownParts = 0;
             foreach (var part in busy.Parts) if (part.IsVisible) shownParts++;
-            Check(shownParts == 0, "client without host data hides parts");
-            monsters.WaitingForHost = false;
+            Check(shownParts == Game.Data.WidgetContexts.MonsterWidgetContext.MaxPartRows, "client without host data still shows its estimate");
+            monsters.IsEstimate = false;
+
+            // Breaks: Rathian's head (first normal part) needs its pool emptied twice; legs only flinch; cut parts go once
+            var rathian = new Monster(6, "em001_00", 1000, 1000, 1, 1);
+            var cut = rathian.UpdateAndGetPart(0x10000001, true, 300, 300, 0);
+            var head = rathian.UpdateAndGetPart(0x10000002, false, 300, 300, 1);
+            rathian.UpdateAndGetPart(0x10000003, false, 300, 300, 0);
+            rathian.UpdateAndGetPart(0x10000004, false, 300, 300, 0);
+            rathian.UpdateAndGetPart(0x10000005, false, 300, 300, 0);
+            var leg = rathian.UpdateAndGetPart(0x10000006, false, 300, 300, 3);
+            Check(head.BreakThreshold == 2 && !head.IsBroken && head.BreakPips.Length == 2, "head: emptied once of twice, not broken yet");
+            head.TimesBrokenCount = 2;
+            Check(head.IsBroken, "head emptied twice is broken");
+            Check(leg.BreakThreshold == 0 && !leg.IsBroken, "legs only flinch, however often they're emptied");
+            Check(cut.BreakThreshold == 1 && !cut.IsBroken, "cut part not cut yet");
 
             // Team damage: a hunter leaving must not shift the others into the wrong slot
             var team = OverlayViewModel.Instance.TeamWidget.Context;

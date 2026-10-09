@@ -57,7 +57,7 @@ namespace SmartHunter.Game.Data
         {
             get
             {
-                bool hostOnly = GroupId == "StatusEffect" && Data.ViewModels.OverlayViewModel.Instance.MonsterWidget.Context.WaitingForHost;
+                bool hostOnly = GroupId == "StatusEffect" && Data.ViewModels.OverlayViewModel.Instance.MonsterWidget.Context.IsEstimate;
                 return !hostOnly && IsIncluded(GroupId) && ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowStatusEffects
                     && IsTimeVisible(ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowUnchangedStatusEffects, ConfigHelper.Main.Values.Overlay.MonsterWidget.HideStatusEffectsAfterSeconds);
             }

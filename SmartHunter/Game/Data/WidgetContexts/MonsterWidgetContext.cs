@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using SmartHunter.Core.Data;
@@ -59,12 +60,27 @@ namespace SmartHunter.Game.Data.WidgetContexts
         }
 
         // Online and not the host, with no host numbers coming through the sync server. The game only refreshes a
-        // client's part HP and ailment buildup every few minutes, so those rows stay hidden instead of showing stale jumps.
-        bool m_WaitingForHost;
-        public bool WaitingForHost
+        // client's part HP and ailment buildup now and then, so the widget marks those numbers as an estimate.
+        bool m_IsEstimate;
+        public bool IsEstimate
         {
-            get { return m_WaitingForHost; }
-            set { SetProperty(ref m_WaitingForHost, value); }
+            get { return m_IsEstimate; }
+            set { SetProperty(ref m_IsEstimate, value); }
+        }
+
+        // A short message at the top of the widget: who the monster data comes from
+        string m_Notice;
+        public string Notice
+        {
+            get { return m_Notice; }
+            private set { SetProperty(ref m_Notice, value); }
+        }
+        DateTime m_NoticeUntil;
+
+        public void ShowNotice(string text, double seconds)
+        {
+            Notice = text;
+            m_NoticeUntil = DateTime.Now.AddSeconds(seconds);
         }
 
         public const int MaxPartRows = 6;
@@ -130,6 +146,10 @@ namespace SmartHunter.Game.Data.WidgetContexts
             foreach (var monster in Monsters)
             {
                 monster.RankRows();
+            }
+            if (Notice != null && DateTime.Now > m_NoticeUntil)
+            {
+                Notice = null;
             }
             HasVisibleMonsters = Monsters.Any(m => m.IsVisible);
         }
