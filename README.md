@@ -2,6 +2,8 @@
 
 An overlay for Monster Hunter: World on PC (Iceborne 15.20). It shows the monster you're fighting, party damage, your buffs and sharpness, and a results screen after each quest.
 
+![Monster widget](docs/monster-widget.png)
+
 It started as a fork of [SmartHunter](https://github.com/gabrielefilipp/SmartHunter) that I fixed up for me and my friends. This is my first public repo, so if something breaks, open an issue.
 
 ## Install

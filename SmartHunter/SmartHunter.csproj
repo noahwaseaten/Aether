@@ -50,6 +50,7 @@
     </ItemGroup>
     <ItemGroup>
         <Resource Include="Ui\Fonts\Roboto-Bold.ttf" />
+        <Resource Include="Ui\Monsters\*.png" />
         <Resource Include="Ui\Fonts\Roboto-Medium.ttf" />
     </ItemGroup>
 </Project>

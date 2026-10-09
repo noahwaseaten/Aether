@@ -137,23 +137,31 @@ namespace SmartHunter.Game.Data.ViewModels
 
             var rathian = MonsterWidget.Context.UpdateAndGetMonster(1, "em001_00", 21000, 21000, 1.1f, 1);
             rathian.UpdateHealth(21000, 12890);
-            // A crowded fight: more parts than fit, plus statuses, to preview the row cap
+            // A busy fight: more parts than fit, ailments building up and one active, a severed tail
             for (int i = 0; i < 8; i++)
             {
                 rathian.UpdateAndGetPart((ulong)(10 + i), i == 0, 900, 900, 0);
-                rathian.UpdateAndGetPart((ulong)(10 + i), i == 0, 900, 880 - 100 * i, i == 1 ? 1 : 0);
+                rathian.UpdateAndGetPart((ulong)(10 + i), i == 0, 900, i == 0 ? 0 : 880 - 100 * i, i <= 1 ? 1 : 0);
             }
             var statusEffects = ConfigHelper.MonsterData.Values.StatusEffects;
-            void Status(string groupId, float buildup, float duration)
+            void Status(string groupId, string nameId, float buildup, float durationLeft, int times)
             {
-                int index = System.Array.FindIndex(statusEffects, e => e.GroupId == groupId);
+                int index = System.Array.FindIndex(statusEffects, e => e.GroupId == groupId && (nameId == null || e.NameStringId == nameId));
                 rathian.UpdateAndGetStatusEffect((ulong)(50 + index), index, 300, 0, 30, 30, 0);
-                rathian.UpdateAndGetStatusEffect((ulong)(50 + index), index, 300, buildup, 30, duration, 1);
+                rathian.UpdateAndGetStatusEffect((ulong)(50 + index), index, 300, buildup, 30, durationLeft, times);
             }
-            Status("Rage", 0, 18);
-            Status("Stamina", 180, 30);
+            Status("StatusEffect", "LOC_STATUS_EFFECT_POISON", 210, 30, 1);
+            Status("StatusEffect", "LOC_STATUS_EFFECT_PARALYSIS", 0, 4, 1);
+            Status("StatusEffect", "LOC_STATUS_EFFECT_SLEEP", 90, 30, 0);
+            Status("StatusEffect", "LOC_STATUS_EFFECT_STUN", 160, 30, 0);
+            Status("StatusEffect", "LOC_STATUS_EFFECT_VIOLATED", 120, 30, 1);
+            Status("Rage", null, 0, 18, 2);
+            Status("Stamina", null, 180, 30, 0);
+            rathian.CaptureFraction = 0.3f;
             MonsterWidget.Context.UpdateAndGetMonster(2, "em007_00", 18000, 15100, 1, 1);
+            MonsterWidget.Context.UpdateAndGetMonster(4, "em044_00", 12000, 4200, 1, 1).UpdateHealth(12000, 4100);
             MonsterWidget.Context.UpdateFocus(0);
+            foreach (var m in MonsterWidget.Context.Monsters) m.IsFocused = m == rathian;
 
             PlayerWidget.Context.Sharpness.Update(new[] { 60, 100, 150, 200, 260, 0, 0 }, 230, 260);
 

@@ -2545,4 +2545,95 @@
 			</DrawingGroup>
 		</DrawingImage.Drawing>
 	</DrawingImage>
+<!-- Monster ailment icons, also from HunterPie (MIT, https://github.com/HunterPie/HunterPie-legacy) -->
+<DrawingImage x:Key="ICON_SLEEP">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V128 H128 V0 H0 Z">
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Brush="#FF5A78B0" Geometry="F1 M128,128z M0,0z M25.44,14.18C41.09,13.69 56.77,14.17 72.43,13.94 72.7,17.1 72.66,20.27 72.57,23.43 68.81,27.06 64.9,30.53 61.03,34.03 55.35,39.75 48.98,44.72 43.41,50.56 53.04,50.6 62.67,50.58 72.3,50.57 72.74,54.14 72.82,57.78 72.26,61.35 56.7,61.25 41.14,61.39 25.58,61.27 25.5,58.09 25.48,54.92 25.47,51.74 27.83,48.99 30.7,46.78 33.41,44.4 40.48,37.64 47.82,31.18 55.05,24.59 45.22,23.99 35.33,24.76 25.49,24.19 25.52,20.86 25.5,17.52 25.44,14.18z" />
+                    <GeometryDrawing Brush="#FF5A78B0" Geometry="F1 M128,128z M0,0z M34.31,82.23C40.19,81.68 46.1,82.07 52,81.96 56.75,82.08 61.54,81.64 66.27,82.32 66.27,84.4 66.29,86.47 66.31,88.55 59.57,94.69 52.9,100.9 46.21,107.1 52.92,107.25 59.64,106.94 66.34,107.31 66.31,109.5 66.3,111.7 66.33,113.89 55.65,114.06 44.97,114.16 34.3,113.86 34.35,111.79 34.05,109.65 34.52,107.62 37.48,104.2 41.22,101.55 44.49,98.42 47.71,95.37 50.97,92.36 54.3,89.43 47.73,89.15 41.14,89.32 34.56,89.31 34.19,86.97 34.21,84.59 34.31,82.23z" />
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Brush="#FF5B78B1" Geometry="F1 M128,128z M0,0z M72.51,41.76C75.99,41.25 79.5,41.56 83,41.49 90.81,41.53 98.62,41.38 106.43,41.59 106.47,44.16 106.51,46.73 106.57,49.29 104.01,52.18 101.15,54.79 98.27,57.35 92.53,62.25 87.38,67.8 81.51,72.56 89.8,73.16 98.12,72.67 106.43,72.81 106.49,75.81 106.53,78.81 106.49,81.8 97.33,82.29 88.16,81.91 79,82.04 74.81,81.87 70.58,82.33 66.42,81.65 66.47,78.97 66.19,76.27 66.6,73.62 68.95,70.64 72.32,68.68 74.93,65.95 80.22,60.61 86.28,56.1 91.36,50.55 85.1,50.44 78.82,50.76 72.56,50.38 72.52,47.51 72.51,44.63 72.51,41.76z" />
+                </DrawingGroup>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+<DrawingImage x:Key="ICON_PARALYSIS">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V128 H128 V0 H0 Z">
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Brush="#FFD1C078" Geometry="F1 M128,128z M0,0z M13.12,14.73C20.75,14.36 28.41,14.69 36.04,14.51 48.56,26.32 61.11,38.09 73.64,49.89 65.29,56.82 57.47,64.36 49.11,71.27 55.84,76.61 62.67,81.84 69.55,86.99 57.18,93.49 44.9,100.16 32.59,106.76 38.74,100.49 45,94.33 51.24,88.15 43.59,82.59 36.27,76.6 28.65,71.01 36.65,63.89 44.46,56.58 52.38,49.38 39.22,37.92 26.45,26 13.12,14.73z" />
+                    <GeometryDrawing Brush="#FFD1C078" Geometry="F1 M128,128z M0,0z M63.05,21.76C70.69,21.77 78.33,21.79 85.97,21.77 95.54,30.69 105.04,39.7 114.56,48.67 106.61,55.8 98.87,63.16 90.81,70.17 98.75,76.38 106.67,82.62 114.6,88.84 98.89,97.98 83.43,107.58 67.7,116.67 76.72,107.97 85.58,99.08 94.43,90.2 86.06,83.92 77.91,77.36 69.59,71.03 77.59,63.91 85.38,56.56 93.39,49.44 83.17,40.33 73.31,30.82 63.05,21.76z" />
+                </DrawingGroup>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+<DrawingImage x:Key="ICON_STUN">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V128 H128 V0 H0 Z">
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Brush="#FFD1C078" Geometry="F1 M128,128z M0,0z M41.54,28.44C43.05,23.02 44.7,17.64 46.77,12.41 49.65,19.75 51.69,27.37 54.17,34.85 62.5,35.24 70.85,34.75 79.18,35.33 72.88,41.44 66.5,47.49 60.53,53.93 62.06,58 63.59,62.07 65.05,66.17 58.69,66.79 52.13,65.51 45.89,67.08 39.36,70.01 33.56,74.36 26.96,77.19 28.65,69.35 31.05,61.69 33.1,53.94 27.09,47.55 20.48,41.75 14.65,35.19 22.66,34.66 30.72,35.58 38.71,34.76 40.31,33.02 40.81,30.61 41.54,28.44z" />
+                    <GeometryDrawing Brush="#FFD1C078" Geometry="F1 M128,128z M0,0z M83.55,50.88C86.54,58.33 88.43,66.15 91.19,73.68 99.24,73.66 107.3,73.45 115.35,73.88 109.56,80.2 103.18,85.95 97.23,92.11 99.12,99.81 101.6,107.37 103.1,115.17 97.13,112.62 91.79,108.86 85.99,105.99 83.46,104.37 80.75,106.24 78.49,107.42 73.78,110.21 69.06,112.99 64.06,115.24 65.81,107.43 68.28,99.8 70.13,92.01 64.03,85.97 57.71,80.14 51.86,73.85 59.92,73.49 67.98,73.58 76.04,73.75 79.01,66.28 80.93,58.47 83.55,50.88z" />
+                </DrawingGroup>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+<DrawingImage x:Key="ICON_TRAP">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V64 H64 V0 H0 Z">
+                <DrawingGroup Opacity="1" Transform="1,0,0,1,-64,-320">
+                    <DrawingGroup Opacity="1" Transform="0.5,0,0,0.375,0,0">
+                        <DrawingGroup Opacity="1" Transform="2,0,0,2.66667,-1408,853.333">
+                            <DrawingGroup Opacity="1" Transform="0.923077,0,0,0.911765,61.5385,2.02941">
+                                <GeometryDrawing>
+                                    <GeometryDrawing.Brush>
+                                        <SolidColorBrush Color="#FF000000" Opacity="0.75" />
+                                    </GeometryDrawing.Brush>
+                                    <GeometryDrawing.Geometry>
+                                        <RectangleGeometry RadiusX="0" RadiusY="0" Rect="774,23,52,34" />
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                            </DrawingGroup>
+                            <GeometryDrawing Brush="#FFC2C700" Geometry="F0 M64,64z M0,0z M823,23L825,23C825,23,826,23,826,24L826,56C826,57,825,57,825,57L775,57C774,57,774,56,774,56L774,24C774,23,775,23,775,23L777,23C777,23,778,23,778,24L778,42 788,52 812,52 822,42 822,24C822,23,823,23,823,23z M776,49L781,49 781,54 776,49z M824,49L819,49 819,54 824,49z" />
+                            <GeometryDrawing Brush="#FFF4FB00" Geometry="F0 M64,64z M0,0z M803,43L803,45C803,45,803,48,806,48L811,48C811,48 811,46 809,46 807,46 806,46 806,45 806,44 807,43 808,43 809,43 811,42 814,39 817,36 818,35 818,30L818,13C818,8 813,8 811,8 809,8 806,10 806,13 806,16 808,18 810,18 812,18 813,17 813,17 813,17 808,17 808,14 808,11 810,11 812,11 814,11 815,13 815,19 815,25 814,27 812,29 810,31 808,32 807,32 806,32 804,30 804,29 804,28 810,23 810,23L800,23C800,23 798,24.5 798,26.5 798,28.5 802,32 802,32L798,32 794,28 794,23C794,23,797,22,797,20L797,8C797,7,796,7,796,7L785,7C784,7,784,8,784,8L784,10 788,14 788,19C788,19 786.5,21 785.5,21 784.5,21 782,18 782,18L782,11C782,11 782,10 781,10 780,10 780,11 780,11L780,21C780,21,782,22,782,23L782,33C782,34,791,43,792,43L797,43 797,45C797,46,796,46,796,46L794,46C792,46,792,48,792,48L797,48C798,48,800,45,800,45L800,43 803,43z M792,16C793.104,16 794,16.896 794,18 794,19.104 793.104,20 792,20 790.896,20 790,19.104 790,18 790,16.896 790.896,16 792,16z" />
+                        </DrawingGroup>
+                    </DrawingGroup>
+                </DrawingGroup>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+<DrawingImage x:Key="ICON_STOPWATCH">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <DrawingGroup.Children>
+                    <GeometryDrawing Geometry="F1 M 15.4583,3.65626L 16.25,3.65626L 16.25,6.23959L 15.4583,6.23959L 15.4583,3.65626 Z ">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="2" LineJoin="Round" Brush="#FFFFFFFF"/>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M 13.953,3.43752L 17.7775,3.43752">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" Brush="#FFFFFFFF"/>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M 24.4382,10.7901L 26.2128,8.88698">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="2.15" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" Brush="#FFFFFFFF"/>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M 19.0521,19.5208L 15.7812,16.8333L 15.7812,11.4792">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="2.15" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" Brush="#FFFFFFFF"/>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M 15.7812,6.70834C 21.7528,6.70834 26.5938,11.5493 26.5938,17.5208C 26.5938,23.4924 21.7528,28.3333 15.7812,28.3333C 9.80967,28.3333 4.96875,23.4924 4.96875,17.5208C 4.96875,11.5493 9.80967,6.70834 15.7812,6.70834 Z ">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="2" LineJoin="Round" Brush="#FFFFFFFF"/>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup.Children>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
 </ResourceDictionary>

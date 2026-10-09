@@ -110,6 +110,7 @@ namespace SmartHunter.Game
                 int id = MemoryHelper.Read<int>(process, monster.Address + 0x12280);
                 CaptureThresholds.ByMonsterId.TryGetValue(id, out int threshold);
                 bool capturable = threshold > 0 && fraction > 0 && fraction * 100 <= threshold;
+                monster.CaptureFraction = threshold / 100f;
                 bool exhausted = monster.StatusEffects.Any(s => s.GroupId == "Fatigue" && s.Duration.Max > 0 && s.Duration.Current > 0);
 
                 if (!s_Monsters.TryGetValue(monster.Address, out var seen))

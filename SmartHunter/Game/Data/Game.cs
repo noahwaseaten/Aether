@@ -1,3 +1,4 @@
+using System;
 using SmartHunter.Core.Data;
 
 namespace SmartHunter.Game.Data
@@ -146,14 +147,29 @@ namespace SmartHunter.Game.Data
             return CurrentPlayerName.Equals(SessionHostPlayerName) || SessionHostPlayerName.Length == 0 || CurrentPlayerName.Length == 0;
         }
 
+        // Quest party as the game lists it: slot 0 is the leader, whose game simulates the monsters (same rule as HunterPie)
+        public string PartyLeaderName = "";
+        public int PartySize;
+
+        // Who owns the monster data. Offline, your game runs everything. Online, the party leader does.
+        // When the leader can't be read, only claim it if nobody else is here: two copies both
+        // acting as host overwrite each other's data on the sync server and neither one pulls.
         public bool IsCurrentPlayerLobbyHost()
         {
-            return CurrentPlayerName.Equals(LobbyHostPlayerName) || LobbyHostPlayerName.Length == 0 || CurrentPlayerName.Length == 0;
+            if (!IsPlayerOnline() || CurrentPlayerName.Length == 0)
+            {
+                return true;
+            }
+            if (PartyLeaderName.Length > 0)
+            {
+                return CurrentPlayerName == PartyLeaderName;
+            }
+            return IsPlayerAlone();
         }
 
         public bool IsPlayerAlone()
         {
-            return LobbyPlayerCount <= 1 || !IsPlayerOnline();
+            return Math.Max(PartySize, LobbyPlayerCount) <= 1 || !IsPlayerOnline();
         }
 
         public WeaponType CurrentEquippedWeaponType()

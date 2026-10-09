@@ -150,6 +150,38 @@ namespace SmartHunter.Game.Data
         }
 
         public Progress Health { get; private set; }
+
+        // What the widget lists: only the parts and ailments that are showing, so hidden ones take no space
+        public ObservableCollection<MonsterPart> VisibleParts { get; } = new ObservableCollection<MonsterPart>();
+        public ObservableCollection<MonsterStatusEffect> VisibleAilments { get; } = new ObservableCollection<MonsterStatusEffect>();
+
+        // Rage, stamina and exhaustion live in the header rather than the ailment strip
+        MonsterStatusEffect m_Rage, m_Stamina, m_Fatigue;
+        public MonsterStatusEffect Rage { get { return m_Rage; } private set { SetProperty(ref m_Rage, value); } }
+        public MonsterStatusEffect Stamina { get { return m_Stamina; } private set { SetProperty(ref m_Stamina, value); } }
+        public MonsterStatusEffect Fatigue { get { return m_Fatigue; } private set { SetProperty(ref m_Fatigue, value); } }
+
+        bool m_IsExhausted;
+        public bool IsExhausted
+        {
+            get { return m_IsExhausted; }
+            private set { SetProperty(ref m_IsExhausted, value); }
+        }
+
+        // Capture threshold as a fraction of max HP (0 when unknown or the monster can't be captured)
+        float m_CaptureFraction;
+        public float CaptureFraction
+        {
+            get { return m_CaptureFraction; }
+            set
+            {
+                if (SetProperty(ref m_CaptureFraction, value))
+                {
+                    NotifyPropertyChanged(nameof(HasCaptureMark));
+                }
+            }
+        }
+        public bool HasCaptureMark => CaptureFraction > 0 && CaptureFraction < 1;
         public ObservableCollection<MonsterPart> Parts { get; private set; }
         public ObservableCollection<MonsterPartSoften> PartSoftens { get; private set; }
         public ObservableCollection<MonsterStatusEffect> StatusEffects { get; private set; }
@@ -310,8 +342,18 @@ namespace SmartHunter.Game.Data
             }
 
             statusEffect.NotifyPropertyChanged(nameof(MonsterStatusEffect.IsVisible));
-            if (statusEffect.GroupId == "Rage")
+            if (statusEffect.GroupId == "Stamina")
             {
+                Stamina = statusEffect;
+            }
+            else if (statusEffect.GroupId == "Fatigue")
+            {
+                Fatigue = statusEffect;
+                IsExhausted = statusEffect.Duration.Max > 0 && statusEffect.Duration.Current > 0;
+            }
+            else if (statusEffect.GroupId == "Rage")
+            {
+                Rage = statusEffect;
                 // Duration.Current is time left (max minus elapsed), so a calm monster sits at exactly max.
                 // Counting that as enraged flagged every idle monster.
                 IsEnraged = statusEffect.Duration.Max > 0 && statusEffect.Duration.Current > 0 && statusEffect.Duration.Current < statusEffect.Duration.Max;
@@ -324,7 +366,35 @@ namespace SmartHunter.Game.Data
         public void RankRows()
         {
             Rank(Parts.Cast<TimedVisibility>().ToList(), p => ((MonsterPart)p).IsCandidate, (p, v) => ((MonsterPart)p).IsRanked = v, Data.WidgetContexts.MonsterWidgetContext.MaxPartRows);
-            Rank(StatusEffects.Cast<TimedVisibility>().ToList(), s => ((MonsterStatusEffect)s).IsCandidate, (s, v) => ((MonsterStatusEffect)s).IsRanked = v, Data.WidgetContexts.MonsterWidgetContext.MaxStatusRows);
+            var ailments = StatusEffects.Where(s => s.GroupId == "StatusEffect").Cast<TimedVisibility>().ToList();
+            Rank(ailments, s => ((MonsterStatusEffect)s).IsCandidate, (s, v) => ((MonsterStatusEffect)s).IsRanked = v, Data.WidgetContexts.MonsterWidgetContext.MaxStatusRows);
+
+            Sync(VisibleParts, Parts.Where(p => p.IsVisible).ToList());
+            Sync(VisibleAilments, StatusEffects.Where(s => s.GroupId == "StatusEffect" && s.IsVisible).ToList());
+        }
+
+        // Make target hold exactly the wanted items in the wanted order, touching only what changed
+        static void Sync<T>(ObservableCollection<T> target, IList<T> wanted)
+        {
+            for (int i = target.Count - 1; i >= 0; i--)
+            {
+                if (!wanted.Contains(target[i]))
+                {
+                    target.RemoveAt(i);
+                }
+            }
+            for (int i = 0; i < wanted.Count; i++)
+            {
+                int at = target.IndexOf(wanted[i]);
+                if (at < 0)
+                {
+                    target.Insert(i, wanted[i]);
+                }
+                else if (at != i)
+                {
+                    target.Move(at, i);
+                }
+            }
         }
 
         static void Rank(List<TimedVisibility> rows, Func<TimedVisibility, bool> isCandidate, Action<TimedVisibility, bool> setRanked, int max)

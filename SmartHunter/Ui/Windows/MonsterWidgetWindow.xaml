@@ -33,7 +33,7 @@
             </Grid.LayoutTransform>
 
             <!--Edit mode: the room this widget takes when it's full, so it can be placed before anything is in it-->
-            <Grid Style="{StaticResource A_Style_EditPreview}" Width="400" Height="330">
+            <Grid Style="{StaticResource A_Style_EditPreview}" Width="462" Height="360">
                 <Rectangle Style="{StaticResource A_Style_EditPreviewOutline}" />
                 <TextBlock Style="{StaticResource T_EditPreview}" Text="The monster you're fighting: health, parts and statuses. Other large monsters get one line each underneath." />
             </Grid>

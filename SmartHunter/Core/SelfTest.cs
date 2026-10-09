@@ -52,6 +52,18 @@ namespace SmartHunter.Core
             monster.UpdateAndGetStatusEffect(2, rage, 1, 0, 30, 0, 1);
             Check(!monster.IsEnraged, "rage ran out");
 
+            // Host detection decides who pushes and who pulls; two hosts overwrite each other on the server
+            var game = new Game.Data.Game { CurrentPlayerName = "Me" };
+            Check(game.IsCurrentPlayerLobbyHost(), "offline: you're the host");
+            game.SessionID = "session";
+            game.PartySize = 2;
+            game.PartyLeaderName = "Friend";
+            Check(!game.IsCurrentPlayerLobbyHost(), "friend leads the party: you're a client");
+            game.PartyLeaderName = "Me";
+            Check(game.IsCurrentPlayerLobbyHost(), "you lead the party: you're the host");
+            game.PartyLeaderName = "";
+            Check(!game.IsCurrentPlayerLobbyHost(), "leader unknown with others around: don't claim host");
+
             // Busy fights: only the most recently hit rows show, and clients without host data show none
             var monsters = OverlayViewModel.Instance.MonsterWidget.Context;
             var busy = new Monster(3, "em001_00", 1000, 1000, 1, 1);

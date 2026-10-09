@@ -153,6 +153,7 @@ namespace SmartHunter.Game.Helpers
         private static ulong[] monsterAddresses = new ulong[3];
         private static List<Monster> updatedMonsters = new List<Monster>();
         private static DateTime lastPulledMonsterData = DateTime.MinValue;
+        const ulong HostPartKeyLimit = 0xFFFF;
         private static string lastPulledPayload;
 
         public static void UpdateCurrentGame(Process process, ulong playerNameCollectionAddress, ulong currentPlayerNameAddress, ulong currentWeaponAddress, ulong lobbyStatusAddress)
@@ -339,6 +340,41 @@ namespace SmartHunter.Game.Helpers
             { WeaponType.SWITCH_AXE, 8 }, { WeaponType.CHARGE_BLADE, 9 }, { WeaponType.INSECT_GLAIVE, 10 }, { WeaponType.BOW, 11 },
             { WeaponType.HEAVY_BOWGUN, 12 }, { WeaponType.LIGHT_BOWGUN, 13 },
         };
+
+        // Quest party leader and size (party struct from HunterPie's map for build 421810). Slot 0 is the leader.
+        static string s_LastHostLog;
+        public static void UpdateQuestParty(Process process)
+        {
+            var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
+            ulong root = MemoryHelper.Read<ulong>(process, 0x140000000UL + 0x05013530);
+            string leader = "";
+            int size = 0;
+            if (root != 0)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    ulong member = MemoryHelper.Read<ulong>(process, root + 0x1AB0 + (ulong)(i * 0x58));
+                    string name = member == 0 ? "" : MemoryHelper.ReadString(process, member + 0x49, 32);
+                    if (!String.IsNullOrEmpty(name))
+                    {
+                        size++;
+                        if (i == 0) leader = name;
+                    }
+                }
+            }
+            game.PartyLeaderName = leader;
+            game.PartySize = size;
+
+            if (game.IsPlayerOnline() && size > 1)
+            {
+                string host = game.IsCurrentPlayerLobbyHost() ? "You're the host" : $"{(leader.Length > 0 ? leader : "Someone else")} is the host";
+                if (host != s_LastHostLog)
+                {
+                    s_LastHostLog = host;
+                    Log.WriteLine($"{host} ({size} hunters)");
+                }
+            }
+        }
 
         // Weapon for each quest member (party struct from HunterPie's map for build 421810)
         public static void UpdatePartyDetails(Process process)
@@ -782,12 +818,17 @@ namespace SmartHunter.Game.Helpers
             {
                 // Only the host's game has exact part HP and ailment buildup. When the host's numbers are arriving
                 // through the sync server they win; otherwise our own memory is the best estimate we have.
-                bool hostDataArriving = (DateTime.Now - lastPulledMonsterData).TotalSeconds < 20;
                 var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
                 bool isClient = game.IsValid && game.IsPlayerOnline() && !game.IsCurrentPlayerLobbyHost();
+                bool hostDataArriving = isClient && (DateTime.Now - lastPulledMonsterData).TotalSeconds < 60;
                 OverlayViewModel.Instance.MonsterWidget.Context.WaitingForHost = isClient && !hostDataArriving;
                 if (!hostDataArriving)
                 {
+                    // Parts built from host data have key addresses; read from memory, they need rediscovering
+                    if (monster.Parts.Any(p => p.Address <= HostPartKeyLimit))
+                    {
+                        monster.Parts.Clear();
+                    }
                     UpdateMonsterParts(process, monster);
                     if (ConfigHelper.MonsterData.Values.Monsters[id].Parts.Where(p => p.IsRemovable).Count() > 0) // In case you are testing add "|| true"
                     {
@@ -830,14 +871,16 @@ namespace SmartHunter.Game.Helpers
 
         private static void UpdateMonsterParts(Dictionary<string, int[]> parts, Monster monster)
         {
-            // Keys are 1-based positions in the host's part list (same discovery order as ours), not addresses
-            foreach (KeyValuePair<string, int[]> entry in parts)
+            // Keys are 1-based positions in the host's part list. The client builds its list from them in that order,
+            // so part names line up with the host's even when this game discovered its parts differently.
+            // The key doubles as the part's address; real addresses are always far above it.
+            if (monster.Parts.Any(p => p.Address > HostPartKeyLimit))
             {
-                int index = int.Parse(entry.Key) - 1;
-                if (index >= 0 && index < monster.Parts.Count && monster.Parts[index].IsRemovable == (entry.Value[0] == 1))
-                {
-                    monster.UpdateAndGetPart(monster.Parts[index].Address, entry.Value[0] == 1, entry.Value[1], entry.Value[2], entry.Value[3]);
-                }
+                monster.Parts.Clear();
+            }
+            foreach (var entry in parts.OrderBy(e => int.Parse(e.Key)))
+            {
+                monster.UpdateAndGetPart(ulong.Parse(entry.Key), entry.Value[0] == 1, entry.Value[1], entry.Value[2], entry.Value[3]);
             }
         }
 

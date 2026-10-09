@@ -153,6 +153,8 @@ namespace SmartHunter.Game
 
             if (!OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsValid || OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerInLobby())
             {
+                MhwHelper.UpdateQuestParty(Process);
+
                 if ((ConfigHelper.Main.Values.Overlay.MonsterWidget.IsVisible || ConfigHelper.Main.Values.Overlay.CalloutWidget.IsVisible || ConfigHelper.Main.Values.DiscordPresence.Enabled) && m_MonsterPattern.MatchedAddresses.Any())
                 {
                     ulong monsterRootPtr = MemoryHelper.LoadEffectiveAddressRelative(Process, m_MonsterPattern.MatchedAddresses.First()); // yeah i know this is basically a static pointer
