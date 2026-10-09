@@ -243,7 +243,7 @@ namespace SmartHunter.Core.Helpers
                 Stats[cmd][1]++;
                 if (ConfigHelper.Main.Values.Debug.ShowServerLogs)
                 {
-                    Log.WriteLine($"An error has occured while sending the request: {e.Message}");
+                    Log.WriteLine($"Sync server request failed: {e.Message}");
                 }
                 onError(e);
             }

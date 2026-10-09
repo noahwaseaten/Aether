@@ -32,6 +32,14 @@ namespace SmartHunter.Core.Data
             }
         }
 
+        // True when the widget sits on the right half of the screen; the skin mirrors its fade and alignment
+        bool m_IsRightAligned;
+        public bool IsRightAligned
+        {
+            get { return m_IsRightAligned; }
+            set { SetProperty(ref m_IsRightAligned, value); }
+        }
+
         float m_Scale = 1;
         public float Scale
         {
@@ -64,6 +72,13 @@ namespace SmartHunter.Core.Data
         {
             m_WidgetConfig = widgetConfig;
             UpdateFromConfig();            
+        }
+
+        public void ResetPlacement(float x, float y)
+        {
+            X = x;
+            Y = y;
+            Scale = 1;
         }
 
         void UpdateConfig()

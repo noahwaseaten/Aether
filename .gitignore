@@ -1,10 +1,7 @@
-SmartHunter/bin/Debug/*
-SmartHunter/bin/Release/*
+SmartHunter/bin/
+SmartHunter/obj/
 SmartHunter/SmartHunter.csproj.user
+SmartHunter/Log.txt
 obj/
 .vs/
-
-# allow for auto updates
-!SmartHunter/bin/Debug/Default.xaml
-!SmartHunter/bin/Debug/Newtonsoft.Json.dll
-!SmartHunter/bin/Debug/SmartHunter.exe
+dist/

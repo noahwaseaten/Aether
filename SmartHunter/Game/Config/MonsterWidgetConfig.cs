@@ -29,7 +29,7 @@ namespace SmartHunter.Game.Config
         public bool UseAnimations = false;
         public bool ShowOnlySelectedMonster = true;
         public bool AlwaysShowParts = false;
-        public bool UseNetworkServer = false;
+        public bool UseNetworkServer = true;
 
         public MonsterWidgetConfig(float x, float y) : base(x, y)
         {
@@ -37,22 +37,22 @@ namespace SmartHunter.Game.Config
 
         public bool MatchIncludeMonsterIdRegex(string monsterId)
         {
-            return new Regex(IncludeMonsterIdRegex).IsMatch(monsterId);
+            return Regex.IsMatch(monsterId, IncludeMonsterIdRegex);
         }
 
         public bool MatchIncludePartGroupIdRegex(string groupId)
         {
-            return new Regex(IncludePartGroupIdRegex).IsMatch(groupId);
+            return Regex.IsMatch(groupId, IncludePartGroupIdRegex);
         }
 
         public bool MatchIncludePartSoftenGroupIdRegex(string groupId)
         {
-            return new Regex(IncludePartSoftenGroupIdRegex).IsMatch(groupId);
+            return Regex.IsMatch(groupId, IncludePartSoftenGroupIdRegex);
         }
 
         public bool MatchIncludeStatusEffectGroupIdRegex(string groupId)
         {
-            return new Regex(IncludeStatusEffectGroupIdRegex).IsMatch(groupId);
+            return Regex.IsMatch(groupId, IncludeStatusEffectGroupIdRegex);
         }
     }
 }

@@ -32,15 +32,22 @@
                 <ScaleTransform ScaleX="{Binding TeamWidget.Scale}" ScaleY="{Binding TeamWidget.Scale}" />
             </Grid.LayoutTransform>
 
+            <!--Edit mode: the room this widget takes when it's full, so it can be placed before anything is in it-->
+            <Grid Style="{StaticResource A_Style_EditPreview}" Width="300" Height="170">
+                <Rectangle Style="{StaticResource A_Style_EditPreviewOutline}" />
+                <TextBlock Style="{StaticResource T_EditPreview}" Text="Party damage, up to 4 hunters" />
+            </Grid>
+
             <Grid Visibility="{Binding IsVisible, Converter={StaticResource A_Converter_BoolToVisibility}}">
                 <ContentControl DataContext="{Binding TeamWidget.Context}" Content="{Binding}" />
             </Grid>
         </Grid>
 
-        <StackPanel DockPanel.Dock="Top" Background="#aa000000" VerticalAlignment="Top" HorizontalAlignment="Left" Visibility="{Binding CanManipulateWindows, Converter={StaticResource A_Converter_BoolToVisibility}}">
-            <TextBlock Style="{StaticResource A_Style_TextBlock_Standard}" Margin="4">
+        <Border Style="{StaticResource A_Style_EditFrame}">
+            <Border Style="{StaticResource A_Style_EditLabel}">
+                <TextBlock Style="{StaticResource T_EditLabel}">
                 <TextBlock.Text>
-                    <MultiBinding StringFormat="{}{0} ({3})">
+                    <MultiBinding StringFormat="{}{0}  ·  {3}">
                         <Binding ConverterParameter="LOC_WIDGET_TEAM" Converter="{StaticResource A_Converter_Localizer}" />
                         <Binding ElementName="Root" Path="ActualWidth" />
                         <Binding ElementName="Root" Path="ActualHeight" />
@@ -48,8 +55,7 @@
                     </MultiBinding>
                 </TextBlock.Text>
             </TextBlock>
-        </StackPanel>
-
-        <Border Visibility="{Binding CanManipulateWindows, Converter={StaticResource A_Converter_BoolToVisibility}}" BorderThickness="2" BorderBrush="Red" />
+            </Border>
+        </Border>
     </Grid>
 </windows:WidgetWindow>

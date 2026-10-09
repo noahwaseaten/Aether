@@ -46,8 +46,9 @@ namespace SmartHunter.Game.Data
         {
             get
             {
-                return IsIncluded(GroupId) && IsTimeVisible(ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowUnchangedParts, ConfigHelper.Main.Values.Overlay.MonsterWidget.HidePartsAfterSeconds)
-                    && ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowParts;
+                var config = ConfigHelper.Main.Values.Overlay.MonsterWidget;
+                return config.ShowParts && IsIncluded(GroupId)
+                    && (config.AlwaysShowParts || IsTimeVisible(config.ShowUnchangedParts, config.HidePartsAfterSeconds));
             }
         }
 

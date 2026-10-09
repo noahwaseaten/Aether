@@ -53,12 +53,12 @@ namespace SmartHunter.Game.Data.WidgetContexts
                                         if (result["result"].ToString().Equals("v"))
                                         {
                                             ServerManager.Instance.IsServerOline = -1;
-                                            Log.WriteLine("A new version is available, please update if you want to use the server!");
+                                            Log.WriteLine("The sync server no longer accepts this version. Party sync is off until Aether updates.");
                                         }
                                         else if (result["result"].ToString().Equals("dev"))
                                         {
                                             ServerManager.Instance.IsServerOline = -1;
-                                            Log.WriteLine("The server is under maintenance!");
+                                            Log.WriteLine("The sync server is down for maintenance. Party sync is off for now.");
                                         }
                                     }
                                 }
@@ -98,12 +98,12 @@ namespace SmartHunter.Game.Data.WidgetContexts
                                     if (result["result"].ToString().Equals("v"))
                                     {
                                         ServerManager.Instance.IsServerOline = -1;
-                                        Log.WriteLine("A new version is available, please update if you want to use the server!");
+                                        Log.WriteLine("The sync server no longer accepts this version. Party sync is off until Aether updates.");
                                     }
                                     else if (result["result"].ToString().Equals("dev"))
                                     {
                                         ServerManager.Instance.IsServerOline = -1;
-                                        Log.WriteLine("The server is under maintenance!");
+                                        Log.WriteLine("The sync server is down for maintenance. Party sync is off for now.");
                                     }
                                 }
                                 CurrentGame.helloDone = false;
@@ -143,12 +143,12 @@ namespace SmartHunter.Game.Data.WidgetContexts
                                 else if (result["result"].ToString().Equals("v"))
                                 {
                                     ServerManager.Instance.IsServerOline = -1;
-                                    Log.WriteLine("A new version is available, please update if you want to use the server!");
+                                    Log.WriteLine("The sync server no longer accepts this version. Party sync is off until Aether updates.");
                                 }
                                 else if (result["result"].ToString().Equals("dev"))
                                 {
                                     ServerManager.Instance.IsServerOline = -1;
-                                    Log.WriteLine("The server is under maintenance!");
+                                    Log.WriteLine("The sync server is down for maintenance. Party sync is off for now.");
                                 }
                             }
                             else
@@ -180,12 +180,12 @@ namespace SmartHunter.Game.Data.WidgetContexts
                                 if (result["result"].ToString().Equals("v"))
                                 {
                                     ServerManager.Instance.IsServerOline = -1;
-                                    Log.WriteLine("A new version is available, please update if you want to use the server!");
+                                    Log.WriteLine("The sync server no longer accepts this version. Party sync is off until Aether updates.");
                                 }
                                 else if (result["result"].ToString().Equals("dev"))
                                 {
                                     ServerManager.Instance.IsServerOline = -1;
-                                    Log.WriteLine("The server is under maintenance!");
+                                    Log.WriteLine("The sync server is down for maintenance. Party sync is off for now.");
                                 }
                             }
                             ServerManager.Instance.PrintStats();

@@ -1,23 +1,43 @@
-using System;
-using System.Collections.Generic;
 using SmartHunter.Core.Data;
-using SmartHunter.Game.Helpers;
 
 namespace SmartHunter.Core
 {
-    public class Setting
+    public class Setting : Bindable
     {
-        public bool Value { get; set; }
+        public string Group { get; }
         public string Name { get; }
         public string Description { get; }
-        public List<Setting>SubSettings { get; }
+        public bool RequiresRestart { get; }
+        public bool IsToggle { get; }
+        public string ActionLabel { get; }
         public Command TriggerAction { get; }
-        public Setting(bool value, string name, string description, Command action = null)
+
+        bool m_Value;
+        public bool Value
         {
-            Value = value;
+            get { return m_Value; }
+            set { SetProperty(ref m_Value, value); }
+        }
+
+        // Toggle row
+        public Setting(string group, string name, string description, bool value, Command action, bool requiresRestart = false)
+        {
+            Group = group;
             Name = name;
             Description = description;
-            SubSettings = new List<Setting>();
+            m_Value = value;
+            TriggerAction = action;
+            RequiresRestart = requiresRestart;
+            IsToggle = true;
+        }
+
+        // Button row
+        public Setting(string group, string name, string description, string actionLabel, Command action)
+        {
+            Group = group;
+            Name = name;
+            Description = description;
+            ActionLabel = actionLabel;
             TriggerAction = action;
         }
     }

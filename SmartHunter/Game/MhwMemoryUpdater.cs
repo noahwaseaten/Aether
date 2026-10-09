@@ -153,7 +153,7 @@ namespace SmartHunter.Game
 
             if (!OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsValid || OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerInLobby())
             {
-                if (ConfigHelper.Main.Values.Overlay.MonsterWidget.IsVisible && m_MonsterPattern.MatchedAddresses.Any())
+                if ((ConfigHelper.Main.Values.Overlay.MonsterWidget.IsVisible || ConfigHelper.Main.Values.Overlay.CalloutWidget.IsVisible || ConfigHelper.Main.Values.DiscordPresence.Enabled) && m_MonsterPattern.MatchedAddresses.Any())
                 {
                     ulong monsterRootPtr = MemoryHelper.LoadEffectiveAddressRelative(Process, m_MonsterPattern.MatchedAddresses.First()); // yeah i know this is basically a static pointer
                     //ulong monsterRootPtr = MemoryHelper.LoadEffectiveAddressRelative(Process, m_MonsterPattern.MatchedAddresses.First()) - 0x36CE0; // yeah i know this is basically a static pointer
@@ -170,6 +170,7 @@ namespace SmartHunter.Game
                 else if (OverlayViewModel.Instance.MonsterWidget.Context.Monsters.Any())
                 {
                     OverlayViewModel.Instance.MonsterWidget.Context.Monsters.Clear();
+                    OverlayViewModel.Instance.MonsterWidget.Context.HasVisibleMonsters = false;
                 }
 
                 if (ConfigHelper.Main.Values.Overlay.TeamWidget.IsVisible && m_PlayerDamagePattern.MatchedAddresses.Any() && m_PlayerNamePattern.MatchedAddresses.Any() && (!OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsValid || OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerOnline()))
@@ -180,6 +181,7 @@ namespace SmartHunter.Game
                     ulong playerNamesAddress = MemoryHelper.Read<uint>(Process, playerNamesPtr);
 
                     MhwHelper.UpdateTeamWidget(Process, playerDamageCollectionAddress, playerNamesAddress);
+                    MhwHelper.UpdatePartyDetails(Process);
 
                     if (m_DamageOnScreenPattern.MatchedAddresses.Any() && OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerInExpedition)
                     {
@@ -206,6 +208,7 @@ namespace SmartHunter.Game
                     ulong buffAddress = MemoryHelper.Read<ulong>(Process, lastBuffAddress + 0x7D20);
 
                     MhwHelper.UpdatePlayerWidget(Process, buffAddress, equipmentAddress, weaponAddress);
+                    MhwHelper.UpdateSharpness(Process);
                 }
                 else if (OverlayViewModel.Instance.PlayerWidget.Context.StatusEffects.Any())
                 {
@@ -215,9 +218,13 @@ namespace SmartHunter.Game
             else
             {
                 OverlayViewModel.Instance.MonsterWidget.Context.Monsters.Clear();
+                OverlayViewModel.Instance.MonsterWidget.Context.HasVisibleMonsters = false;
                 OverlayViewModel.Instance.TeamWidget.Context.ClearPlayers();
                 OverlayViewModel.Instance.PlayerWidget.Context.StatusEffects.Clear();
             }
+
+            HuntTracker.Update(Process);
+            DiscordPresence.Instance.Update(Process);
         }
 
         void UpdateVisibility()

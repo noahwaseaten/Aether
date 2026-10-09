@@ -31,6 +31,10 @@ namespace SmartHunter.Game.Data
                 {
                     UpdateDamagePoint(value);
                 }
+                if (value > m_Damage)
+                {
+                    LastHitTime = DateTime.Now;
+                }
 
                 SetProperty(ref m_Damage, value);
             }
@@ -50,8 +54,38 @@ namespace SmartHunter.Game.Data
             set { SetProperty(ref m_BarFraction, value); }
         }
 
+        public DateTime LastHitTime { get; private set; }
+
+        // Icon key in Ui/Resources/Icons.xaml
+        string m_WeaponIcon;
+        public string WeaponIcon
+        {
+            get { return m_WeaponIcon; }
+            set { SetProperty(ref m_WeaponIcon, value); }
+        }
+
+        bool m_IsMe;
+        public bool IsMe
+        {
+            get { return m_IsMe; }
+            set { SetProperty(ref m_IsMe, value); }
+        }
+
+        // True for a moment after this hunter lands damage; the skin flashes their dot
+        bool m_IsHitting;
+        public bool IsHitting
+        {
+            get { return m_IsHitting; }
+            set { SetProperty(ref m_IsHitting, value); }
+        }
+
         private void UpdateDamagePoint(int damage)
         {
+            if (!SmartHunter.Game.Helpers.ConfigHelper.Main.Values.Overlay.TeamWidget.ShowChart)
+            {
+                return;
+            }
+
             var timestamp = DateTime.Now.ToFileTime();
             DamagePoints.Add(new DamagePoint(timestamp, damage));
         }

@@ -18,6 +18,10 @@ namespace SmartHunter.Core
             m_MainWindow = mainWindow;
             WidgetWindows = widgetWindows;
 
+            // Closing the console quits the app. Without this, the hidden drag-guide window would keep the process and its keyboard hook alive.
+            Application.Current.MainWindow = mainWindow;
+            Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
+
             m_MainWindow.Loaded += MainWindow_Loaded;
             m_MainWindow.Closing += MainWindow_Closing;
 

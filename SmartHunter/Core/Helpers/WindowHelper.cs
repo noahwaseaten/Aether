@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
@@ -42,16 +43,37 @@ namespace SmartHunter.Core.Helpers
             }
         }
 
+        // The global keyboard hook keeps firing while the app shuts down; a closed window has no handle to give
+        static bool TryGetHandle(Window window, out IntPtr handle)
+        {
+            try
+            {
+                handle = new WindowInteropHelper(window).EnsureHandle();
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                handle = IntPtr.Zero;
+                return false;
+            }
+        }
+
         public static void SetTopMostSelectable(Window window)
         {
-            var handle = new WindowInteropHelper(window).EnsureHandle();
+            if (!TryGetHandle(window, out var handle))
+            {
+                return;
+            }
             WindowsApi.SetWindowLong(handle, (int)WindowsApi.WindowLongGroup.GWL_EXSTYLE, TopMostSelectableWindowStyleFlags);
             WindowsApi.SetWindowPos(handle, -1, 0, 0, 0, 0, TopMostWindowSizePositions);
         }
 
         public static void SetTopMostTransparent(Window window)
         {
-            var handle = new WindowInteropHelper(window).EnsureHandle();
+            if (!TryGetHandle(window, out var handle))
+            {
+                return;
+            }
             WindowsApi.SetWindowLong(handle, (int)WindowsApi.WindowLongGroup.GWL_EXSTYLE, TopMostTransparentWindowStyleFlags);
             WindowsApi.SetWindowPos(handle, -1, 0, 0, 0, 0, TopMostWindowSizePositions);
         }

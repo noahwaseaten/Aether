@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows;
 using System.Xaml;
 using SmartHunter.Core;
+using SmartHunter.Core.Helpers;
 using SmartHunter.Game;
 using SmartHunter.Game.Data.ViewModels;
 using SmartHunter.Game.Helpers;
@@ -20,11 +21,45 @@ namespace SmartHunter
 
         string m_LastSkinFileName;
 
+        // Two copies would draw every widget twice and double the sync traffic
+        static System.Threading.Mutex s_SingleInstance;
+
+        public static void ReleaseSingleInstance()
+        {
+            s_SingleInstance?.ReleaseMutex();
+            s_SingleInstance?.Dispose();
+            s_SingleInstance = null;
+        }
+
+        public App()
+        {
+            // Startup crashes happen before the log exists; leave a trace next to the exe
+            AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+                File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Crash.txt"), $"[{DateTime.Now}] {e.ExceptionObject}\r\n\r\n");
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             //var culture = new System.Globalization.CultureInfo("es-ES");
             //System.Globalization.CultureInfo.CurrentCulture = culture;
             //System.Globalization.CultureInfo.CurrentUICulture = culture;
+
+            if (Array.IndexOf(e.Args, "--selftest") >= 0)
+            {
+                Environment.Exit(SelfTest.Run());
+            }
+
+            var mutex = new System.Threading.Mutex(false, "Aether-MHW-Overlay");
+            bool owned;
+            try { owned = mutex.WaitOne(TimeSpan.FromSeconds(5)); } // a restarting copy may still be closing
+            catch (System.Threading.AbandonedMutexException) { owned = true; }
+            if (!owned)
+            {
+                MessageBox.Show("Aether is already running.", "Aether");
+                Shutdown();
+                return;
+            }
+            s_SingleInstance = mutex;
 
             // Initialize the console view model first thing so we can see any problems that may occur
             var consoleViewModel = ConsoleViewModel.Instance;
@@ -34,32 +69,57 @@ namespace SmartHunter
 
             SetPerMonitorDpiAwareness();
 
+            // Stay out of the game's way: lower CPU priority, and cap animations at 30 fps. Transparent overlay
+            // windows are re-composited on the CPU every animation frame, so 60 fps pulses cost real time.
+            try { System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.BelowNormal; } catch { }
+            System.Windows.Media.Animation.Timeline.DesiredFrameRateProperty.OverrideMetadata(
+                typeof(System.Windows.Media.Animation.Timeline), new FrameworkPropertyMetadata { DefaultValue = 30 });
+
             ConfigHelper.EnsureConfigs();
+            if (ConfigHelper.Main.Values.UseSoftwareRendering)
+            {
+                System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+            }
             ConfigHelper.Main.Loaded += Config_Loaded;
 
             m_SkinFile = new FileContainer(ConfigHelper.Main.Values.SkinFileName);
             m_SkinFile.Changed += (s1, e1) => { LoadSkin(); };
             LoadSkin();
 
-            try
+            AppUpdater.DeleteLeftovers();
+            if (ConfigHelper.Main.Values.AutomaticallyCheckAndDownloadUpdates)
             {
-                string[] files = Directory.GetFiles(".");
-                foreach (string file in files)
-                {
-                    if (Path.GetExtension(file).Equals(".exe") && file.Contains("SmartHunter_"))
-                    {
-                        File.Delete(file);
-                    }
-                }
-            }
-            catch
-            {
-
+                CheckForUpdate();
             }
 
-            m_Overlay = new MhwOverlay(new ConsoleWindow(), new TeamWidgetWindow(), new MonsterWidgetWindow(), new PlayerWidgetWindow(), new DebugWidgetWindow());
+            m_Overlay = new MhwOverlay(new ConsoleWindow(), new TeamWidgetWindow(), new MonsterWidgetWindow(), new PlayerWidgetWindow(), new DebugWidgetWindow(), new CalloutWidgetWindow(), new RecapWidgetWindow());
 
             base.OnStartup(e);
+        }
+
+        async void CheckForUpdate()
+        {
+            try
+            {
+                var version = await AppUpdater.DownloadLatestAsync();
+                if (version == null)
+                {
+                    return;
+                }
+
+                Log.WriteLine($"Updated to Aether {version.ToString(3)}");
+                // Not in the game yet: switch over right away. Otherwise let the player pick the moment.
+                if (System.Diagnostics.Process.GetProcessesByName(ConfigHelper.Memory.Values.ProcessName).Length == 0)
+                {
+                    AppUpdater.Restart();
+                }
+                SettingsViewModel.Instance.RestartReason = $"Aether {version.ToString(3)} is installed. Restart to use it.";
+                SettingsViewModel.Instance.NeedsRestart = true;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine($"Update check failed: {ex.Message}");
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -84,9 +144,9 @@ namespace SmartHunter
             }
 
             var skinFileName = ConfigHelper.Main.Values.SkinFileName;
+            // No skin file next to the exe is the normal case: the built-in look is already loaded
             if (!File.Exists(FileContainer.GetFullPathFileName(skinFileName)))
             {
-                Log.WriteLine($"Failed to load skin file '{skinFileName}'");
                 return;
             }
 
@@ -113,6 +173,7 @@ namespace SmartHunter
                 if (resourceDictionary != null)
                 {
                     Resources.MergedDictionaries.Clear();
+                    Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("pack://application:,,,/Ui/Resources/Icons.xaml") });
                     Resources.MergedDictionaries.Add(resourceDictionary);
 
                     if (m_Overlay != null)

@@ -218,25 +218,13 @@ namespace SmartHunter.Core.Helpers
             return addressRangeDivisions;
         }
 
-        public static T Read<T>(Process process, ulong address) where T : struct
+        // Reads straight into the result: no array, pin or boxing per read (this runs thousands of times a second).
+        // A failed read leaves it at 0, same as before.
+        public static unsafe T Read<T>(Process process, ulong address) where T : unmanaged
         {
-            byte[] bytes = new byte[Marshal.SizeOf(typeof(T))];
-
+            T result = default;
             int lpNumberOfBytesRead = 0;
-            WindowsApi.ReadProcessMemory(process.Handle, (IntPtr)address, bytes, bytes.Length, ref lpNumberOfBytesRead);
-
-            T result;
-            GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-
-            try
-            {
-                result = (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
-            }
-            finally
-            {
-                handle.Free();
-            }
-
+            WindowsApi.ReadProcessMemory(process.Handle, (IntPtr)address, (IntPtr)(&result), sizeof(T), ref lpNumberOfBytesRead);
             return result;
         }
 
@@ -254,7 +242,9 @@ namespace SmartHunter.Core.Helpers
                 return Encoding.UTF8.GetString(bytes);
             }
 
-            return null;
+            // No terminator means we read garbage. Return "" rather than null because callers
+            // .Split/.Length the result, and a null would abort the whole monster update for that tick.
+            return "";
         }
 
         public static ulong ReadMultiLevelPointer(bool traceUniquePointers, Process process, ulong address, params long[] offsets)

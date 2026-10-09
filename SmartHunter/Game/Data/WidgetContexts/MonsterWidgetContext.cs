@@ -58,6 +58,13 @@ namespace SmartHunter.Game.Data.WidgetContexts
             set { SetProperty(ref m_AlwaysShowParts, value); }
         }
 
+        bool m_HasVisibleMonsters;
+        public bool HasVisibleMonsters
+        {
+            get { return m_HasVisibleMonsters; }
+            set { SetProperty(ref m_HasVisibleMonsters, value); }
+        }
+
         public MonsterWidgetContext()
         {
             Monsters = new ObservableCollection<Monster>();
@@ -67,14 +74,18 @@ namespace SmartHunter.Game.Data.WidgetContexts
 
         public Monster UpdateAndGetMonster(ulong address, string id, float maxHealth, float currentHealth, float sizeScale, float scaleModifier)
         {
-            Monster monster = null;
+            Monster monster = Monsters.FirstOrDefault(existingMonster => existingMonster.Address == address);
 
-            monster = Monsters.FirstOrDefault(existingMonster => existingMonster.Address == address);
+            // The game reuses monster slots: a different id, or a dead entry back at full HP, is a new spawn
+            if (monster != null && (monster.Id != id || (!monster.IsAlive && currentHealth >= maxHealth)))
+            {
+                Monsters.Remove(monster);
+                monster = null;
+            }
+
             if (monster != null)
             {
-                monster.Id = id;
-                monster.Health.Max = maxHealth;
-                monster.Health.Current = currentHealth;
+                monster.UpdateHealth(maxHealth, currentHealth);
                 monster.SizeScale = sizeScale;
                 monster.ScaleModifier = scaleModifier;
             }
@@ -87,6 +98,23 @@ namespace SmartHunter.Game.Data.WidgetContexts
             monster.NotifyPropertyChanged(nameof(Monster.IsVisible));
 
             return monster;
+        }
+
+        // Focus: the map-pinned monster, else whoever lost HP most recently, else the only one alive
+        public void UpdateFocus(ulong selectedAddress)
+        {
+            var alive = Monsters.Where(m => m.IsAlive).ToList();
+            var focus = alive.FirstOrDefault(m => selectedAddress != 0 && m.Address == selectedAddress)
+                ?? alive.Where(m => m.LastDamagedTime.HasValue).OrderByDescending(m => m.LastDamagedTime).FirstOrDefault()
+                ?? (alive.Count == 1 ? alive[0] : null);
+
+            bool onlyFocused = ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowOnlySelectedMonster;
+            foreach (var monster in Monsters)
+            {
+                monster.IsFocused = monster == focus;
+                monster.IsSuppressed = onlyFocused && focus != null && monster != focus;
+            }
+            HasVisibleMonsters = Monsters.Any(m => m.IsVisible);
         }
 
         public override void UpdateFromConfig()

@@ -111,6 +111,9 @@ namespace SmartHunter.Core.Config
             }
 
             TryUnpauseWatching();
+
+            // The watcher is paused while we write, so notify listeners ourselves: settings apply live
+            Loaded?.Invoke(this, null);
         }
     }
 }

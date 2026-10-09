@@ -27,9 +27,41 @@ namespace SmartHunter.Game
             ConfigHelper.MonsterData.Loaded += (s, e) => { RefreshWidgetsLayout(); };
             ConfigHelper.PlayerData.Loaded += (s, e) => { RefreshWidgetsLayout(); };
 
+            OverlayViewModel.Instance.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(OverlayViewModel.CanManipulateWindows))
+                {
+                    ApplyEditMode(OverlayViewModel.Instance.CanManipulateWindows);
+                }
+            };
+
             if (!ConfigHelper.Main.Values.Debug.UseSampleData)
             {
                 m_MemoryUpdater = new MhwMemoryUpdater();
+            }
+        }
+
+        // Editing: widgets take the mouse (drag, scroll to scale). Done: back to click-through, and save where they ended up.
+        void ApplyEditMode(bool isEditing)
+        {
+            bool canSaveConfig = false;
+            foreach (var widgetWindow in WidgetWindows)
+            {
+                if (isEditing)
+                {
+                    WindowHelper.SetTopMostSelectable(widgetWindow as Window);
+                }
+                else
+                {
+                    WindowHelper.SetTopMostTransparent(widgetWindow as Window);
+                    canSaveConfig |= widgetWindow.Widget.CanSaveConfig;
+                    widgetWindow.Widget.CanSaveConfig = false;
+                }
+            }
+
+            if (canSaveConfig)
+            {
+                ConfigHelper.Main.Save();
             }
         }
 
@@ -43,38 +75,9 @@ namespace SmartHunter.Game
 
         private void HandleControl(InputControl control, bool isDown)
         {
-            if (control == InputControl.ManipulateWidget && isDown && !OverlayViewModel.Instance.CanManipulateWindows)
+            if (control == InputControl.ManipulateWidget && OverlayViewModel.Instance.CanManipulateWindows != isDown)
             {
-                OverlayViewModel.Instance.CanManipulateWindows = true;
-
-                // Make all the windows selectable
-                foreach (var widgetWindow in WidgetWindows)
-                {
-                    WindowHelper.SetTopMostSelectable(widgetWindow as Window);
-                }
-            }
-            else if (control == InputControl.ManipulateWidget && !isDown && OverlayViewModel.Instance.CanManipulateWindows)
-            {
-                OverlayViewModel.Instance.CanManipulateWindows = false;
-
-                bool canSaveConfig = false;
-
-                // Return all windows to their click through state
-                foreach (var widgetWindow in WidgetWindows)
-                {
-                    WindowHelper.SetTopMostTransparent(widgetWindow as Window);
-
-                    if (widgetWindow.Widget.CanSaveConfig)
-                    {
-                        canSaveConfig = true;
-                        widgetWindow.Widget.CanSaveConfig = false;
-                    }
-                }
-
-                if (canSaveConfig)
-                {
-                    ConfigHelper.Main.Save();
-                }
+                OverlayViewModel.Instance.CanManipulateWindows = isDown;
             }
             else if (control == InputControl.HideWidgets)
             {

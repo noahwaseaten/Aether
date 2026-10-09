@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Linq;
 using SmartHunter.Core.Data;
 
@@ -7,6 +7,8 @@ namespace SmartHunter.Game.Data.WidgetContexts
     public class PlayerWidgetContext : WidgetContext
     {
         public ObservableCollection<PlayerStatusEffect> StatusEffects { get; private set; }
+
+        public Sharpness Sharpness { get; } = new Sharpness();
 
         public PlayerWidgetContext()
         {

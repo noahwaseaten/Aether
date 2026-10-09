@@ -260,7 +260,7 @@ namespace SmartHunter.Config
             { "LOC_STATUS_EFFECT_DUNG", "Dung Pods" },
             { "LOC_STATUS_EFFECT_KNOW_DOWN", "Knockdown" },
             { "LOC_STATUS_EFFECT_SMOKING", "Smoking" },
-            { "LOC_STATUS_EFFECT_VIOLATED", "Violated" },
+            { "LOC_STATUS_EFFECT_VIOLATED", "Claw Flinch" },
             { "LOC_STATUS_EFFECT_CLAW_ATTACK", "Claw Attack" },
             { "LOC_STATUS_EFFECT_FELVYNE_KNOCK_DOWN_TRAP", "Felvyne Knock Down Trap" },
 

@@ -210,7 +210,8 @@ namespace SmartHunter.Game.Config
             new StatusEffectConfig("Weapon", "LOC_WEAPON_INSECT_GLAIVE_SPEED", (uint)WeaponType.INSECT_GLAIVE, indexToHexStrNoOffset(2267)),
             new StatusEffectConfig("Weapon", "LOC_WEAPON_INSECT_GLAIVE_DEFENSE", (uint)WeaponType.INSECT_GLAIVE, indexToHexStrNoOffset(2268)),
 
-            new StatusEffectConfig("Weapon", "LOC_WEAPON_SWITCH_AXE_AMPED_STATE", (uint)WeaponType.SWITCH_AXE, indexToHexStrNoOffset(2260)),
+            // 2260 is the amp gauge (0-100), not a timer; 2265 is the sword charge timer (HunterPie: weapon mechanics - 0x8)
+            new StatusEffectConfig("Weapon", "LOC_WEAPON_SWITCH_AXE_AMPED_STATE", (uint)WeaponType.SWITCH_AXE, indexToHexStrNoOffset(2265)),
             };
     }
 }

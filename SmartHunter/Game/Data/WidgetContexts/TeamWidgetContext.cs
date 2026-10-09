@@ -57,40 +57,28 @@ namespace SmartHunter.Game.Data.WidgetContexts
 
         public event EventHandler PlayersDamageUpdated;
 
+        // Players are keyed by their game slot (0-3), so a hunter leaving doesn't shift the others into
+        // the wrong slot (and their names, damage and colours with them).
         public Player UpdateAndGetPlayer(int index, string name, int damage)
         {
+            Player player = Players.FirstOrDefault(p => p.Index == index);
             if (String.IsNullOrEmpty(name) && damage == 0)
             {
-                if (index < Players.Count)
+                if (player != null)
                 {
-                    Players.RemoveAt(index);
-                    if (DontShowIfAlone && Players.Count() <= 1)
-                    {
-                        Fake_Players.Clear();
-                    }
-                    else
-                    {
-                        Fake_Players.RemoveAt(index);
-                    }
+                    Players.Remove(player);
+                    SyncShownPlayers();
                 }
                 return null;
             }
 
-            while (index >= Players.Count)
+            if (player == null)
             {
-                Players.Add(new Player() { Index = Players.Count, Name = LocalizationHelper.GetString(LocalizationHelper.UnknownPlayerStringId) });
-
-                if (DontShowIfAlone && Players.Count() <= 1)
-                {
-                    Fake_Players.Clear();
-                }
-                else
-                {
-                    Fake_Players.Add(Players[Players.Count() - 1]);
-                }
+                player = new Player() { Index = index, Name = LocalizationHelper.GetString(LocalizationHelper.UnknownPlayerStringId) };
+                Players.Add(player);
+                SyncShownPlayers();
             }
 
-            Player player = Players[index];
             if (!String.IsNullOrEmpty(name))
             {
                 player.Name = name;
@@ -108,6 +96,20 @@ namespace SmartHunter.Game.Data.WidgetContexts
             return player;
         }
 
+        // Fake_Players is what the skin lists: everyone, or nobody when solo and "Hide when solo" is on
+        void SyncShownPlayers()
+        {
+            bool hide = DontShowIfAlone && Players.Count <= 1;
+            foreach (var player in Fake_Players.Where(p => hide || !Players.Contains(p)).ToList())
+            {
+                Fake_Players.Remove(player);
+            }
+            foreach (var player in Players.Where(p => !hide && !Fake_Players.Contains(p)))
+            {
+                Fake_Players.Add(player);
+            }
+        }
+
         public void UpdateFractions()
         {
             var playersWithDamage = Players.Where(player => player.Damage > 0);
@@ -122,6 +124,7 @@ namespace SmartHunter.Game.Data.WidgetContexts
                 return;
             }
 
+            UpdateStats();
             NormalizeDamagePoints();
             PlayersDamageUpdated?.Invoke(this, EventArgs.Empty);
 
@@ -140,6 +143,28 @@ namespace SmartHunter.Game.Data.WidgetContexts
                     otherPlayer.BarFraction = (float)otherPlayer.Damage / (float)highestDamagePlayer.Damage;
                 }
             }
+        }
+
+        // Solo hunts drop the share % and bars: 100% of the damage is not information
+        bool m_IsSolo = true;
+        public bool IsSolo
+        {
+            get { return m_IsSolo; }
+            set { SetProperty(ref m_IsSolo, value); }
+        }
+
+        void UpdateStats()
+        {
+            var now = DateTime.Now;
+            string me = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.CurrentPlayerName;
+
+            foreach (var player in Players)
+            {
+                player.IsMe = !String.IsNullOrEmpty(me) && player.Name == me;
+                player.IsHitting = (now - player.LastHitTime).TotalMilliseconds < 700;
+            }
+
+            IsSolo = Players.Count <= 1;
         }
 
         public void ClearPlayers()
@@ -223,6 +248,7 @@ namespace SmartHunter.Game.Data.WidgetContexts
             base.UpdateFromConfig();
 
             DontShowIfAlone = ConfigHelper.Main.Values.Overlay.TeamWidget.DontShowIfAlone;
+            SyncShownPlayers();
             ShowBars = ConfigHelper.Main.Values.Overlay.TeamWidget.ShowBars;
             ShowNumbers = ConfigHelper.Main.Values.Overlay.TeamWidget.ShowNumbers;
             ShowPercents = ConfigHelper.Main.Values.Overlay.TeamWidget.ShowPercents;

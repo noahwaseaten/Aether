@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace SmartHunter.Core
 {
@@ -13,14 +15,32 @@ namespace SmartHunter.Core
 
         public event EventHandler<KeyboardInputEventArgs> InputReceived;
 
+        // The hook lives on its own thread. Windows holds every keystroke (the game's too) until a low-level hook returns,
+        // so it must never wait behind the UI thread's memory reads and rendering. Handlers still run on the UI thread.
+        readonly Dispatcher m_UiDispatcher;
+        Dispatcher m_HookDispatcher;
+
         public KeyboardInput()
         {
-            Hook();
-        }
+            m_UiDispatcher = Dispatcher.CurrentDispatcher;
+            var ready = new ManualResetEventSlim();
+            var thread = new Thread(() =>
+            {
+                m_HookDispatcher = Dispatcher.CurrentDispatcher;
+                Hook();
+                ready.Set();
+                Dispatcher.Run();
+            })
+            { IsBackground = true, Name = "KeyboardHook" };
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            ready.Wait();
 
-        ~KeyboardInput()
-        {
-            Unhook();
+            m_UiDispatcher.ShutdownStarted += (s, e) => m_HookDispatcher.BeginInvoke(new Action(() =>
+            {
+                Unhook();
+                m_HookDispatcher.InvokeShutdown();
+            }));
         }
 
         void Hook()
@@ -42,7 +62,6 @@ namespace SmartHunter.Core
             {
                 WindowsApi.UnhookWindowsHookEx(m_KeyboardHookHandle);
                 m_KeyboardHookHandle = IntPtr.Zero;
-                m_KeyboardHook -= KeyboardHook;
             }
 
             if (m_User32Handle != IntPtr.Zero)
@@ -72,10 +91,8 @@ namespace SmartHunter.Core
                 var key = KeyFromVirtualCode(keyboardData.VkCode);
                 bool isDown = keyboardMessage == WindowsApi.KeyboardMessage.WM_KEYDOWN || keyboardMessage == WindowsApi.KeyboardMessage.WM_SYSKEYDOWN;
 
-                if (InputReceived != null)
-                {
-                    InputReceived(this, new KeyboardInputEventArgs(key, isDown));
-                }
+                var args = new KeyboardInputEventArgs(key, isDown);
+                m_UiDispatcher.BeginInvoke(new Action(() => InputReceived?.Invoke(this, args)));
             }
 
             return WindowsApi.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);

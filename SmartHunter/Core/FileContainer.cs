@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Reflection;
@@ -129,7 +129,7 @@ namespace SmartHunter.Core
 
         public static string GetFullPath()
         {
-            return Path.GetDirectoryName(Assembly.GetExecutingAssembly().GetName().CodeBase).Replace("file:\\", "") + "\\";
+            return AppDomain.CurrentDomain.BaseDirectory; // folder of the exe, with trailing slash
         }
 
         public static string GetFullPathFileName(string fileName)

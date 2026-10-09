@@ -1,4 +1,6 @@
-﻿using System;
+using System;
+using System.IO;
+using SmartHunter.Core;
 using SmartHunter.Config;
 using SmartHunter.Core.Config;
 using SmartHunter.Game.Config;
@@ -100,10 +102,44 @@ namespace SmartHunter.Game.Helpers
         {
             var main = Main;
             var versions = Versions;
+            RefreshGeneratedFilesOnNewBuild();
             var localization = Localization;
             var monsterData = MonsterData;
             var playerData = PlayerData;
             var memory = Memory;
+        }
+
+        // The data files are written from the exe's built-in defaults on first run and then override them.
+        // On a new build, regenerate them (and set aside an old skin) so offset and layout fixes actually reach existing installs.
+        static void RefreshGeneratedFilesOnNewBuild()
+        {
+            string build = typeof(ConfigHelper).Module.ModuleVersionId.ToString();
+            if (Versions.Values.Build == build)
+            {
+                return;
+            }
+
+            foreach (var fileName in new[] { Main.Values.LocalizationFileName, Main.Values.MonsterDataFileName, Main.Values.PlayerDataFileName, Main.Values.MemoryFileName })
+            {
+                TryDelete(FileContainer.GetFullPathFileName(fileName));
+            }
+
+            string skin = FileContainer.GetFullPathFileName(Main.Values.SkinFileName);
+            if (File.Exists(skin))
+            {
+                TryDelete(skin + ".old");
+                try { File.Move(skin, skin + ".old"); Log.WriteLine($"New build: moved {Main.Values.SkinFileName} to {Main.Values.SkinFileName}.old, using the built-in skin"); }
+                catch (Exception ex) { Log.WriteException(ex); }
+            }
+
+            Versions.Values.Build = build;
+            Versions.Save();
+        }
+
+        static void TryDelete(string path)
+        {
+            try { File.Delete(path); }
+            catch (Exception ex) { Log.WriteException(ex); }
         }
 
         static void Main_Loaded(object sender, EventArgs e)

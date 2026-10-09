@@ -152,6 +152,8 @@ namespace SmartHunter.Game.Helpers
         private static int[,] expeditionDamageChecker = new int[DataOffsets.PlayerDamage.MaxOnScreenDamages, 2];
         private static ulong[] monsterAddresses = new ulong[3];
         private static List<Monster> updatedMonsters = new List<Monster>();
+        private static DateTime lastPulledMonsterData = DateTime.MinValue;
+        private static string lastPulledPayload;
 
         public static void UpdateCurrentGame(Process process, ulong playerNameCollectionAddress, ulong currentPlayerNameAddress, ulong currentWeaponAddress, ulong lobbyStatusAddress)
         {
@@ -197,6 +199,27 @@ namespace SmartHunter.Game.Helpers
             OverlayViewModel.Instance.DebugWidget.Context.UpdateCurrentGame(currentPlayerName, currentEquippedWeaponString, currentSessionID, currentSessionPlayerName, currentLobbyID, currentLobbyPlayerName, !isPlayerInMission && isPlayerInExpedition);
         }
 
+        // Buff offsets are hex strings in PlayerData.json; parse each chain once instead of every tick
+        static readonly Dictionary<string, long[]> s_ParsedOffsets = new Dictionary<string, long[]>();
+        static long[] ParsedOffsets(string[] offsetStrings)
+        {
+            string key = string.Join(",", offsetStrings);
+            if (!s_ParsedOffsets.TryGetValue(key, out var offsets))
+            {
+                offsets = new long[offsetStrings.Length];
+                for (int i = 0; i < offsetStrings.Length; i++)
+                {
+                    if (!TryParseHex(offsetStrings[i], out offsets[i]))
+                    {
+                        offsets = null;
+                        break;
+                    }
+                }
+                s_ParsedOffsets[key] = offsets;
+            }
+            return offsets != null && offsets.Length > 0 ? offsets : null;
+        }
+
         public static void UpdatePlayerWidget(Process process, ulong baseAddress, ulong equipmentAddress, ulong weaponAddress)
         {
             for (int index = 0; index < ConfigHelper.PlayerData.Values.StatusEffects.Length; ++index)
@@ -218,28 +241,14 @@ namespace SmartHunter.Game.Helpers
                 {
                     foreach (var condition in statusEffectConfig.Conditions)
                     {
-                        bool isOffsetChainValid = true;
-                        List<long> offsets = new List<long>();
-                        foreach (var offsetString in condition.Offsets)
-                        {
-                            if (TryParseHex(offsetString, out var offset))
-                            {
-                                offsets.Add(offset);
-                            }
-                            else
-                            {
-                                isOffsetChainValid = false;
-                                break;
-                            }
-                        }
-
-                        if (!isOffsetChainValid)
+                        long[] offsets = ParsedOffsets(condition.Offsets);
+                        if (offsets == null)
                         {
                             allConditionsPassed = false;
                             break;
                         }
 
-                        var conditionAddress = MemoryHelper.ReadMultiLevelPointer(false, process, sourceAddress + (ulong)offsets.First(), offsets.Skip(1).ToArray());
+                        var conditionAddress = MemoryHelper.ReadMultiLevelPointer(false, process, sourceAddress + (ulong)offsets[0], offsets.Skip(1).ToArray());
 
                         bool isPassed = false;
                         if (condition.ByteValue.HasValue)
@@ -255,7 +264,7 @@ namespace SmartHunter.Game.Helpers
                         else if (condition.StringRegexValue != null)
                         {
                             var conditionValue = MemoryHelper.ReadString(process, conditionAddress, 64);
-                            isPassed = new Regex(condition.StringRegexValue).IsMatch(conditionValue);
+                            isPassed = Regex.IsMatch(conditionValue, condition.StringRegexValue);
                         }
 
                         if (!isPassed)
@@ -279,8 +288,10 @@ namespace SmartHunter.Game.Helpers
                 float? timer = null;
                 if (allConditionsPassed && statusEffectConfig.TimerOffset != null)
                 {
-                    if (TryParseHex(statusEffectConfig.TimerOffset, out var timerOffset))
+                    var timerOffsets = ParsedOffsets(new[] { statusEffectConfig.TimerOffset });
+                    if (timerOffsets != null)
                     {
+                        long timerOffset = timerOffsets[0];
                         timer = MemoryHelper.Read<float>(process, (ulong)((long)sourceAddress + timerOffset));
                     }
 
@@ -316,6 +327,83 @@ namespace SmartHunter.Game.Helpers
             {
                 OverlayViewModel.Instance.TeamWidget.Context.ClearPlayers();
             }
+        }
+
+        // Game weapon id order -> icon key
+        static readonly string[] s_WeaponIcons = { "ICON_GREATSWORD", "ICON_SWORDANDSHIELD", "ICON_DUALBLADES", "ICON_LONGSWORD", "ICON_HAMMER", "ICON_HUNTINGHORN",
+            "ICON_LANCE", "ICON_GUNLANCE", "ICON_SWITCHAXE", "ICON_CHARGEBLADE", "ICON_INSECTGLAIVE", "ICON_BOW", "ICON_HEAVYBOWGUN", "ICON_LIGHTBOWGUN" };
+        static readonly Dictionary<WeaponType, int> s_WeaponTypeIds = new Dictionary<WeaponType, int>
+        {
+            { WeaponType.GREAT_SWORD, 0 }, { WeaponType.SWORD_AND_SHIELD, 1 }, { WeaponType.DUAL_BLADES, 2 }, { WeaponType.LONG_SWORD, 3 },
+            { WeaponType.HAMMER, 4 }, { WeaponType.HUNTING_HORN, 5 }, { WeaponType.LANCE, 6 }, { WeaponType.GUNLANCE, 7 },
+            { WeaponType.SWITCH_AXE, 8 }, { WeaponType.CHARGE_BLADE, 9 }, { WeaponType.INSECT_GLAIVE, 10 }, { WeaponType.BOW, 11 },
+            { WeaponType.HEAVY_BOWGUN, 12 }, { WeaponType.LIGHT_BOWGUN, 13 },
+        };
+
+        // Weapon for each quest member (party struct from HunterPie's map for build 421810)
+        public static void UpdatePartyDetails(Process process)
+        {
+            ulong root = MemoryHelper.Read<ulong>(process, 0x140000000UL + 0x05013530);
+            if (root == 0)
+            {
+                return;
+            }
+
+            var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
+            var players = OverlayViewModel.Instance.TeamWidget.Context.Players;
+            for (int i = 0; i < 4; i++)
+            {
+                ulong member = MemoryHelper.Read<ulong>(process, root + 0x1AB0 + (ulong)(i * 0x58));
+                if (member == 0) continue;
+
+                string memberName = MemoryHelper.ReadString(process, member + 0x49, 32);
+                var target = players.FirstOrDefault(p => p.Name == memberName);
+                if (String.IsNullOrEmpty(memberName) || target == null) continue;
+
+                int weapon = MemoryHelper.Read<byte>(process, member + 0x7C);
+                if (memberName == game.CurrentPlayerName && s_WeaponTypeIds.TryGetValue(game.EquippedWeaponType, out var mine))
+                {
+                    weapon = mine;
+                }
+                target.WeaponIcon = weapon < s_WeaponIcons.Length ? s_WeaponIcons[weapon] : null;
+            }
+        }
+
+        // Sharpness of the equipped melee weapon (HunterPie's map for build 421810)
+        static int[] s_MinimumSharpness;
+        public static void UpdateSharpness(Process process)
+        {
+            var sharpness = OverlayViewModel.Instance.PlayerWidget.Context.Sharpness;
+            var weaponType = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.EquippedWeaponType;
+            bool isMelee = s_WeaponTypeIds.ContainsKey(weaponType) && weaponType != WeaponType.BOW && weaponType != WeaponType.HEAVY_BOWGUN && weaponType != WeaponType.LIGHT_BOWGUN;
+
+            const ulong Base = 0x140000000;
+            ulong weapon = MemoryHelper.ReadMultiLevelPointer(false, process, Base + 0x050139A0, 0x50, 0x98, 0x10, 0x70, 0x18, 0x550, 0x0);
+            ulong weaponData = MemoryHelper.Read<ulong>(process, Base + 0x05012080);
+            if (!isMelee || weapon < 0xFFFF || weaponData == 0 || DiscordPresence.IsInTown(process))
+            {
+                sharpness.IsAvailable = false;
+                return;
+            }
+
+            if (s_MinimumSharpness == null)
+            {
+                // Only keep a sane table: caching a read from before the game finished loading pinned the cap wrong forever
+                var minimums = Enumerable.Range(0, 8).Select(i => MemoryHelper.Read<int>(process, Base + 0x034DAB10 + (ulong)(i * 4))).ToArray();
+                if (minimums.All(m => m >= 0 && m <= 1000) && minimums.Any(m => m > 0))
+                {
+                    s_MinimumSharpness = minimums;
+                }
+            }
+
+            int weaponId = MemoryHelper.Read<int>(process, weapon + 0x1D0C);
+            int current = MemoryHelper.Read<int>(process, weapon + 0x20F8);
+            int maxIndex = MemoryHelper.Read<int>(process, weapon + 0x1D10);
+            ulong table = MemoryHelper.ReadMultiLevelPointer(false, process, weaponData + 0xC8, weaponId * 8, 0x0C);
+            var thresholds = Enumerable.Range(0, 7).Select(i => (int)MemoryHelper.Read<short>(process, table + (ulong)(i * 2))).ToArray();
+            int cap = s_MinimumSharpness != null && maxIndex >= 0 && maxIndex < s_MinimumSharpness.Length ? s_MinimumSharpness[maxIndex] : thresholds.Max();
+
+            sharpness.Update(thresholds, current, cap);
         }
 
         private static Player player;
@@ -355,7 +443,7 @@ namespace SmartHunter.Game.Helpers
                     int id1 = MemoryHelper.Read<int>(process, currentItem + 0x20);
                     int id2 = MemoryHelper.Read<int>(process, currentItem + 0x24);
 
-                    if (expeditionDamageChecker[i, 0] != id1 && expeditionDamageChecker[i, 1] != id2)
+                    if (expeditionDamageChecker[i, 0] != id1 || expeditionDamageChecker[i, 1] != id2)
                     {
                         expeditionDamageChecker[i, 0] = id1;
                         expeditionDamageChecker[i, 1] = id2;
@@ -386,12 +474,12 @@ namespace SmartHunter.Game.Helpers
                             else if (result["result"].ToString().Equals("v"))
                             {
                                 ServerManager.Instance.IsServerOline = -1;
-                                Core.Log.WriteLine("A new version is available, please update if you want to use the server!");
+                                Core.Log.WriteLine("The sync server no longer accepts this version. Party sync is off until Aether updates.");
                             }
                             else if (result["result"].ToString().Equals("dev"))
                             {
                                 ServerManager.Instance.IsServerOline = -1;
-                                Core.Log.WriteLine("The server is under maintenance!");
+                                Core.Log.WriteLine("The sync server is down for maintenance. Party sync is off for now.");
                             }
                         }
                         else if (result != null && result["status"].ToString().Equals("ok"))
@@ -425,53 +513,44 @@ namespace SmartHunter.Game.Helpers
 
         public static void UpdateMonsterWidget(Process process, ulong monsterBaseList, ulong mapBaseAddress)
         {
-            bool flg = false;
+            var context = OverlayViewModel.Instance.MonsterWidget.Context;
+            if (monsterBaseList < 0xffffff)
+            {
+                context.Monsters.Clear();
+                context.HasVisibleMonsters = false;
+                return;
+            }
+
+            // Always read every large monster slot; the map pin only decides focus. Monsters stay in the
+            // list while you change the pin, so they keep their part history and don't re-animate in.
+            ulong selectedMonsterAddress = 0;
             if (mapBaseAddress != 0x0)
             {
                 bool isMonsterSelected = MemoryHelper.Read<ulong>(process, mapBaseAddress + 0x128) != 0x0 && MemoryHelper.Read<ulong>(process, mapBaseAddress + 0x130) != 0x0 && MemoryHelper.Read<ulong>(process, mapBaseAddress + 0x160) != 0x0;
                 if (isMonsterSelected)
                 {
-                    ulong selectedMonsterAddress = MemoryHelper.Read<ulong>(process, mapBaseAddress + 0x148);
-                    var selectedMonster = UpdateAndGetMonster(process, selectedMonsterAddress);
-                    if (selectedMonster != null)
-                    {
-                        flg = true;
-                        var toRemoveMonsters = OverlayViewModel.Instance.MonsterWidget.Context.Monsters.Where(m => !m.Id.Equals(selectedMonster.Id));
-                        foreach (var obsoleteMonster in toRemoveMonsters.Reverse())
-                        {
-                            OverlayViewModel.Instance.MonsterWidget.Context.Monsters.Remove(obsoleteMonster);
-                        }
-                    }
+                    selectedMonsterAddress = MemoryHelper.Read<ulong>(process, mapBaseAddress + 0x148);
                 }
             }
 
-            if (!flg)
+            monsterAddresses[0] = monsterBaseList;
+            monsterAddresses[1] = MemoryHelper.Read<ulong>(process, monsterBaseList - 0x30) + 0x40;
+            monsterAddresses[2] = MemoryHelper.Read<ulong>(process, MemoryHelper.Read<ulong>(process, monsterBaseList - 0x30) + 0x10) + 0x40;
+            updatedMonsters.Clear();
+            foreach (var monsterAddress in monsterAddresses.Concat(new[] { selectedMonsterAddress }).Where(a => a > 0xffffff).Distinct())
             {
-                if (monsterBaseList < 0xffffff)
+                var monster = UpdateAndGetMonster(process, monsterAddress);
+                if (monster != null)
                 {
-                    OverlayViewModel.Instance.MonsterWidget.Context.Monsters.Clear();
-                    return;
-                }
-
-                monsterAddresses[0] = monsterBaseList;
-                monsterAddresses[1] = MemoryHelper.Read<ulong>(process, monsterBaseList - 0x30) + 0x40;
-                monsterAddresses[2] = MemoryHelper.Read<ulong>(process, MemoryHelper.Read<ulong>(process, monsterBaseList - 0x30) + 0x10) + 0x40;
-                updatedMonsters.Clear();
-                foreach (var monsterAddress in monsterAddresses)
-                {
-                    var monster = UpdateAndGetMonster(process, monsterAddress);
-                    if (monster != null)
-                    {
-                        updatedMonsters.Add(monster);
-                    }
-                }
-                // Clean out monsters that aren't in the linked list anymore
-                var obsoleteMonsters = OverlayViewModel.Instance.MonsterWidget.Context.Monsters.Except(updatedMonsters);
-                foreach (var obsoleteMonster in obsoleteMonsters.Reverse())
-                {
-                    OverlayViewModel.Instance.MonsterWidget.Context.Monsters.Remove(obsoleteMonster);
+                    updatedMonsters.Add(monster);
                 }
             }
+            // Clean out monsters that aren't in the linked list anymore
+            foreach (var obsoleteMonster in context.Monsters.Except(updatedMonsters).ToList())
+            {
+                context.Monsters.Remove(obsoleteMonster);
+            }
+            context.UpdateFocus(selectedMonsterAddress);
 
             if (ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer && ServerManager.Instance.IsServerOline == 1 && OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsValid && OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerOnline())
             {
@@ -484,7 +563,8 @@ namespace SmartHunter.Game.Helpers
                             if (networkOperationDone && DateTime.Now.Second != lastNetworkOperationTime)
                             {
                                 Dictionary<string, Dictionary<string, Dictionary<string, int[]>>> data = new Dictionary<string, Dictionary<string, Dictionary<string, int[]>>>();
-                                foreach (var monster in OverlayViewModel.Instance.MonsterWidget.Context.Monsters)
+                                // Keyed by species: two of the same monster would throw on Add, and dead ones have nothing to share
+                                foreach (var monster in OverlayViewModel.Instance.MonsterWidget.Context.Monsters.Where(m => m.IsAlive).GroupBy(m => m.Id).Select(g => g.First()))
                                 {
                                     if (OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsValid && OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerOnline() && !OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerAlone())
                                     {
@@ -538,12 +618,12 @@ namespace SmartHunter.Game.Helpers
                                             else if (result["result"].ToString().Equals("v"))
                                             {
                                                 ServerManager.Instance.IsServerOline = -1;
-                                                Core.Log.WriteLine("A new version is available, please update if you want to use the server!");
+                                                Core.Log.WriteLine("The sync server no longer accepts this version. Party sync is off until Aether updates.");
                                             }
                                             else if (result["result"].ToString().Equals("dev"))
                                             {
                                                 ServerManager.Instance.IsServerOline = -1;
-                                                Core.Log.WriteLine("The server is under maintenance!");
+                                                Core.Log.WriteLine("The sync server is down for maintenance. Party sync is off for now.");
                                             }
                                         }
                                         networkOperationDone = true;
@@ -573,10 +653,17 @@ namespace SmartHunter.Game.Helpers
                                     {
                                         if (!result["result"].ToString().Equals(""))
                                         {
+                                            // The server keeps a lobby's last snapshot after the host leaves; only trust it while it's moving
+                                            string payload = result["result"].ToString();
+                                            if (payload != lastPulledPayload)
+                                            {
+                                                lastPulledPayload = payload;
+                                                lastPulledMonsterData = DateTime.Now;
+                                            }
                                             var monstersData = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, Dictionary<string, int[]>>>>(result["result"].ToString());//.ToObject<Dictionary<string, Dictionary<string, Dictionary<string, int[]>>>>();
                                             foreach (var id in monstersData.Keys)
                                             {
-                                                var m = OverlayViewModel.Instance.MonsterWidget.Context.Monsters.Where(m => m.Id.Equals(id));
+                                                var m = OverlayViewModel.Instance.MonsterWidget.Context.Monsters.Where(m => m.Id.Equals(id) && m.IsAlive);
                                                 if (m.Any())
                                                 {
                                                     var monster = m.First();
@@ -607,12 +694,12 @@ namespace SmartHunter.Game.Helpers
                                             else if (result["result"].ToString().Equals("v"))
                                             {
                                                 ServerManager.Instance.IsServerOline = -1;
-                                                Core.Log.WriteLine("A new version is available, please update if you want to use the server!");
+                                                Core.Log.WriteLine("The sync server no longer accepts this version. Party sync is off until Aether updates.");
                                             }
                                             else if (result["result"].ToString().Equals("dev"))
                                             {
                                                 ServerManager.Instance.IsServerOline = -1;
-                                                Core.Log.WriteLine("The server is under maintenance!");
+                                                Core.Log.WriteLine("The sync server is down for maintenance. Party sync is off for now.");
                                             }
                                         }
                                     }
@@ -683,9 +770,20 @@ namespace SmartHunter.Game.Helpers
 
             monster = OverlayViewModel.Instance.MonsterWidget.Context.UpdateAndGetMonster(monsterAddress, id, maxHealth, currentHealth, sizeScale, scaleModifier);
 
+            string action = ReadMonsterAction(process, monsterAddress);
+            monster.IsCaptured = action.Contains("Capture");
+            monster.IsAlive = currentHealth > 0 && !monster.IsCaptured && !IsDeathAction(action);
+            if (!monster.IsAlive)
+            {
+                return monster;
+            }
+
             if (ConfigHelper.MonsterData.Values.Monsters.ContainsKey(id) && ConfigHelper.MonsterData.Values.Monsters[id].Parts != null && ConfigHelper.MonsterData.Values.Monsters[id].Parts.Count() > 0)
             {
-                if (OverlayViewModel.Instance.MonsterWidget.Context.AlwaysShowParts || (!OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsValid || OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsCurrentPlayerLobbyHost() || !OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerOnline()))
+                // Only the host's game has exact part HP and ailment buildup. When the host's numbers are arriving
+                // through the sync server they win; otherwise our own memory is the best estimate we have.
+                bool hostDataArriving = (DateTime.Now - lastPulledMonsterData).TotalSeconds < 20;
+                if (!hostDataArriving)
                 {
                     UpdateMonsterParts(process, monster);
                     if (ConfigHelper.MonsterData.Values.Monsters[id].Parts.Where(p => p.IsRemovable).Count() > 0) // In case you are testing add "|| true"
@@ -693,26 +791,50 @@ namespace SmartHunter.Game.Helpers
                         UpdateMonsterRemovableParts(process, monster);
                     }
                     UpdateMonsterStatusEffects(process, monster);
-                    UpdateMonsterPartsSoften(process, monster);
                 }
-                else
-                {
-                    if (!OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.helloDone || !OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.checkDone)
-                    {
-                        UpdateMonsterStatusEffects(process, monster);
-                        UpdateMonsterPartsSoften(process, monster);
-                    }
-                }
+                UpdateMonsterPartsSoften(process, monster);
             }
 
             return monster;
         }
 
+        // Current action's reference name, e.g. "nActEm001::Die" (HunterPie's GetMonsterAction)
+        private static string ReadMonsterAction(Process process, ulong monsterAddress)
+        {
+            ulong actionPointer = monsterAddress + 0x61C8;
+            int actionId = MemoryHelper.Read<int>(process, actionPointer + 0xB0);
+            if (actionId < 0 || actionId > 0x1000)
+            {
+                return "";
+            }
+            actionPointer = MemoryHelper.Read<ulong>(process, actionPointer + 2 * 8 + 0x68);
+            actionPointer = MemoryHelper.Read<ulong>(process, actionPointer + (ulong)actionId * 8);
+            actionPointer = MemoryHelper.Read<ulong>(process, actionPointer);
+            actionPointer = MemoryHelper.Read<ulong>(process, actionPointer + 0x20);
+            if (actionPointer < 0xffffff)
+            {
+                return "";
+            }
+            uint actionOffset = MemoryHelper.Read<uint>(process, actionPointer + 3);
+            ulong actionRef = MemoryHelper.Read<ulong>(process, actionPointer + actionOffset + 7 + 8);
+            return actionRef < 0xffffff ? "" : MemoryHelper.ReadString(process, actionRef, 64);
+        }
+
+        public static bool IsDeathAction(string action)
+        {
+            return (action.Contains("Die") && !action.Contains("DieSleep")) || (action.Contains("Dead") && !action.Contains("Deadly"));
+        }
+
         private static void UpdateMonsterParts(Dictionary<string, int[]> parts, Monster monster)
         {
+            // Keys are 1-based positions in the host's part list (same discovery order as ours), not addresses
             foreach (KeyValuePair<string, int[]> entry in parts)
             {
-                monster.UpdateAndGetPart(ulong.Parse(entry.Key), entry.Value[0] == 1, entry.Value[1], entry.Value[2], (int)entry.Value[3]);
+                int index = int.Parse(entry.Key) - 1;
+                if (index >= 0 && index < monster.Parts.Count && monster.Parts[index].IsRemovable == (entry.Value[0] == 1))
+                {
+                    monster.UpdateAndGetPart(monster.Parts[index].Address, entry.Value[0] == 1, entry.Value[1], entry.Value[2], entry.Value[3]);
+                }
             }
         }
 
@@ -720,7 +842,10 @@ namespace SmartHunter.Game.Helpers
         {
             foreach (KeyValuePair<string, int[]> entry in statuses)
             {
-                monster.UpdateAndGetStatusEffect(ulong.Parse(entry.Key), int.Parse(entry.Key), entry.Value[0], entry.Value[1], entry.Value[2], entry.Value[3], (int)entry.Value[4]);
+                // Keyed by status index; keep our real address so memory reads still work if the host stops sending
+                int index = int.Parse(entry.Key);
+                ulong address = monster.StatusEffects.FirstOrDefault(st => st.Index == index)?.Address ?? 0;
+                monster.UpdateAndGetStatusEffect(address, index, entry.Value[0], entry.Value[1], entry.Value[2], entry.Value[3], entry.Value[4]);
             }
         }
 
@@ -737,8 +862,10 @@ namespace SmartHunter.Game.Helpers
             else
             {
                 ulong firstPartAddress = monster.Address + DataOffsets.Monster.PartCollection + DataOffsets.MonsterPartCollection.FirstPart;
+                // Names come from the config by index, so extra memory slots would shift every name after them
+                int configPartCount = ConfigHelper.MonsterData.Values.Monsters[monster.Id].Parts.Count(p => !p.IsRemovable);
 
-                for (int index = 0; index < DataOffsets.MonsterPartCollection.MaxItemCount; ++index)
+                for (int index = 0; index < DataOffsets.MonsterPartCollection.MaxItemCount && monster.Parts.Count(p => !p.IsRemovable) < configPartCount; ++index)
                 {
                     ulong currentPartOffset = DataOffsets.MonsterPart.NextPart * (ulong)index;
                     ulong currentPartAddress = firstPartAddress + currentPartOffset;
@@ -853,12 +980,12 @@ namespace SmartHunter.Game.Helpers
         {
             int maxIndex = ConfigHelper.MonsterData.Values.StatusEffects.Where(s => s.GroupId.Equals("StatusEffect")).Count() - 1;
             var statuses = monster.StatusEffects;
-            if (statuses != null && statuses.Where(s => s.GroupId.Equals("StatusEffect")).Any())
+            if (statuses != null && statuses.Any(s => s.GroupId.Equals("StatusEffect") && s.Address > 0xffffff))
             {
                 for (int i = 0; i < statuses.Count(); i++)
                 {
                     MonsterStatusEffect status = statuses[i];
-                    if (status == null)
+                    if (status == null || status.Address <= 0xffffff)
                     {
                         continue;
                     }

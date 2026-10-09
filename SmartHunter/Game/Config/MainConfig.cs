@@ -18,10 +18,13 @@ namespace SmartHunter.Game.Config
         public bool IgnoreHttpsErrors = true;
         public bool ShutdownWhenProcessExits = false;
         public bool BackupWhenProcessExits = false;
-        public bool AutomaticallyCheckAndDownloadUpdates = true; // TODO: Rimetti a true
+        public bool AutomaticallyCheckAndDownloadUpdates = true;
+        public bool UseSoftwareRendering = false; // fallback for graphics drivers that draw transparent overlay windows wrong
         public bool StartMHWWhenSmartHunterStart = false;
 
         public OverlayConfig Overlay = new OverlayConfig();
+
+        public DiscordPresenceConfig DiscordPresence = new DiscordPresenceConfig();
 
         [PreserveCollectionIntegrity]
         public Dictionary<InputControl, Key> Keybinds = new Dictionary<InputControl, Key>()
@@ -36,5 +39,12 @@ namespace SmartHunter.Game.Config
         };
 
         public DebugConfig Debug = new DebugConfig();
+    }
+
+    public class DiscordPresenceConfig
+    {
+        public bool Enabled = true;
+        public string ApplicationId = "477152881196269569"; // Discord's verified "Monster Hunter: World" app
+        public string LargeImage = "https://cdn.cloudflare.steamstatic.com/steam/apps/582010/capsule_616x353.jpg";
     }
 }

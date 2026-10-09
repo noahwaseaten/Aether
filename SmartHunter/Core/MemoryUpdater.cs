@@ -18,9 +18,6 @@ namespace SmartHunter.Core
         enum State
         {
             None,
-            CheckingForUpdates,
-            DownloadingUpdates,
-            Restarting,
             WaitingForProcess,
             StartMHW,
             ProcessFound,
@@ -61,8 +58,6 @@ namespace SmartHunter.Core
 
         void CreateStateMachine()
         {
-            var updater = new Updater();
-
             m_StateMachine = new StateMachine<State>();
 
             m_StateMachine.Add(State.None, new StateMachine<State>.StateData(
@@ -70,173 +65,58 @@ namespace SmartHunter.Core
                 new StateMachine<State>.Transition[]
                 {
                     new StateMachine<State>.Transition(
-                        State.CheckingForUpdates,
-                        () => ConfigHelper.Main.Values.AutomaticallyCheckAndDownloadUpdates,
-                        () =>
-                        {
-                            Log.WriteLine("Searching for updates (You can disable this feature in file 'Config.json')!");
-                        }),
-                    new StateMachine<State>.Transition(
                         State.StartMHW,
-                        () => !ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer && !ConfigHelper.Main.Values.AutomaticallyCheckAndDownloadUpdates,
+                        () => !ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer,
                         () =>
                         {
                             Initialize();
                         }),
                     new StateMachine<State>.Transition(
                         State.ServerChecking,
-                        () => ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer && !ConfigHelper.Main.Values.AutomaticallyCheckAndDownloadUpdates,
+                        () => ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer,
                         () =>
                         {
-                            Log.WriteLine("Checking Server...");
+                            Log.WriteLine("Checking the sync server...");
                             ServerManager.Instance.RequestCommadWithHandler(ServerManager.Command.ALIVE, null, null, false, 0, null, (result, ping) =>
                             {
                                 if (result != null)
                                 {
                                     if (result["status"].ToString().Equals("ok"))
                                     {
-                                        Log.WriteLine($"Server is online with response time of {ping} ms");
+                                        Log.WriteLine($"Sync server is up ({ping} ms)");
                                         ServerManager.Instance.IsServerOline = 1;
                                     }
                                     else
                                     {
                                         if (result["result"].ToString().Equals("v"))
                                         {
-                                            Log.WriteLine("You are using an outdated version of SmartHunter please update it to use this feature");
+                                            Log.WriteLine("The sync server no longer accepts this version. Party sync is off until Aether updates.");
                                         }
                                         else if (result["result"].ToString().Equals("dev"))
                                         {
-                                            Log.WriteLine("Server is under maintenance, a new version should be available soon");
+                                            Log.WriteLine("The sync server is down for maintenance. Party sync is off for now.");
                                         }
                                         else
                                         {
-                                            Log.WriteLine("An internal server error has occured, please restart the application if you want to use this function (The overlay will work fine even withouth the server)");
+                                            Log.WriteLine("The sync server returned an error. Party sync is off; restart Aether to try again. Everything else works without it.");
                                         }
                                         ServerManager.Instance.IsServerOline = -1;
                                     }
                                 }
                                 else
                                 {
-                                    Log.WriteLine("Server appears to be offline. Please check your connection (The overlay will work fine even withouth the server)");
+                                    Log.WriteLine("Couldn't reach the sync server. Party sync is off; restart Aether to try again. Everything else works without it.");
                                     ServerManager.Instance.IsServerOline = -1;
                                 }
                                 ServerManager.Instance.ResetStats();
                             }, (error) =>
                             {
-                                Log.WriteLine("An error has occured while performing the request, please restart the application if you want to use this function (The overlay will work fine even withouth the server)");
+                                Log.WriteLine("Couldn't reach the sync server. Party sync is off; restart Aether to try again. Everything else works without it.");
                                 ServerManager.Instance.IsServerOline = -1;
                                 ServerManager.Instance.ResetStats();
                             });
                         })
                 }));
-
-            m_StateMachine.Add(State.CheckingForUpdates, new StateMachine<State>.StateData(
-                null,
-                new StateMachine<State>.Transition[]
-                {
-                    new StateMachine<State>.Transition(
-                        State.StartMHW,
-                        () => !ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer && !updater.CheckForUpdates(),
-                        () =>
-                        {
-                            Initialize();
-                        }),
-                    new StateMachine<State>.Transition(
-                        State.DownloadingUpdates,
-                        () => updater.CheckForUpdates(),
-                        () =>
-                        {
-                            Log.WriteLine("Starting to download Updates!");
-                        }),
-                    new StateMachine<State>.Transition(
-                        State.ServerChecking,
-                        () => ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer && !updater.CheckForUpdates(),
-                        () =>
-                        {
-                            Log.WriteLine("Checking Server...");
-                            ServerManager.Instance.RequestCommadWithHandler(ServerManager.Command.ALIVE, null, null, false, 0, null, (result, ping) =>
-                            {
-                                if (result != null)
-                                {
-                                    if (result["status"].ToString().Equals("ok"))
-                                    {
-                                        Log.WriteLine($"Server is online with response time of {ping} ms");
-                                        ServerManager.Instance.IsServerOline = 1;
-                                    }
-                                    else
-                                    {
-                                        if (result["result"].ToString().Equals("v"))
-                                        {
-                                            Log.WriteLine("You are using an outdated version of SmartHunter please update it to use this feature");
-                                        }
-                                        else if (result["result"].ToString().Equals("dev"))
-                                        {
-                                            Log.WriteLine("Server is under maintenance, a new version should be available soon");
-                                        }
-                                        else
-                                        {
-                                            Log.WriteLine("An internal server error has occured, please restart the application if you want to use this function (The overlay will work fine even withouth the server)");
-                                        }
-                                        ServerManager.Instance.IsServerOline = -1;
-                                    }
-                                }
-                                else
-                                {
-                                    Log.WriteLine("Server appears to be offline. Please check your connection (The overlay will work fine even withouth the server)");
-                                    ServerManager.Instance.IsServerOline = -1;
-                                }
-                                ServerManager.Instance.ResetStats();
-                            }, (error) =>
-                            {
-                                Log.WriteLine("An error has occured while performing the request, please restart the application if you want to use this function (The overlay will work fine even withouth the server)");
-                                ServerManager.Instance.IsServerOline = -1;
-                                ServerManager.Instance.ResetStats();
-                            });
-                        })
-                }));
-
-            m_StateMachine.Add(State.DownloadingUpdates, new StateMachine<State>.StateData(
-                null,
-                new StateMachine<State>.Transition[]
-                {
-                    new StateMachine<State>.Transition(
-                        State.Restarting,
-                        () => updater.DownloadUpdates(),
-                        () =>
-                        {
-                            Log.WriteLine("Successfully downloaded all files!");
-                        }),
-                    new StateMachine<State>.Transition(
-                        State.StartMHW,
-                        () => !updater.DownloadUpdates(),
-                        () =>
-                        {
-                            Log.WriteLine("Failed to download Updates... Resuming the normal flow of the application!");
-                            Initialize();
-                        })
-                }));
-
-            m_StateMachine.Add(State.Restarting, new StateMachine<State>.StateData(
-               null,
-               new StateMachine<State>.Transition[]
-               {
-                    new StateMachine<State>.Transition(
-                        State.Restarting,
-                        () => true,
-                        () =>
-                        {
-                            Log.WriteLine("Restarting Application!");
-                            string update = ".\\SmartHunter_NEW.exe";
-                            string exec = Assembly.GetEntryAssembly()?.Location;
-                            if (File.Exists(update) && exec != null && File.Exists(exec))
-                            {
-                                File.Move(exec, "SmartHunter_OLD.exe");
-                                File.Move(update, "SmartHunter.exe");
-                                Process.Start("SmartHunter.exe");
-                            }
-                            Environment.Exit(1);
-                        })
-               }));
 
             m_StateMachine.Add(State.ServerChecking, new StateMachine<State>.StateData(
                 null,
@@ -263,7 +143,7 @@ namespace SmartHunter.Core
                                 return true;
                             if(!StartMHWWhenSmartHunterStart)
                             {
-                                Log.WriteLine("Start MHW When SmartHunter Start = false");
+                                Log.WriteLine("Not starting the game (\"Start the game with Aether\" is off)");
                                 return true;
                             }
                             Log.WriteLine("Start MHW.");
@@ -421,7 +301,7 @@ namespace SmartHunter.Core
                     }
                     catch (Exception ex)
                     {
-                        Log.WriteException(ex);
+                        LogThrottled(ex);
                     }
                 },
                 new StateMachine<State>.Transition[]
@@ -490,13 +370,27 @@ namespace SmartHunter.Core
 
         private void Update(object sender, EventArgs e)
         {
+            // Keep ticking after an error; stopping the timer would freeze the overlay until a restart
             try
             {
                 m_StateMachine.Update();
             }
             catch (Exception ex)
             {
-                m_DispatcherTimer.IsEnabled = false;
+                LogThrottled(ex);
+            }
+        }
+
+        // A bad read repeats every tick; log each distinct error once a minute instead of 20 times a second
+        string m_LastError;
+        DateTime m_LastErrorTime;
+        void LogThrottled(Exception ex)
+        {
+            string error = ex.GetType().Name + ex.Message + ex.TargetSite;
+            if (error != m_LastError || (DateTime.Now - m_LastErrorTime).TotalSeconds > 60)
+            {
+                m_LastError = error;
+                m_LastErrorTime = DateTime.Now;
                 Log.WriteException(ex);
             }
         }
