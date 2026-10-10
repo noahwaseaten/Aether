@@ -140,6 +140,10 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   there) and starts that one with the same arguments. Data lives there too (`FileContainer.GetFullPath`). Each start
   keeps a Start Menu shortcut (never Desktop), the Settings > Apps entry (`--uninstall`) and the startup entry
   pointing at the running exe. Uninstall keeps `UserDataBackup`: those are the player's saves.
+- Windows Defender's ML heuristic flagged 2.3.0 as `Trojan:Win32/Ulthar.A!ml` (a false positive). What tipped it: deleting
+  the exe's own Zone.Identifier (download mark), a `cmd.exe` self-delete on uninstall, and `WScript.Shell` shortcuts, on
+  top of what Aether always does (reading another process, a keyboard hook, a Run key, replacing its own exe). Don't
+  add those back. `build.ps1` scans every build with Defender and refuses to package a flagged one.
 - Widget placement is saved on every drag and resize (`WidgetWindow.PlacementChanged`), not only when edit mode ends.
 - Routine sync calls (pull, push, damage) aren't logged one by one: they filled the log and pushed out what mattered.
   Past sessions' logs are kept in `Logs\`.

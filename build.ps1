@@ -34,6 +34,14 @@ Remove-Item -Recurse -Force $test
 if ($p.ExitCode -ne 0) { throw "Self-test failed:`n$report" }
 Write-Host 'Self-test passed'
 
+# Windows Defender's machine-learning heuristics flagged 2.3.0 as a trojan. Never ship a build it flags.
+$defender = Join-Path $env:ProgramFiles 'Windows Defender\MpCmdRun.exe'
+if (Test-Path $defender) {
+    $scan = & $defender -Scan -ScanType 3 -File (Join-Path $out 'Aether.exe') -DisableRemediation 2>&1 | Out-String
+    if ($scan -match 'found [1-9]') { throw "Windows Defender flags this build:`n$scan" }
+    Write-Host 'Defender scan clean'
+}
+
 $exeVersion = (Get-Item (Join-Path $out 'Aether.exe')).VersionInfo.ProductVersion
 if (-not $exeVersion.StartsWith($Version)) { throw "Aether.exe reports version $exeVersion, expected $Version" }
 
