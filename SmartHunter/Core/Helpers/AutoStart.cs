@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
@@ -85,8 +86,17 @@ namespace SmartHunter.Core.Helpers
 
                 var seen = new HashSet<int>();
                 bool first = true;
+                var running = Assembly.GetExecutingAssembly().GetName().Version;
                 while (IsEnabled)
                 {
+                    // Aether updated while this copy waited: wait from the new exe instead, so this one stops holding
+                    // the old file (the next update has to move it out of the way)
+                    if (IsUpdatedOnDisk(running))
+                    {
+                        waiter.ReleaseMutex();
+                        StartWaiter();
+                        return false;
+                    }
                     foreach (var game in Process.GetProcessesByName(GameProcessName))
                     {
                         // Each game start counts once: if Aether was already open for it, or gets closed during it, stay out
@@ -101,6 +111,18 @@ namespace SmartHunter.Core.Helpers
                     Thread.Sleep(3000);
                 }
                 waiter.ReleaseMutex();
+                return false;
+            }
+        }
+
+        static bool IsUpdatedOnDisk(Version running)
+        {
+            try
+            {
+                return Version.TryParse(FileVersionInfo.GetVersionInfo(Exe).FileVersion, out var onDisk) && onDisk != running;
+            }
+            catch
+            {
                 return false;
             }
         }

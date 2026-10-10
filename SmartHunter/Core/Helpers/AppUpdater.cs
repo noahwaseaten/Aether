@@ -39,8 +39,20 @@ namespace SmartHunter.Core.Helpers
 
         public static void DeleteLeftovers()
         {
-            TryDelete(ExePath + ".old");
             TryDelete(ExePath + ".new");
+            foreach (var old in Directory.GetFiles(Path.GetDirectoryName(ExePath), Path.GetFileName(ExePath) + ".old*"))
+            {
+                TryDelete(old);
+            }
+        }
+
+        // Where the running exe goes during an update. Aether.exe.old can still be running too (the "Open with the game"
+        // copy that waited through the last update), and Windows won't delete or replace a running exe: moving onto it
+        // failed with "Cannot create a file when that file already exists". A free name always works.
+        static string FreeOldPath(string exe)
+        {
+            TryDelete(exe + ".old");
+            return File.Exists(exe + ".old") ? exe + ".old-" + DateTime.Now.Ticks : exe + ".old";
         }
 
         static HttpClient CreateClient()
@@ -128,8 +140,7 @@ namespace SmartHunter.Core.Helpers
 
             string exe = ExePath;
             File.WriteAllBytes(exe + ".new", bytes);
-            TryDelete(exe + ".old");
-            File.Move(exe, exe + ".old");
+            File.Move(exe, FreeOldPath(exe));
             File.Move(exe + ".new", exe);
             File.WriteAllText(NotesPath, release.Version.ToString(3) + "\n" + release.Notes, Encoding.UTF8);
         }
