@@ -80,6 +80,10 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
 - `App.xaml.cs` caps every WPF animation at 30 fps to keep the in-game overlay cheap. The Aether window's
   animations opt out and run at the monitor's refresh rate (`WindowHelper.RefreshRate`). Do the same for new
   window animations, but not for overlay widgets.
+- Discord Rich Presence images are loaded by URL from `main` on GitHub: monster portraits from `SmartHunter/Ui/Monsters/`
+  and weapon icons from `assets/discord/weapons/` (rendered by `assets/render-weapon-icons.ps1`). Moving or renaming
+  those files breaks the images for every installed copy. It uses Discord's verified MHW app id. Buttons are links
+  only and other people see them, not you. "Ask to Join" was ruled out: Aether can't join a game session for the player.
 - The clipboard can be held by another app, and `Clipboard.SetText` then throws. Use the `CopyToClipboard` wrapper.
 
 ## UI conventions (`Ui/Windows/ConsoleWindow.xaml`, `SettingsViewModel.cs`)

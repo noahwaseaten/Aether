@@ -54,6 +54,15 @@ namespace SmartHunter.Core
             greenCapped.Update(new[] { 50, 100, 150, 200, 250, 0, 0 }, 140, 250);
             Check(greenCapped.NeedsSharpening, "dropping to yellow on that weapon still asks to sharpen");
 
+            // Discord weapon icons: every weapon maps to a PNG committed under assets/discord/weapons
+            foreach (WeaponType weapon in Enum.GetValues(typeof(WeaponType)))
+            {
+                string icon = MhwHelper.WeaponIconName(weapon);
+                if (icon != null)
+                    Check(System.Text.RegularExpressions.Regex.IsMatch(icon, "^[a-z]+$"), $"{weapon} icon name '{icon}' is a plain file name");
+            }
+            Check(MhwHelper.WeaponIconName(WeaponType.LONG_SWORD) == "longsword", "long sword maps to longsword.png");
+
             // Debuff timers: a frozen value is hidden, a ticking one isn't
             var t0 = new DateTime(2026, 1, 1);
             MhwHelper.IsTimerStuck(-1, 1f, t0);

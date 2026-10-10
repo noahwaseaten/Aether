@@ -9,6 +9,7 @@ using System.Threading;
 using Newtonsoft.Json;
 using SmartHunter.Core;
 using SmartHunter.Core.Helpers;
+using SmartHunter.Game.Data;
 using SmartHunter.Game.Data.ViewModels;
 using SmartHunter.Game.Helpers;
 
@@ -51,7 +52,13 @@ namespace SmartHunter.Game
         float m_LastPlayerHp = -1;
         readonly Dictionary<ulong, float> m_MonsterHp = new Dictionary<ulong, float>();
         DateTime m_SharpenedAt, m_CombatAt;
-        string m_CombatMonster;
+        readonly Dictionary<ulong, DateTime> m_HitAt = new Dictionary<ulong, DateTime>(); // per monster, for "Fighting A & B"
+        DateTime? m_QuestStartedAt;
+        TimeSpan? m_ClearTime;
+
+        // Images Discord loads from this repo on GitHub: monster portraits and weapon icons (assets/discord)
+        const string AssetBase = "https://raw.githubusercontent.com/noahwaseaten/Aether/main/";
+        static readonly Dictionary<string, bool> s_HasPortrait = new Dictionary<string, bool>();
         long m_PhaseStart = Now();
 
         DiscordPresence()
@@ -125,7 +132,7 @@ namespace SmartHunter.Game
             int zone = MemoryHelper.Read<int>(p, Chain(p, ZoneAddress, 0xAED0));
             if (zone == 0)
             {
-                return Activity("Main menu", null, null);
+                return Activity("Main menu", null, null, null);
             }
 
             ulong save = Chain(p, SaveAddress, 0xA8);
@@ -154,6 +161,16 @@ namespace SmartHunter.Game
             // New phase (zone or quest state changed): reset timer and edge state
             if (zone != m_LastZone || questState != m_LastQuestState)
             {
+                if (questState == 2 && m_LastQuestState != 2)
+                    m_QuestStartedAt = now;
+                if ((questState == 3 || questState == 4) && m_QuestStartedAt.HasValue)
+                    m_ClearTime = now - m_QuestStartedAt.Value;
+                if (questState == 0 || questState == 1)
+                {
+                    m_QuestStartedAt = null;
+                    m_ClearTime = null;
+                }
+                m_HitAt.Clear();
                 m_PhaseStart = Now();
                 m_LastZone = zone;
                 m_LastQuestState = questState;
@@ -171,18 +188,21 @@ namespace SmartHunter.Game
             m_LastWeaponId = weaponId;
 
             // Fighting = a large monster lost HP, or we took damage, recently
-            float bestFraction = 1;
-            foreach (var monster in OverlayViewModel.Instance.MonsterWidget.Context.Monsters.ToList())
+            var monsters = OverlayViewModel.Instance.MonsterWidget.Context.Monsters.ToList();
+            foreach (var monster in monsters)
             {
                 float current = monster.Health.Current;
                 if (m_MonsterHp.TryGetValue(monster.Address, out var previous) && current < previous && current > 0)
                 {
                     m_CombatAt = now;
-                    m_CombatMonster = monster.Name;
+                    m_HitAt[monster.Address] = now;
                 }
                 m_MonsterHp[monster.Address] = current;
-                if (monster.Name == m_CombatMonster) bestFraction = monster.Health.Fraction;
             }
+            // Most recently hit first; a turf war or double hunt shows both
+            var fighting = monsters.Where(m => m.IsAlive && m_HitAt.TryGetValue(m.Address, out var at) && (now - at).TotalSeconds < 20)
+                .OrderByDescending(m => m_HitAt[m.Address]).ToList();
+            var target = fighting.FirstOrDefault();
             if (!town && m_LastPlayerHp > 0 && hp < m_LastPlayerHp && hp > 0)
             {
                 m_CombatAt = now;
@@ -197,31 +217,47 @@ namespace SmartHunter.Game
             if (town)
             {
                 string detail = questState == 1 && questId > 0 ? "Quest accepted" : $"In {zoneName}";
-                return Activity(detail, questState == 1 && questId > 0 ? $"{zoneName}{stars}" : null, hover);
+                return Activity(detail, questState == 1 && questId > 0 ? $"{zoneName}{stars}" : null, hover, null);
             }
 
             string details;
             string state = $"{zoneName}{stars}";
-            if (questState == 3 || questState == 4) details = "Quest complete";
+            if (questState == 3 || questState == 4)
+            {
+                details = "Quest complete";
+                if (m_ClearTime.HasValue)
+                    state = $"Cleared in {(int)m_ClearTime.Value.TotalMinutes}:{m_ClearTime.Value.Seconds:00} · {zoneName}";
+            }
             else if (questState >= 5) details = "Quest failed";
             else if (carted) details = "Carted";
             else if ((now - m_SharpenedAt).TotalSeconds < 6) details = "Sharpening";
-            else if ((now - m_CombatAt).TotalSeconds < 20 && m_CombatMonster != null)
+            else if (target != null)
             {
-                details = $"Fighting {m_CombatMonster}";
-                state = $"{(int)Math.Ceiling(bestFraction * 20) * 5}% HP · {zoneName}"; // 5% steps keeps updates under Discord's rate limit
+                details = fighting.Count > 1 ? $"Fighting {target.Name} & {fighting[1].Name}" : $"Fighting {target.Name}";
+                state = $"{(int)Math.Ceiling(target.Health.Fraction * 20) * 5}% HP · {zoneName}"; // 5% steps keeps updates under Discord's rate limit
             }
             else if ((now - m_CombatAt).TotalSeconds < 20) details = "In combat";
             else if (questState == 2 && questId > 0) details = "On a quest";
             else details = "Exploring";
 
-            return Activity(details, state, hover);
+            return Activity(details, state, hover, target);
         }
 
-        object Activity(string details, string state, string hover)
+        object Activity(string details, string state, string hover, Monster target)
         {
             var c = ConfigHelper.Main.Values.DiscordPresence;
+            var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
             int partySize = OverlayViewModel.Instance.TeamWidget.Context.Players.Count;
+            string weaponIcon = MhwHelper.WeaponIconName(game.EquippedWeaponType);
+
+            // Big image: the monster you're fighting (crown size on hover), else the game's art
+            string largeImage = c.LargeImage, largeText = "Monster Hunter: World";
+            if (target != null && HasPortrait(target.Id))
+            {
+                largeImage = $"{AssetBase}SmartHunter/Ui/Monsters/{target.Id}.png";
+                largeText = target.Crown == MonsterCrown.None ? target.Name : $"{target.Name} · {target.Crown} crown size";
+            }
+
             return new
             {
                 type = 0,
@@ -229,9 +265,34 @@ namespace SmartHunter.Game
                 state,
                 status_display_type = 2, // member list shows "Fighting Rathalos" instead of the game name
                 timestamps = new { start = m_PhaseStart },
-                assets = new { large_image = c.LargeImage, large_text = hover ?? "Monster Hunter: World" },
-                party = partySize > 1 && state != null ? new { id = "mhw-party", size = new[] { partySize, 4 } } : null,
+                assets = new
+                {
+                    large_image = largeImage,
+                    large_text = largeText,
+                    // Small badge: your weapon, with name, rank and weapon on hover
+                    small_image = weaponIcon != null ? $"{AssetBase}assets/discord/weapons/{weaponIcon}.png" : null,
+                    small_text = weaponIcon != null ? hover : null,
+                },
+                // Same hashed lobby id for everyone in the session, so Discord shows you as one party
+                party = partySize > 1 && state != null
+                    ? new { id = "mhw-" + (string.IsNullOrEmpty(game.key) ? "party" : game.key.Substring(0, Math.Min(16, game.key.Length))), size = new[] { partySize, 4 } }
+                    : null,
+                // Shown to people viewing your profile (Discord never shows you your own buttons)
+                buttons = new[] { new { label = "Get the Aether overlay", url = "https://github.com/noahwaseaten/Aether" } },
             };
+        }
+
+        static bool HasPortrait(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return false;
+            if (!s_HasPortrait.TryGetValue(id, out bool has))
+            {
+                try { has = System.Windows.Application.GetResourceStream(new Uri($"pack://application:,,,/Ui/Monsters/{id}.png")) != null; }
+                catch (IOException) { has = false; }
+                s_HasPortrait[id] = has;
+            }
+            return has;
         }
 
         // ---- Discord IPC ---------------------------------------------------------------

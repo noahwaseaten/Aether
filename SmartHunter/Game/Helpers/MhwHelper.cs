@@ -365,6 +365,10 @@ namespace SmartHunter.Game.Helpers
             { WeaponType.HEAVY_BOWGUN, 12 }, { WeaponType.LIGHT_BOWGUN, 13 },
         };
 
+        // "longsword" for ICON_LONGSWORD: the file name of the weapon's Discord icon in assets/discord/weapons
+        public static string WeaponIconName(WeaponType weaponType) =>
+            s_WeaponTypeIds.TryGetValue(weaponType, out int id) && id < s_WeaponIcons.Length ? s_WeaponIcons[id].Substring("ICON_".Length).ToLowerInvariant() : null;
+
         // Quest party leader and size (party struct from HunterPie's map for build 421810). Slot 0 is the leader.
         static string s_LastHostLog;
         public static void UpdateQuestParty(Process process)
