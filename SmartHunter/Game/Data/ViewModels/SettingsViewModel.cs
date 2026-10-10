@@ -140,7 +140,7 @@ namespace SmartHunter.Game.Data.ViewModels
             Toggle(Game, "Start the game with Aether", "Opens Monster Hunter: World through Steam when Aether starts, unless it's already running. If an update is downloading, the game starts once it's done.",
                 () => C.StartMHWWhenSmartHunterStart, v => C.StartMHWWhenSmartHunterStart = v, true);
             Toggle(Game, "Close with the game", "Aether quits when you close Monster Hunter: World.", () => C.ShutdownWhenProcessExits, v => C.ShutdownWhenProcessExits = v);
-            Toggle(Game, "Discord status", "Shows the monster you're hunting on your Discord profile.",
+            Toggle(Game, "Discord Rich Presence", "Shows what you're doing on your Discord profile: your area, the monster you're fighting and its health, and how the quest ended.",
                 () => C.DiscordPresence.Enabled, v => C.DiscordPresence.Enabled = v);
             Toggle(Game, "Back up saves when the game closes", "Zips your Steam save folder into UserDataBackup next to Aether, in case a save gets corrupted.",
                 () => C.BackupWhenProcessExits, v => C.BackupWhenProcessExits = v);

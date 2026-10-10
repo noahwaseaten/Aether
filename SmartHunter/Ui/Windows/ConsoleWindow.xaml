@@ -396,8 +396,7 @@
                             </ItemsControl.GroupStyle>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type core:Setting}">
-                                    <Border x:Name="Row" Margin="0 0 0 4" Padding="14 10" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1"
-                                            ToolTip="{Binding Description}" ToolTipService.InitialShowDelay="350" ToolTipService.BetweenShowDelay="80" ToolTipService.ShowDuration="60000">
+                                    <Border x:Name="Row" Margin="0 0 0 4" Padding="14 10" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
                                         <DockPanel>
                                             <CheckBox x:Name="Switch" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="16 0 0 0" Style="{StaticResource Switch}"
                                                       IsChecked="{Binding Value, Mode=TwoWay}" Command="{Binding TriggerAction}" />
@@ -406,8 +405,25 @@
                                             <StackPanel VerticalAlignment="Center">
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                                                    <TextBlock x:Name="InfoMark" Text="&#xE946;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Margin="7 1 0 0"
-                                                               VerticalAlignment="Center" Foreground="{StaticResource Muted}" Opacity="0.55" />
+                                                    <!--Vector "i" in a solid circle on whole pixels: the icon-font glyph blurred into a ring and a line at this size.
+                                                        The transparent padding gives the explanation tooltip a comfortable hover target.-->
+                                                    <!--Defaults go in styles: a value set on the element itself would beat the hover triggers below-->
+                                                    <Border x:Name="InfoMark" Background="Transparent" Padding="5 3" Margin="2 0 0 0" VerticalAlignment="Center" Cursor="Help"
+                                                            ToolTip="{Binding Description}" ToolTipService.InitialShowDelay="150" ToolTipService.BetweenShowDelay="50" ToolTipService.ShowDuration="60000">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Opacity" Value="0.5" />
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <Path x:Name="InfoGlyph" Width="14" Height="14" SnapsToDevicePixels="True"
+                                                              Data="F0 M7,0 A7,7 0 1 1 7,14 A7,7 0 1 1 7,0 Z M6,3 H8 V5 H6 Z M6,6 H8 V11 H6 Z">
+                                                            <Path.Style>
+                                                                <Style TargetType="Path">
+                                                                    <Setter Property="Fill" Value="{StaticResource Muted}" />
+                                                                </Style>
+                                                            </Path.Style>
+                                                        </Path>
+                                                    </Border>
                                                     <Border x:Name="RestartChip" Margin="8 0 0 0" Padding="6 1" CornerRadius="4" Background="#2A2B30" Visibility="Collapsed" VerticalAlignment="Center">
                                                         <TextBlock Text="Restart" FontSize="10.5" Foreground="{StaticResource Muted}" />
                                                     </Border>
@@ -434,7 +450,11 @@
                                             <Setter TargetName="InfoMark" Property="Visibility" Value="Collapsed" />
                                         </DataTrigger>
                                         <Trigger SourceName="Row" Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="InfoMark" Property="Opacity" Value="0.8" />
+                                        </Trigger>
+                                        <Trigger SourceName="InfoMark" Property="IsMouseOver" Value="True">
                                             <Setter TargetName="InfoMark" Property="Opacity" Value="1" />
+                                            <Setter TargetName="InfoGlyph" Property="Fill" Value="{StaticResource Accent}" />
                                         </Trigger>
                                     </DataTemplate.Triggers>
                                 </DataTemplate>

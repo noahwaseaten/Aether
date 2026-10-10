@@ -3,29 +3,71 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 
 namespace SmartHunter.Ui.Behaviors
 {
-    // Eases the mouse wheel instead of jumping 48 px per notch. Fast wheel spins add up into one glide.
+    // Glides the mouse wheel instead of jumping 48 px per notch. Each frame the offset closes a fixed fraction of
+    // the gap to the target, so extra notches just move the target and speed changes stay continuous. Restarting
+    // an eased animation per notch (the old way) jolted the speed on every notch and stuttered on fast spins.
     public static class SmoothScroll
     {
-        const double PixelsPerNotch = 64; // a notch is 120 wheel units
-        static readonly Duration Glide = new Duration(TimeSpan.FromMilliseconds(260));
-        static readonly IEasingFunction Ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        const double PixelsPerNotch = 64;   // a notch is 120 wheel units
+        const double TimeConstant = 0.06;   // seconds; ~95% of the way there after 0.18 s
 
         public static readonly DependencyProperty IsEnabledProperty = DependencyProperty.RegisterAttached(
             "IsEnabled", typeof(bool), typeof(SmoothScroll), new PropertyMetadata(false, OnIsEnabledChanged));
         public static bool GetIsEnabled(DependencyObject o) => (bool)o.GetValue(IsEnabledProperty);
         public static void SetIsEnabled(DependencyObject o, bool value) => o.SetValue(IsEnabledProperty, value);
 
-        // VerticalOffset is read-only, so the animation drives this and it forwards to the ScrollViewer
-        static readonly DependencyProperty OffsetProperty = DependencyProperty.RegisterAttached(
-            "Offset", typeof(double), typeof(SmoothScroll), new PropertyMetadata(0.0, (o, e) => ((ScrollViewer)o).ScrollToVerticalOffset((double)e.NewValue)));
-        static readonly DependencyProperty TargetProperty = DependencyProperty.RegisterAttached(
-            "Target", typeof(double), typeof(SmoothScroll), new PropertyMetadata(double.NaN));
-        static readonly DependencyProperty AnimationProperty = DependencyProperty.RegisterAttached(
-            "Animation", typeof(AnimationTimeline), typeof(SmoothScroll));
+        static readonly DependencyProperty GlideProperty = DependencyProperty.RegisterAttached(
+            "Glide", typeof(Glide), typeof(SmoothScroll));
+
+        class Glide
+        {
+            readonly ScrollViewer m_ScrollViewer;
+            double m_Current;
+            TimeSpan m_LastFrame;
+            public double Target;
+            public bool IsRunning { get; private set; }
+
+            public Glide(ScrollViewer scrollViewer) { m_ScrollViewer = scrollViewer; }
+
+            public void Start()
+            {
+                if (IsRunning)
+                    return;
+                m_Current = m_ScrollViewer.VerticalOffset;
+                m_LastFrame = TimeSpan.Zero;
+                IsRunning = true;
+                // Runs once per rendered frame, so it follows the monitor's refresh rate
+                CompositionTarget.Rendering += OnFrame;
+            }
+
+            void Stop()
+            {
+                IsRunning = false;
+                CompositionTarget.Rendering -= OnFrame;
+            }
+
+            void OnFrame(object sender, EventArgs e)
+            {
+                var time = ((RenderingEventArgs)e).RenderingTime;
+                if (time == m_LastFrame)
+                    return; // Rendering can fire more than once for the same frame
+                double dt = m_LastFrame == TimeSpan.Zero ? 1 / 60.0 : Math.Min((time - m_LastFrame).TotalSeconds, 0.1);
+                m_LastFrame = time;
+
+                Target = Math.Max(0, Math.Min(m_ScrollViewer.ScrollableHeight, Target));
+                m_Current += (Target - m_Current) * (1 - Math.Exp(-dt / TimeConstant));
+                if (Math.Abs(Target - m_Current) < 0.5 || !m_ScrollViewer.IsLoaded)
+                {
+                    m_Current = Target;
+                    Stop();
+                }
+                // Whole pixels: text snapped to the pixel grid shimmers at fractional offsets
+                m_ScrollViewer.ScrollToVerticalOffset(Math.Round(m_Current));
+            }
+        }
 
         static void OnIsEnabledChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
@@ -37,8 +79,12 @@ namespace SmartHunter.Ui.Behaviors
             }
         }
 
-        static bool CanScroll(ScrollViewer scrollViewer, int delta) =>
-            delta > 0 ? scrollViewer.VerticalOffset > 0 : scrollViewer.VerticalOffset < scrollViewer.ScrollableHeight;
+        static bool CanScroll(ScrollViewer scrollViewer, int delta)
+        {
+            var glide = (Glide)scrollViewer.GetValue(GlideProperty);
+            double offset = glide != null && glide.IsRunning ? glide.Target : scrollViewer.VerticalOffset;
+            return delta > 0 ? offset > 0 : offset < scrollViewer.ScrollableHeight;
+        }
 
         static void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
@@ -57,23 +103,16 @@ namespace SmartHunter.Ui.Behaviors
                 return;
 
             e.Handled = true;
-            double target = (double)scrollViewer.GetValue(TargetProperty);
-            if (double.IsNaN(target))
-                target = scrollViewer.VerticalOffset;
-            target = Math.Max(0, Math.Min(scrollViewer.ScrollableHeight, target - e.Delta / 120.0 * PixelsPerNotch));
-            scrollViewer.SetValue(TargetProperty, target);
-
-            var animation = new DoubleAnimation(scrollViewer.VerticalOffset, target, Glide) { EasingFunction = Ease };
-            // App caps animations at 30 fps to keep the in-game overlay cheap; scrolling runs at the monitor's rate
-            Timeline.SetDesiredFrameRate(animation, Core.Helpers.WindowHelper.RefreshRate(scrollViewer));
-            animation.Completed += (s, _) =>
+            var glide = (Glide)scrollViewer.GetValue(GlideProperty);
+            if (glide == null)
             {
-                // Only the latest glide resets the target; superseded ones finishing late must not
-                if (scrollViewer.GetValue(AnimationProperty) == animation)
-                    scrollViewer.SetValue(TargetProperty, double.NaN);
-            };
-            scrollViewer.SetValue(AnimationProperty, animation);
-            scrollViewer.BeginAnimation(OffsetProperty, animation);
+                glide = new Glide(scrollViewer);
+                scrollViewer.SetValue(GlideProperty, glide);
+            }
+            if (!glide.IsRunning)
+                glide.Target = scrollViewer.VerticalOffset; // the scrollbar may have been dragged since
+            glide.Target -= e.Delta / 120.0 * PixelsPerNotch;
+            glide.Start();
         }
     }
 }
