@@ -22,11 +22,13 @@ namespace SmartHunter.Core.Helpers
         {
             get
             {
+                // No activation: clicking a widget or the editor while editing leaves the game focused, so "hide when
+                // the game isn't focused" doesn't make the overlay vanish once you're done
                 return ((uint)WindowsApi.WindowStyleFlag.WS_EX_LAYERED
                     | (uint)WindowsApi.WindowStyleFlag.WS_EX_TOPMOST
-                    | (uint)WindowsApi.WindowStyleFlag.WS_EX_TOOLWINDOW)
+                    | (uint)WindowsApi.WindowStyleFlag.WS_EX_TOOLWINDOW
+                    | (uint)WindowsApi.WindowStyleFlag.WS_EX_NOACTIVATE)
                     & ~(uint)WindowsApi.WindowStyleFlag.WS_EX_APPWINDOW;
-                ;
             }
         }
 

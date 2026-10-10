@@ -58,7 +58,8 @@ namespace SmartHunter.Core.Windows
             return new Rect(left + ContentInset, top + ContentInset, Math.Max(0, ActualWidth - ContentInset * 2), Math.Max(0, ActualHeight - ContentInset * 2));
         }
 
-        Point MouseOnScreen(MouseEventArgs e)
+        // The mouse in screen DIPs, the unit Left and Top use
+        public Point PointToScreenDips(MouseEventArgs e)
         {
             var point = PointToScreen(e.GetPosition(this));
             var source = PresentationSource.FromVisual(this);
@@ -80,7 +81,7 @@ namespace SmartHunter.Core.Windows
             }
 
             m_IsDragging = true;
-            m_DragStartMouse = MouseOnScreen(e);
+            m_DragStartMouse = PointToScreenDips(e);
             m_DragStartWindow = new Point(Left, Top);
             CaptureMouse();
         }
@@ -93,7 +94,7 @@ namespace SmartHunter.Core.Windows
                 return;
             }
 
-            var mouse = MouseOnScreen(e);
+            var mouse = PointToScreenDips(e);
             double left = m_DragStartWindow.X + mouse.X - m_DragStartMouse.X;
             double top = m_DragStartWindow.Y + mouse.Y - m_DragStartMouse.Y;
 
@@ -112,7 +113,7 @@ namespace SmartHunter.Core.Windows
 
             Left = left;
             Top = top;
-            GuideWindow.Instance.Show(guides);
+            LayoutEditor.Instance.ShowGuides(guides);
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
@@ -136,13 +137,37 @@ namespace SmartHunter.Core.Windows
 
             m_IsDragging = false;
             ReleaseMouseCapture();
-            GuideWindow.Instance.Hide();
+            LayoutEditor.Instance.ShowGuides(new Guide[0]);
             PlacementChanged?.Invoke();
         }
 
         // Saved right away: saving only on leaving edit mode lost the layout whenever Aether closed or restarted
         // for an update while you were still editing
         public static event Action PlacementChanged;
+
+        // The hide button on the edit tab; the overlay hides the window and saves
+        public static event Action<WidgetWindow> HideRequested;
+        public void RequestHide() => HideRequested?.Invoke(this);
+
+        // Corner grip: the widget grows with the drag along its diagonal, so the grip stays under the mouse
+        float m_ResizeStartScale;
+        Size m_ResizeStartSize;
+
+        public void BeginResize()
+        {
+            m_ResizeStartScale = Widget.Scale;
+            var content = ContentRect(Left, Top);
+            m_ResizeStartSize = new Size(Math.Max(1, content.Width), Math.Max(1, content.Height));
+        }
+
+        public void ResizeBy(double dx, double dy)
+        {
+            double factor = (m_ResizeStartSize.Width + dx + m_ResizeStartSize.Height + dy) / (m_ResizeStartSize.Width + m_ResizeStartSize.Height);
+            float scale = (float)Math.Round(m_ResizeStartScale * factor, 2);
+            Widget.Scale = Math.Min(Math.Max(scale, ScaleMin), ScaleMax);
+        }
+
+        public void EndResize() => PlacementChanged?.Invoke();
 
         static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));
 
@@ -176,10 +201,12 @@ namespace SmartHunter.Core.Windows
                 xs.Add((r.Right - me.Width, r.Right));          // align right edges
                 xs.Add((r.Right + Gap, r.Right + Gap));         // sit to the right
                 xs.Add((r.Left - Gap - me.Width, r.Left - Gap)); // sit to the left
+                xs.Add((r.Left + (r.Width - me.Width) / 2, r.Left + r.Width / 2)); // centred on it
                 ys.Add((r.Top, r.Top));
                 ys.Add((r.Bottom - me.Height, r.Bottom));
                 ys.Add((r.Bottom + Gap, r.Bottom + Gap));
                 ys.Add((r.Top - Gap - me.Height, r.Top - Gap));
+                ys.Add((r.Top + (r.Height - me.Height) / 2, r.Top + r.Height / 2));
             }
 
             var bestX = xs.OrderBy(c => Math.Abs(c.target - me.Left)).First();
@@ -212,69 +239,5 @@ namespace SmartHunter.Core.Windows
         public readonly bool IsVertical;
         public readonly double Position;
         public Guide(bool isVertical, double position) { IsVertical = isVertical; Position = position; }
-    }
-
-    // A click-through full-screen layer that draws alignment guides while a widget is being dragged
-    public class GuideWindow : Window
-    {
-        public static readonly GuideWindow Instance = new GuideWindow();
-
-        readonly Canvas m_Canvas = new Canvas();
-        readonly Brush m_Brush = new SolidColorBrush(Color.FromArgb(0xCC, 0xF5, 0xA5, 0x24));
-
-        GuideWindow()
-        {
-            WindowStyle = WindowStyle.None;
-            AllowsTransparency = true;
-            Background = Brushes.Transparent;
-            ShowInTaskbar = false;
-            ShowActivated = false;
-            Topmost = true;
-            Left = SystemParameters.VirtualScreenLeft;
-            Top = SystemParameters.VirtualScreenTop;
-            Width = SystemParameters.VirtualScreenWidth;
-            Height = SystemParameters.VirtualScreenHeight;
-            Content = m_Canvas;
-            IsHitTestVisible = false;
-            SourceInitialized += (s, e) => WindowHelper.SetTopMostTransparent(this);
-            m_Brush.Freeze();
-        }
-
-        public void Show(IEnumerable<Guide> guides)
-        {
-            m_Canvas.Children.Clear();
-            foreach (var guide in guides)
-            {
-                var line = new Line
-                {
-                    Stroke = m_Brush,
-                    StrokeThickness = 1,
-                    StrokeDashArray = new DoubleCollection { 4, 4 },
-                    SnapsToDevicePixels = true,
-                };
-                if (guide.IsVertical)
-                {
-                    line.X1 = line.X2 = guide.Position - Left;
-                    line.Y2 = Height;
-                }
-                else
-                {
-                    line.Y1 = line.Y2 = guide.Position - Top;
-                    line.X2 = Width;
-                }
-                m_Canvas.Children.Add(line);
-            }
-
-            if (!IsVisible)
-            {
-                base.Show();
-            }
-        }
-
-        public new void Hide()
-        {
-            m_Canvas.Children.Clear();
-            base.Hide();
-        }
     }
 }

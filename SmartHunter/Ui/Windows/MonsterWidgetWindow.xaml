@@ -12,7 +12,7 @@
         xmlns:windows="clr-namespace:SmartHunter.Core.Windows"
         xmlns:viewModels="clr-namespace:SmartHunter.Game.Data.ViewModels"
     
-        Title="{Binding ConverterParameter=LOC_WIDGET_MONSTER, Converter={StaticResource A_Converter_Localizer}}"
+        Title="Monster"
                       
         d:DataContext="{x:Static viewModels:OverlayViewModel.Instance}"        
         MouseDown="WidgetWindow_MouseDown"
@@ -56,17 +56,6 @@
             </Grid>
         </Grid>
 
-        <Border Style="{StaticResource A_Style_EditFrame}">
-            <Border Style="{StaticResource A_Style_EditLabel}">
-                <TextBlock Style="{StaticResource T_EditLabel}">
-                <TextBlock.Text>
-                    <MultiBinding StringFormat="{}{0}  ·  {1}">
-                        <Binding ConverterParameter="LOC_WIDGET_MONSTER" Converter="{StaticResource A_Converter_Localizer}" />
-                        <Binding Path="MonsterWidget.Scale" Converter="{StaticResource A_Converter_FractionToPercentage}" Mode="OneWay" />
-                    </MultiBinding>
-                </TextBlock.Text>
-            </TextBlock>
-            </Border>
-        </Border>
+        <windows:EditChrome />
     </Grid>
 </windows:WidgetWindow>

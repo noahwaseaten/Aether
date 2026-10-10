@@ -125,6 +125,14 @@ namespace SmartHunter.Game.Helpers
                 return;
             }
 
+            // Left Alt was the old layout key: holding it clashed with Discord's overlay and Alt shortcuts. Nobody picked
+            // it on purpose (there's no setting for it), so move saved configs to the new default.
+            if (Main.Values.Keybinds.TryGetValue(InputControl.ManipulateWidget, out var editKey) && editKey == System.Windows.Input.Key.LeftAlt)
+            {
+                Main.Values.Keybinds[InputControl.ManipulateWidget] = System.Windows.Input.Key.Scroll;
+                Main.Save();
+            }
+
             foreach (var fileName in new[] { Main.Values.LocalizationFileName, Main.Values.MonsterDataFileName, Main.Values.PlayerDataFileName, Main.Values.MemoryFileName })
             {
                 TryDelete(FileContainer.GetFullPathFileName(fileName));

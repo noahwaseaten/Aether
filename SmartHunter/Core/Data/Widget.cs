@@ -74,11 +74,11 @@ namespace SmartHunter.Core.Data
             UpdateFromConfig();            
         }
 
-        public void ResetPlacement(float x, float y)
+        public void ResetPlacement(float x, float y, float scale)
         {
             X = x;
             Y = y;
-            Scale = 1;
+            Scale = scale;
         }
 
         void UpdateConfig()

@@ -88,7 +88,7 @@ namespace SmartHunter.Game.Data.ViewModels
         public void ResetLayout()
         {
             var defaults = Config.OverlayConfig.ForScreen();
-            void Reset(Core.Data.Widget widget, Core.Config.WidgetConfig config) => widget.ResetPlacement(config.X, config.Y);
+            void Reset(Core.Data.Widget widget, Core.Config.WidgetConfig config) => widget.ResetPlacement(config.X, config.Y, config.Scale);
 
             Reset(TeamWidget, defaults.TeamWidget);
             Reset(MonsterWidget, defaults.MonsterWidget);

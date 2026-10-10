@@ -19,19 +19,14 @@ namespace SmartHunter.Game
     public class MhwOverlay : Overlay
     {
         MhwMemoryUpdater m_MemoryUpdater;
-        bool m_HideKeyDown;
-
-        // Layout editing needs Left Alt held on its own for a moment: Alt+Tab, Alt+F4 or Alt+Enter must not flip every
-        // widget into edit mode. Any other key while Alt is down marks it as a shortcut and cancels.
-        const int EditHoldMilliseconds = 250;
-        bool m_EditKeyDown, m_EditKeyCombo, m_EditKeyStartedEditing;
-        System.Windows.Threading.DispatcherTimer m_EditHoldTimer;
+        bool m_HideKeyDown, m_EditKeyDown;
 
         public MhwOverlay(Window mainWindow, params WidgetWindow[] widgetWindows) : base(mainWindow, widgetWindows)
         {
             ConfigHelper.Main.Loaded += (s, e) => { UpdateWidgetsFromConfig(); OverlayViewModel.Instance.ApplyDisplaySettings(); };
             OverlayViewModel.Instance.ApplyDisplaySettings();
             WidgetWindow.PlacementChanged += SaveMovedWidgets;
+            WidgetWindow.HideRequested += ToggleWidget;
             ConfigHelper.Localization.Loaded += (s, e) => { RefreshWidgetsLayout(); };
             ConfigHelper.MonsterData.Loaded += (s, e) => { RefreshWidgetsLayout(); };
             ConfigHelper.PlayerData.Loaded += (s, e) => { RefreshWidgetsLayout(); };
@@ -50,9 +45,24 @@ namespace SmartHunter.Game
             }
         }
 
-        // Editing: widgets take the mouse (drag, scroll to scale). Done: back to click-through, and save where they ended up.
+        protected override bool IsEditing => OverlayViewModel.Instance.CanManipulateWindows;
+
+        // Editing: the game dims behind the layout editor and the widgets take the mouse (drag, resize, hide).
+        // Done: back to click-through, and save where they ended up.
         void ApplyEditMode(bool isEditing)
         {
+            if (isEditing)
+            {
+                // The debug widget is for development; it's shown from its setting only
+                LayoutEditor.Instance.Open(WidgetWindows.Where(w => w.Widget != OverlayViewModel.Instance.DebugWidget), ToggleWidget,
+                    () => OverlayViewModel.Instance.ResetLayout(), () => OverlayViewModel.Instance.CanManipulateWindows = false);
+            }
+            else
+            {
+                LayoutEditor.Instance.Close();
+            }
+
+            // After the editor opens, so the widgets stack above it
             foreach (var widgetWindow in WidgetWindows)
             {
                 if (isEditing)
@@ -65,10 +75,24 @@ namespace SmartHunter.Game
                 }
             }
 
-            if (!isEditing)
+            if (isEditing)
             {
-                SaveMovedWidgets();
+                LayoutEditor.Instance.RaiseToolbar();
             }
+            else
+            {
+                // Wait for the widgets to shrink back from their edit-mode size first: right-side ones shift as they
+                // shrink, and saving straight away stored the shifted spot, so they crept left every edit
+                Application.Current.Dispatcher.BeginInvoke(new Action(SaveMovedWidgets), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            }
+        }
+
+        void ToggleWidget(WidgetWindow widgetWindow)
+        {
+            widgetWindow.Widget.IsVisible = !widgetWindow.Widget.IsVisible;
+            UpdateWidgetsFromConfig();
+            LayoutEditor.Instance.RaiseToolbar();
+            SaveMovedWidgets();
         }
 
         void SaveMovedWidgets()
@@ -88,64 +112,15 @@ namespace SmartHunter.Game
 
         protected override void InputReceived(Key key, bool isDown)
         {
-            var bindings = ConfigHelper.Main.Values.Keybinds.Where(keybind => keybind.Value == key).ToList();
-            // Shift (no snapping) and Ctrl (fine resize) are part of editing, so they don't count as a shortcut
-            bool isEditModifier = key == Key.LeftShift || key == Key.RightShift || key == Key.LeftCtrl || key == Key.RightCtrl;
-            if (isDown && m_EditKeyDown && !isEditModifier && !bindings.Any(b => b.Key == InputControl.ManipulateWidget))
+            if (key == Key.Escape && isDown && OverlayViewModel.Instance.CanManipulateWindows)
             {
-                CancelEditHold();
-            }
-            foreach (var controlKeyPair in bindings)
-            {
-                HandleControl(controlKeyPair.Key, isDown);
-            }
-        }
-
-        void HandleEditKey(bool isDown)
-        {
-            if (isDown)
-            {
-                if (m_EditKeyDown)
-                {
-                    return; // key repeat while held
-                }
-                m_EditKeyDown = true;
-                m_EditKeyCombo = false;
-                if (m_EditHoldTimer == null)
-                {
-                    m_EditHoldTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(EditHoldMilliseconds) };
-                    m_EditHoldTimer.Tick += (s, e) =>
-                    {
-                        m_EditHoldTimer.Stop();
-                        if (m_EditKeyDown && !m_EditKeyCombo && !OverlayViewModel.Instance.CanManipulateWindows)
-                        {
-                            OverlayViewModel.Instance.CanManipulateWindows = true;
-                            m_EditKeyStartedEditing = true;
-                        }
-                    };
-                }
-                m_EditHoldTimer.Start();
+                OverlayViewModel.Instance.CanManipulateWindows = false;
                 return;
             }
 
-            m_EditKeyDown = false;
-            m_EditHoldTimer?.Stop();
-            // Only end editing that the key started; the Edit layout button's mode stays on
-            if (m_EditKeyStartedEditing)
+            foreach (var controlKeyPair in ConfigHelper.Main.Values.Keybinds.Where(keybind => keybind.Value == key).ToList())
             {
-                OverlayViewModel.Instance.CanManipulateWindows = false;
-                m_EditKeyStartedEditing = false;
-            }
-        }
-
-        void CancelEditHold()
-        {
-            m_EditKeyCombo = true;
-            m_EditHoldTimer?.Stop();
-            if (m_EditKeyStartedEditing)
-            {
-                OverlayViewModel.Instance.CanManipulateWindows = false;
-                m_EditKeyStartedEditing = false;
+                HandleControl(controlKeyPair.Key, isDown);
             }
         }
 
@@ -153,7 +128,13 @@ namespace SmartHunter.Game
         {
             if (control == InputControl.ManipulateWidget)
             {
-                HandleEditKey(isDown);
+                // A press opens or closes the layout editor, like Discord's overlay key and Lunar's HUD editor.
+                // Holding the key repeats "down" events, so only the first one counts.
+                if (isDown && !m_EditKeyDown)
+                {
+                    OverlayViewModel.Instance.CanManipulateWindows = !OverlayViewModel.Instance.CanManipulateWindows;
+                }
+                m_EditKeyDown = isDown;
             }
             else if (control == InputControl.HideWidgets)
             {

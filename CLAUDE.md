@@ -117,6 +117,11 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
 - "Open with the game" (`Core/Helpers/AutoStart.cs`) is an HKCU Run entry that starts `Aether.exe --wait`: no window,
   checks for the game every 3 s, then starts normally and closes with the game. Each game start counts once, so closing
   Aether mid-hunt doesn't reopen it. Testing it with "Start the game with Aether" on launches the game.
+- Layout editing (Scroll Lock, as in HunterPie, or the Edit layout button) dims the game behind `LayoutEditor` and gives
+  each widget an `EditChrome`: a name tab with a hide button and a corner resize grip. Widgets stay separate windows,
+  which is also how Discord's 2025 overlay draws over games without hooking them. The toolbar is its own window so it
+  stacks above the widgets. Edit windows use `WS_EX_NOACTIVATE`, so the game keeps focus. Leaving edit mode saves only
+  after the widgets shrink back: right-side widgets shift while they shrink, and saving at once stored the shifted spot.
 - Widget placement is saved on every drag and resize (`WidgetWindow.PlacementChanged`), not only when edit mode ends.
 - Routine sync calls (pull, push, damage) aren't logged one by one: they filled the log and pushed out what mattered.
   Past sessions' logs are kept in `Logs\`.

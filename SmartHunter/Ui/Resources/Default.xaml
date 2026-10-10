@@ -210,34 +210,7 @@
         <Setter Property="CornerRadius" Value="2" />
     </Style>
 
-    <!--Edit mode (hold the manipulate key): rounded frame + legend that fade in, never pop-->
-    <Style x:Key="A_Style_EditFrame" TargetType="{x:Type Border}">
-        <Setter Property="Margin" Value="-8" />
-        <Setter Property="CornerRadius" Value="16" />
-        <Setter Property="BorderThickness" Value="1.5" />
-        <Setter Property="BorderBrush" Value="{StaticResource B_Accent}" />
-        <Setter Property="Background" Value="#14F5A524" />
-        <Setter Property="IsHitTestVisible" Value="False" />
-        <Setter Property="Opacity" Value="0" />
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding CanManipulateWindows}" Value="True">
-                <DataTrigger.EnterActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.16" />
-                        </Storyboard>
-                    </BeginStoryboard>
-                </DataTrigger.EnterActions>
-                <DataTrigger.ExitActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2" />
-                        </Storyboard>
-                    </BeginStoryboard>
-                </DataTrigger.ExitActions>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
+    <!--Edit mode: the frame, tab and grip are Core/Windows/EditChrome.cs-->
     <!--Edit mode placeholder: reserves a widget's full size and says what goes there-->
     <Style x:Key="A_Style_EditPreview" TargetType="{x:Type Grid}">
         <Setter Property="Visibility" Value="Collapsed" />
@@ -267,19 +240,6 @@
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Margin" Value="16 4" />
-    </Style>
-    <Style x:Key="A_Style_EditLabel" TargetType="{x:Type Border}">
-        <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Margin" Value="12 -11 0 0" />
-        <Setter Property="Padding" Value="8 2 8 3" />
-        <Setter Property="CornerRadius" Value="6" />
-        <Setter Property="Background" Value="{StaticResource B_Accent}" />
-    </Style>
-    <Style x:Key="T_EditLabel" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
-        <Setter Property="FontSize" Value="11" />
-        <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="#1C1400" />
     </Style>
 
     <!--Danger: three red blinks, then it stays lit. Targets an element named Danger.

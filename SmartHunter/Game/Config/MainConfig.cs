@@ -29,7 +29,7 @@ namespace SmartHunter.Game.Config
         [PreserveCollectionIntegrity]
         public Dictionary<InputControl, Key> Keybinds = new Dictionary<InputControl, Key>()
         {
-            { InputControl.ManipulateWidget, Key.LeftAlt },
+            { InputControl.ManipulateWidget, Key.Scroll }, // Scroll Lock, as in HunterPie: no game, chat or Discord overlay uses it
             { InputControl.HideWidgets, Key.F1 },
             { InputControl.CopyTeamDamage, Key.F5 },
             { InputControl.CopyPlayer1Damage, Key.F6},

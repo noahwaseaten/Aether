@@ -79,7 +79,10 @@ namespace SmartHunter.Core
                 widgetWindow.Show();
                 widgetWindow.Owner = null;
 
-                WindowHelper.SetTopMostTransparent(widgetWindow);
+                if (IsEditing)
+                    WindowHelper.SetTopMostSelectable(widgetWindow);
+                else
+                    WindowHelper.SetTopMostTransparent(widgetWindow);
             }
             else
             {
@@ -117,5 +120,8 @@ namespace SmartHunter.Core
         }
 
         abstract protected void InputReceived(Key key, bool down);
+
+        // A widget shown while the layout is edited must take the mouse like the others
+        protected virtual bool IsEditing => false;
     }
 }
