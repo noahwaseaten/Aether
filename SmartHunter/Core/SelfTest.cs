@@ -32,6 +32,9 @@ namespace SmartHunter.Core
             Check(AppUpdater.TryParseTag("1.2", out var b) && b == new Version(1, 2, 0, 0), "1.2 parses as 1.2.0.0");
             Check(AppUpdater.TryParseTag("v1.10.0", out var c) && c > new Version(1, 9, 0, 0), "1.10 is newer than 1.9");
             Check(!AppUpdater.TryParseTag("latest", out _), "non-version tag is ignored");
+            Check(AppUpdater.CleanNotes("## Fixes\r\n- **Bold** `code`") == "Fixes\n• Bold code", "release notes lose their markdown");
+            Check(AppUpdater.CleanNotes(null) == "No notes for this release.", "empty release notes get a placeholder");
+            Check(WindowHelper.RefreshRate() >= 30, "monitor refresh rate is read or falls back to 60");
 
             // Sharpness: a sane table shows, garbage from loading screens doesn't
             var sharpness = new Sharpness();

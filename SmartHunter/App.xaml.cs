@@ -86,40 +86,11 @@ namespace SmartHunter
             m_SkinFile.Changed += (s1, e1) => { LoadSkin(); };
             LoadSkin();
 
-            AppUpdater.DeleteLeftovers();
-            if (ConfigHelper.Main.Values.AutomaticallyCheckAndDownloadUpdates)
-            {
-                CheckForUpdate();
-            }
+            UpdateViewModel.Instance.Start();
 
             m_Overlay = new MhwOverlay(new ConsoleWindow(), new TeamWidgetWindow(), new MonsterWidgetWindow(), new PlayerWidgetWindow(), new DebugWidgetWindow(), new CalloutWidgetWindow(), new RecapWidgetWindow());
 
             base.OnStartup(e);
-        }
-
-        async void CheckForUpdate()
-        {
-            try
-            {
-                var version = await AppUpdater.DownloadLatestAsync();
-                if (version == null)
-                {
-                    return;
-                }
-
-                Log.WriteLine($"Updated to Aether {version.ToString(3)}");
-                // Not in the game yet: switch over right away. Otherwise let the player pick the moment.
-                if (System.Diagnostics.Process.GetProcessesByName(ConfigHelper.Memory.Values.ProcessName).Length == 0)
-                {
-                    AppUpdater.Restart();
-                }
-                SettingsViewModel.Instance.RestartReason = $"Aether {version.ToString(3)} is installed. Restart to use it.";
-                SettingsViewModel.Instance.NeedsRestart = true;
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLine($"Update check failed: {ex.Message}");
-            }
         }
 
         protected override void OnExit(ExitEventArgs e)

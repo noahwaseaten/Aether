@@ -6,6 +6,8 @@
         xmlns:core="clr-namespace:SmartHunter.Core"
         xmlns:viewModels="clr-namespace:SmartHunter.Game.Data.ViewModels"
         xmlns:controls="clr-namespace:SmartHunter.Ui.Controls"
+        xmlns:behaviors="clr-namespace:SmartHunter.Ui.Behaviors"
+        xmlns:helpers="clr-namespace:SmartHunter.Core.Helpers"
         d:DataContext="{x:Static viewModels:ConsoleViewModel.Instance}"
         mc:Ignorable="d"
         Icon="/Ui/Aether.ico"
@@ -64,6 +66,11 @@
         <SolidColorBrush x:Key="Muted" Color="#A39C8C" />
         <SolidColorBrush x:Key="Accent" Color="#E2C27A" />
         <CubicEase x:Key="Ease" EasingMode="EaseOut" />
+
+        <!--Every scroll area in the window, the Log's text box included, glides instead of jumping-->
+        <Style TargetType="ScrollViewer">
+            <Setter Property="behaviors:SmoothScroll.IsEnabled" Value="True" />
+        </Style>
 
         <!--Thin scrollbar-->
         <Style TargetType="ScrollBar">
@@ -150,7 +157,7 @@
                             <Trigger Property="IsChecked" Value="True">
                                 <Trigger.EnterActions>
                                     <BeginStoryboard>
-                                        <Storyboard>
+                                        <Storyboard Timeline.DesiredFrameRate="{x:Static helpers:WindowHelper.PrimaryRefreshRate}">
                                             <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="16" Duration="0:0:0.18" EasingFunction="{StaticResource Ease}" />
                                             <DoubleAnimation Storyboard.TargetName="TrackOn" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.18" />
                                         </Storyboard>
@@ -158,7 +165,7 @@
                                 </Trigger.EnterActions>
                                 <Trigger.ExitActions>
                                     <BeginStoryboard>
-                                        <Storyboard>
+                                        <Storyboard Timeline.DesiredFrameRate="{x:Static helpers:WindowHelper.PrimaryRefreshRate}">
                                             <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="0" Duration="0:0:0.18" EasingFunction="{StaticResource Ease}" />
                                             <DoubleAnimation Storyboard.TargetName="TrackOn" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.18" />
                                         </Storyboard>
@@ -191,6 +198,58 @@
             </Setter>
         </Style>
 
+        <!--Setting explanations: fade in and rise a few pixels-->
+        <Style TargetType="ToolTip">
+            <Setter Property="HasDropShadow" Value="False" />
+            <Setter Property="Placement" Value="Bottom" />
+            <Setter Property="VerticalOffset" Value="6" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToolTip">
+                        <Border Padding="0 0 12 14">
+                            <Border x:Name="B" MaxWidth="320" Padding="12 9" CornerRadius="8" Background="#26272C" BorderBrush="#3A3B42" BorderThickness="1" Opacity="0">
+                                <Border.RenderTransform>
+                                    <TranslateTransform Y="4" />
+                                </Border.RenderTransform>
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="14" ShadowDepth="3" Opacity="0.45" Color="Black" />
+                                </Border.Effect>
+                                <TextBlock Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}" TextWrapping="Wrap"
+                                           Foreground="#E8E2D4" FontSize="12" LineHeight="17" />
+                            </Border>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsOpen" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard Timeline.DesiredFrameRate="{x:Static helpers:WindowHelper.PrimaryRefreshRate}">
+                                            <DoubleAnimation Storyboard.TargetName="B" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.14" />
+                                            <DoubleAnimation Storyboard.TargetName="B" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="4" To="0" Duration="0:0:0.18" EasingFunction="{StaticResource Ease}" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ThinProgress" TargetType="ProgressBar">
+            <Setter Property="Height" Value="4" />
+            <Setter Property="Maximum" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Grid>
+                            <Border x:Name="PART_Track" CornerRadius="2" Background="#34353B" />
+                            <Border x:Name="PART_Indicator" CornerRadius="2" Background="{StaticResource Accent}" HorizontalAlignment="Left" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Window.Resources>
 
     <DockPanel x:Name="Shell">
@@ -211,6 +270,60 @@
         <StackPanel DockPanel.Dock="Top" Margin="22 6 22 14">
             <TextBlock Text="Aether" FontSize="22" FontWeight="Bold" />
             <TextBlock Text="Monster Hunter: World overlay. Settings apply instantly." Foreground="{StaticResource Muted}" Margin="0 3 0 0" TextWrapping="Wrap" />
+
+            <!--Update card: downloading, ready, just updated, or failed-->
+            <Border x:Name="UpdateCard" Margin="0 14 0 0" Padding="14 12" CornerRadius="10" Background="#1FE2C27A" BorderBrush="#59E2C27A" BorderThickness="1"
+                    DataContext="{x:Static viewModels:UpdateViewModel.Instance}"
+                    Visibility="{Binding IsVisible, Converter={StaticResource A_Converter_BoolToVisibility}}">
+                <StackPanel>
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="12 0 0 0">
+                            <Button Content="{Binding DismissLabel}" Command="{Binding DismissCommand}" Style="{StaticResource PillButton}" Margin="0 0 8 0"
+                                    Visibility="{Binding CanDismiss, Converter={StaticResource A_Converter_BoolToVisibility}}" />
+                            <Button Content="Try again" Command="{Binding RetryCommand}" Style="{StaticResource PillButton}" Background="{StaticResource Accent}" Foreground="#1C1400"
+                                    Visibility="{Binding CanRetry, Converter={StaticResource A_Converter_BoolToVisibility}}" />
+                            <Button Content="Restart now" Command="{Binding RestartCommand}" Style="{StaticResource PillButton}" Background="{StaticResource Accent}" Foreground="#1C1400"
+                                    Visibility="{Binding CanRestart, Converter={StaticResource A_Converter_BoolToVisibility}}" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding Message}" Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0 2 0 0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Message}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </DockPanel>
+                    <ProgressBar Style="{StaticResource ThinProgress}" Value="{Binding Progress, Mode=OneWay}" Margin="0 10 0 0"
+                                 Visibility="{Binding IsDownloading, Converter={StaticResource A_Converter_BoolToVisibility}}" />
+                    <StackPanel Margin="0 10 0 0" Visibility="{Binding HasNotes, Converter={StaticResource A_Converter_BoolToVisibility}}">
+                        <TextBlock Text="WHAT'S NEW" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource Accent}" Margin="0 0 0 4" />
+                        <ScrollViewer MaxHeight="140" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding NoteSections}" Margin="0 0 8 0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0 0 0 10">
+                                            <TextBlock x:Name="Heading" Text="{Binding Version}" FontWeight="SemiBold" FontSize="12.5" Margin="0 0 0 2" />
+                                            <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="12" LineHeight="18" Foreground="#D8D0BE" />
+                                        </StackPanel>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding Version}" Value="{x:Null}">
+                                                <Setter TargetName="Heading" Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
             <!--Layout editing: the button and holding Left Alt in game do the same thing-->
             <Border Margin="0 14 0 0" Padding="14 12" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1"
@@ -283,7 +396,8 @@
                             </ItemsControl.GroupStyle>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type core:Setting}">
-                                    <Border x:Name="Row" Margin="0 0 0 4" Padding="14 10" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
+                                    <Border x:Name="Row" Margin="0 0 0 4" Padding="14 10" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1"
+                                            ToolTip="{Binding Description}" ToolTipService.InitialShowDelay="350" ToolTipService.BetweenShowDelay="80" ToolTipService.ShowDuration="60000">
                                         <DockPanel>
                                             <CheckBox x:Name="Switch" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="16 0 0 0" Style="{StaticResource Switch}"
                                                       IsChecked="{Binding Value, Mode=TwoWay}" Command="{Binding TriggerAction}" />
@@ -292,11 +406,13 @@
                                             <StackPanel VerticalAlignment="Center">
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                                    <TextBlock x:Name="InfoMark" Text="&#xE946;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Margin="7 1 0 0"
+                                                               VerticalAlignment="Center" Foreground="{StaticResource Muted}" Opacity="0.55" />
                                                     <Border x:Name="RestartChip" Margin="8 0 0 0" Padding="6 1" CornerRadius="4" Background="#2A2B30" Visibility="Collapsed" VerticalAlignment="Center">
                                                         <TextBlock Text="Restart" FontSize="10.5" Foreground="{StaticResource Muted}" />
                                                     </Border>
                                                 </StackPanel>
-                                                <TextBlock x:Name="Description" Text="{Binding Description}" Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0 2 0 0" />
+                                                <TextBlock x:Name="Detail" Text="{Binding Detail}" Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0 2 0 0" />
                                             </StackPanel>
                                         </DockPanel>
                                     </Border>
@@ -311,9 +427,15 @@
                                         <DataTrigger Binding="{Binding RequiresRestart}" Value="True">
                                             <Setter TargetName="RestartChip" Property="Visibility" Value="Visible" />
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
-                                            <Setter TargetName="Description" Property="Visibility" Value="Collapsed" />
+                                        <DataTrigger Binding="{Binding Detail}" Value="{x:Null}">
+                                            <Setter TargetName="Detail" Property="Visibility" Value="Collapsed" />
                                         </DataTrigger>
+                                        <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                            <Setter TargetName="InfoMark" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                        <Trigger SourceName="Row" Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="InfoMark" Property="Opacity" Value="1" />
+                                        </Trigger>
                                     </DataTemplate.Triggers>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

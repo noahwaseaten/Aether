@@ -6,7 +6,15 @@ namespace SmartHunter.Core
     {
         public string Group { get; }
         public string Name { get; }
+        // Shown in the row's tooltip
         public string Description { get; }
+        // Shown under the name: a current value like a folder path, not an explanation
+        string m_Detail;
+        public string Detail
+        {
+            get { return m_Detail; }
+            set { SetProperty(ref m_Detail, value); }
+        }
         public bool RequiresRestart { get; }
         public bool IsToggle { get; }
         string m_ActionLabel;

@@ -17,9 +17,15 @@ namespace SmartHunter.Ui.Controls
 
         protected override void OnTextChanged(TextChangedEventArgs e)
         {
+            // Layout hasn't caught up with the new text yet, so these still describe the old view
+            bool wasAtEnd = VerticalOffset + ViewportHeight >= ExtentHeight - 2;
             base.OnTextChanged(e);
-            CaretIndex = Text.Length;
-            ScrollToEnd();
+            // Follow new lines only when already at the bottom; don't yank someone reading further up
+            if (wasAtEnd)
+            {
+                CaretIndex = Text.Length;
+                ScrollToEnd();
+            }
         }
     }
 }

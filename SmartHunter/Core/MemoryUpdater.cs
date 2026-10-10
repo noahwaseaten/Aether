@@ -146,7 +146,15 @@ namespace SmartHunter.Core
                                 Log.WriteLine("Not starting the game (\"Start the game with Aether\" is off)");
                                 return true;
                             }
-                            Log.WriteLine("Start MHW.");
+                            // An update found at startup restarts Aether; launching first could start the game twice
+                            if (!UpdateViewModel.Instance.TryReleaseGameLaunch())
+                            {
+                                if (!m_LoggedUpdateWait)
+                                    Log.WriteLine("Starting the game once the update check is done");
+                                m_LoggedUpdateWait = true;
+                                return false;
+                            }
+                            Log.WriteLine("Starting the game");
                             try
                             {
                                 Process.Start(new ProcessStartInfo
@@ -345,6 +353,7 @@ namespace SmartHunter.Core
         }
 
         DateTime m_ScanFailedTime;
+        bool m_LoggedUpdateWait;
 
         void ResetScans()
         {

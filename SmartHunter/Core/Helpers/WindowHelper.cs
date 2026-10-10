@@ -58,6 +58,61 @@ namespace SmartHunter.Core.Helpers
             }
         }
 
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        struct DEVMODE
+        {
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string dmDeviceName;
+            public short dmSpecVersion, dmDriverVersion, dmSize, dmDriverExtra;
+            public int dmFields, dmPositionX, dmPositionY, dmDisplayOrientation, dmDisplayFixedOutput;
+            public short dmColor, dmDuplex, dmYResolution, dmTTOption, dmCollate;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string dmFormName;
+            public short dmLogPixels;
+            public int dmBitsPerPel, dmPelsWidth, dmPelsHeight, dmDisplayFlags, dmDisplayFrequency;
+            public int dmICMMethod, dmICMIntent, dmMediaType, dmDitherType, dmReserved1, dmReserved2, dmPanningWidth, dmPanningHeight;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        struct MONITORINFOEX
+        {
+            public int cbSize;
+            public int MonitorLeft, MonitorTop, MonitorRight, MonitorBottom, WorkLeft, WorkTop, WorkRight, WorkBottom;
+            public int dwFlags;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string szDevice;
+        }
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        static extern bool EnumDisplaySettingsW(string deviceName, int modeNum, ref DEVMODE devMode);
+        [DllImport("user32.dll")]
+        static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        static extern bool GetMonitorInfoW(IntPtr monitor, ref MONITORINFOEX info);
+
+        // Refresh rate of the monitor showing this element (the primary one if it isn't on screen yet), so the
+        // Aether window animates at 60, 144 or 240 fps to match. 60 when Windows won't say.
+        public static int RefreshRate(System.Windows.Media.Visual visual = null)
+        {
+            try
+            {
+                string device = null;
+                var source = visual == null ? null : PresentationSource.FromVisual(visual) as HwndSource;
+                if (source != null)
+                {
+                    var info = new MONITORINFOEX { cbSize = Marshal.SizeOf(typeof(MONITORINFOEX)) };
+                    if (GetMonitorInfoW(MonitorFromWindow(source.Handle, 2 /* MONITOR_DEFAULTTONEAREST */), ref info))
+                        device = info.szDevice;
+                }
+                var mode = new DEVMODE { dmSize = (short)Marshal.SizeOf(typeof(DEVMODE)) };
+                if (EnumDisplaySettingsW(device, -1 /* ENUM_CURRENT_SETTINGS */, ref mode) && mode.dmDisplayFrequency > 1)
+                    return Math.Min(Math.Max(mode.dmDisplayFrequency, 30), 500);
+            }
+            catch (Exception)
+            {
+            }
+            return 60;
+        }
+
+        public static int PrimaryRefreshRate { get; } = RefreshRate();
+
         public static void SetTopMostSelectable(Window window)
         {
             if (!TryGetHandle(window, out var handle))
