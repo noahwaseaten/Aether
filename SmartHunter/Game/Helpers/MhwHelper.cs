@@ -534,6 +534,9 @@ namespace SmartHunter.Game.Helpers
             if (p.Any())
             {
                 var currentPlayer = p.First();
+                // In town the list holds leftovers and garbage that read as stray 2s and 5s. Still mark them as
+                // seen, so the leftovers aren't counted once the quest starts either.
+                bool inTown = DiscordPresence.IsInTown(process);
                 ulong startOfList = damageOnScreenPtr + 0x2900;
                 ulong currentItem = startOfList;
                 for (int i = 0; i < DataOffsets.PlayerDamage.MaxOnScreenDamages; i++)
@@ -547,8 +550,10 @@ namespace SmartHunter.Game.Helpers
                         expeditionDamageChecker[i, 1] = id2;
 
                         int value = MemoryHelper.Read<int>(process, currentItem + 0x34);
-
-                        currentPlayer.Damage += value;
+                        if (!inTown && value > 0 && value < 100000)
+                        {
+                            currentPlayer.Damage += value;
+                        }
                     }
                     currentItem += 0x90;
                 }
