@@ -99,6 +99,15 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   those files breaks the images for every installed copy. It uses Discord's verified MHW app id. Buttons are links
   only and other people see them, not you. "Ask to Join" was ruled out: Aether can't join a game session for the player.
 - The clipboard can be held by another app, and `Clipboard.SetText` then throws. Use the `CopyToClipboard` wrapper.
+- On expeditions the game's quest roster (team widget names) can leave a slot blank, seen for your own. Without your
+  name in the team list, Aether never sent your damage to the party. Blank slots fall back to the party struct
+  (`MhwHelper.PartyMemberName`).
+- Party sync uses one shared `HttpClient` with a short timeout (`ServerManager`). A client per request plus the 100 s
+  default timeout let one stuck reply stall sync for over a minute.
+- Before the game has your player name, its session ids are placeholders every copy shares. Don't sync until the name is read.
+- Widget placement is saved on every drag and resize (`WidgetWindow.PlacementChanged`), not only when edit mode ends.
+- Routine sync calls (pull, push, damage) aren't logged one by one: they filled the log and pushed out what mattered.
+  Past sessions' logs are kept in `Logs\`.
 
 ## UI conventions (`Ui/Windows/ConsoleWindow.xaml`, `SettingsViewModel.cs`)
 
@@ -107,3 +116,5 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
 - Colors: background `#111214`, surface `#1A1B1E`, accent gold `#E2C27A`, text `#F3EDE0`, muted `#A39C8C`.
   Overlay widget styles live in `Ui/Resources/Default.xaml`.
 - Write user-facing text plainly: say what happens and what the player can do, and no stack traces in the UI.
+- When something the player relies on fails, call `Problems.Report(key, text)` (`Core/Problems.cs`) as well as
+  logging it. It shows in a card in the Aether window. Call `Problems.Clear(key)` once it works again.
