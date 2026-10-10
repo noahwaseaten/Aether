@@ -51,6 +51,9 @@ namespace SmartHunter.Game.Data
         public bool IsLow { get { return m_IsLow; } set { SetProperty(ref m_IsLow, value); } }
 
         string m_Key;
+        string m_WeaponKey;
+        int m_ObservedCap;
+        int m_LastCurrent = -1;
 
         public void Update(int[] thresholds, int current, int cap)
         {
@@ -61,6 +64,26 @@ namespace SmartHunter.Game.Data
             {
                 IsAvailable = false;
                 return;
+            }
+
+            // The cap read from memory can count sharpness this weapon only reaches with more Handicraft, which made
+            // a green-capped weapon say "sharpen" on green. Sharpening (or a quest starting) refills to the real
+            // maximum, so the highest value seen right after a refill is the cap that counts.
+            string weaponKey = string.Join(",", thresholds);
+            if (weaponKey != m_WeaponKey)
+            {
+                m_WeaponKey = weaponKey;
+                m_ObservedCap = 0;
+                m_LastCurrent = -1;
+            }
+            if (m_LastCurrent >= 0 && current > m_LastCurrent)
+            {
+                m_ObservedCap = Math.Max(m_ObservedCap, current);
+            }
+            m_LastCurrent = current;
+            if (m_ObservedCap > thresholds[0])
+            {
+                cap = m_ObservedCap;
             }
 
             int top = TopLevel(thresholds, cap);

@@ -221,6 +221,25 @@ namespace SmartHunter.Game.Helpers
             return offsets != null && offsets.Length > 0 ? offsets : null;
         }
 
+        // A real debuff counts down. A timer frozen at one value (Blastscourge's slot sat at 1 s forever with some
+        // gear) isn't an active debuff. ponytail: also hides a debuff while the solo pause menu freezes timers.
+        static readonly Dictionary<int, (float Value, DateTime Since)> s_DebuffTimers = new Dictionary<int, (float, DateTime)>();
+        internal static bool IsTimerStuck(int index, float? timer, DateTime? now = null)
+        {
+            var time = now ?? DateTime.Now;
+            if (timer == null || timer <= 0)
+            {
+                s_DebuffTimers.Remove(index);
+                return false;
+            }
+            if (!s_DebuffTimers.TryGetValue(index, out var last) || last.Value != timer.Value)
+            {
+                s_DebuffTimers[index] = (timer.Value, time);
+                return false;
+            }
+            return (time - last.Since).TotalSeconds > 2;
+        }
+
         public static void UpdatePlayerWidget(Process process, ulong baseAddress, ulong equipmentAddress, ulong weaponAddress)
         {
             for (int index = 0; index < ConfigHelper.PlayerData.Values.StatusEffects.Length; ++index)
@@ -301,6 +320,11 @@ namespace SmartHunter.Game.Helpers
                         timer = 0;
                         allConditionsPassed = false;
                     }
+                }
+
+                if (statusEffectConfig.GroupId == "Debuff" && IsTimerStuck(index, timer))
+                {
+                    allConditionsPassed = false;
                 }
 
                 OverlayViewModel.Instance.PlayerWidget.Context.UpdateAndGetPlayerStatusEffect(index, timer, allConditionsPassed);

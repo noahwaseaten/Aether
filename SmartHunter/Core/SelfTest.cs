@@ -45,6 +45,22 @@ namespace SmartHunter.Core
             sharpness.Update(new[] { 90, 0, 0, 0, 0, 0, 0 }, 50, 90);
             Check(!sharpness.IsAvailable, "a lone red band is rejected");
 
+            // A weapon that tops out at green, with a cap read from memory that wrongly reaches into blue
+            var greenCapped = new Sharpness();
+            greenCapped.Update(new[] { 50, 100, 150, 200, 250, 0, 0 }, 120, 250);
+            greenCapped.Update(new[] { 50, 100, 150, 200, 250, 0, 0 }, 200, 250); // sharpened: refills to the real max
+            greenCapped.Update(new[] { 50, 100, 150, 200, 250, 0, 0 }, 190, 250);
+            Check(greenCapped.LevelName == "Green" && !greenCapped.NeedsSharpening, "a green-capped weapon on green doesn't ask to sharpen");
+            greenCapped.Update(new[] { 50, 100, 150, 200, 250, 0, 0 }, 140, 250);
+            Check(greenCapped.NeedsSharpening, "dropping to yellow on that weapon still asks to sharpen");
+
+            // Debuff timers: a frozen value is hidden, a ticking one isn't
+            var t0 = new DateTime(2026, 1, 1);
+            MhwHelper.IsTimerStuck(-1, 1f, t0);
+            Check(MhwHelper.IsTimerStuck(-1, 1f, t0.AddSeconds(3)), "a debuff timer stuck at 1 s is hidden");
+            MhwHelper.IsTimerStuck(-2, 30f, t0);
+            Check(!MhwHelper.IsTimerStuck(-2, 27f, t0.AddSeconds(3)), "a counting-down debuff stays visible");
+
             // Rage: the stored value is time left, so a calm monster reads exactly max
             int rage = Array.FindIndex(ConfigHelper.MonsterData.Values.StatusEffects, s => s.GroupId == "Rage");
             var monster = new Monster(1, "em001_00", 1000, 1000, 1, 1);
