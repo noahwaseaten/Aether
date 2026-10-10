@@ -921,7 +921,9 @@ namespace SmartHunter.Game.Helpers
         {
             var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
             var context = OverlayViewModel.Instance.MonsterWidget.Context;
-            if (!game.IsValid || !game.IsPlayerOnline() || !game.IsPlayerInLobby() || game.IsPlayerAlone() || !context.Monsters.Any())
+            // Only live monsters count: the host shares only those, so after the last kill their data stops and the
+            // quest's end looked like "isn't sharing data"
+            if (!game.IsValid || !game.IsPlayerOnline() || !game.IsPlayerInLobby() || game.IsPlayerAlone() || !context.Monsters.Any(m => m.IsAlive))
             {
                 s_ClientSince = DateTime.MinValue;
                 return;
