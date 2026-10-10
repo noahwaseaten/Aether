@@ -210,12 +210,14 @@ namespace SmartHunter.Game.Config
             new StatusEffectConfig("Weapon", "LOC_WEAPON_SWITCH_AXE_AMPED_STATE", (uint)StatusEffectConfig.MemorySource.Weapon, "1FD4", WeaponType.SWITCH_AXE),
             new StatusEffectConfig("Weapon", "LOC_WEAPON_HAMMER_POWER_CHARGE", (uint)StatusEffectConfig.MemorySource.Weapon, null, WeaponType.HAMMER, new MemoryConditionConfig((byte)1, "1FC4"))
             */
-            //Working
+            // Weapon buffs: index × 4 = offset into HunterPie v2's World weapon structures (MHWChargeBladeStructure etc.).
+            // MhwHelper.WeaponTimerSeconds adds Power Prolonger and converts the Long Sword's spirit level fraction.
             new StatusEffectConfig("Weapon", "LOC_WEAPON_CHARGE_BLADE_SHIELD_CHARGE", (uint)WeaponType.CHARGE_BLADE, indexToHexStrNoOffset(2270)),
             new StatusEffectConfig("Weapon", "LOC_WEAPON_CHARGE_BLADE_BLADE_CHARGE", (uint)WeaponType.CHARGE_BLADE, indexToHexStrNoOffset(2271)),
-            new StatusEffectConfig("Weapon", "LOC_WEAPON_CHARGE_BLADE_PHIAL_EXPIRES", (uint)WeaponType.CHARGE_BLADE, indexToHexStrNoOffset(2332)),
-            new StatusEffectConfig("Weapon", "LOC_WEAPON_LONGSWORD_SPIRIT_GAUGE_REGEN_LAI_SLASH",  (uint)WeaponType.LONG_SWORD, indexToHexStrNoOffset(2269)),
-            new StatusEffectConfig("Weapon", "LOC_WEAPON_LONGSWORD_STEADY_SPIRIT_LEVEL",  (uint)WeaponType.LONG_SWORD, indexToHexStrNoOffset(2268)),
+            new StatusEffectConfig("Weapon", "LOC_WEAPON_CHARGE_BLADE_PHIAL_EXPIRES", (uint)WeaponType.CHARGE_BLADE, indexToHexStrNoOffset(2332)), // 0x2470: Savage Axe
+            new StatusEffectConfig("Weapon", "LOC_WEAPON_LONGSWORD_STEADY_SPIRIT_LEVEL", (uint)WeaponType.LONG_SWORD, indexToHexStrNoOffset(2269)), // 0x2374: fraction of the level's time
+            new StatusEffectConfig("Weapon", "LOC_WEAPON_LONGSWORD_SPIRIT_GAUGE_REGEN_LAI_SLASH", (uint)WeaponType.LONG_SWORD, indexToHexStrNoOffset(2270)), // 0x2378
+            new StatusEffectConfig("Weapon", "LOC_WEAPON_LONGSWORD_SPIRIT_GAUGE_REGEN_HELM_BREAKER", (uint)WeaponType.LONG_SWORD, indexToHexStrNoOffset(2274)), // 0x2388
 
             new StatusEffectConfig("Weapon", "LOC_WEAPON_INSECT_GLAIVE_ATTACK", (uint)WeaponType.INSECT_GLAIVE, indexToHexStrNoOffset(2266)),
             new StatusEffectConfig("Weapon", "LOC_WEAPON_INSECT_GLAIVE_SPEED", (uint)WeaponType.INSECT_GLAIVE, indexToHexStrNoOffset(2267)),

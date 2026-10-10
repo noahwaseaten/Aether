@@ -1107,41 +1107,12 @@
             <Grid x:Name="Layer">
             <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" Opacity="{Binding ShadeOpacity, Source={x:Static viewModels:OverlayViewModel.Instance}}" OpacityMask="{StaticResource B_ScrimFeather}" />
             <StackPanel x:Name="Body" Effect="{StaticResource A_Effect_Halo}" MinWidth="200" Margin="18 14 44 14">
-                <!--Quest clock and meal timer on one line; each part only while it has a value-->
+                <!--Quest clock: elapsed / limit, only during a quest-->
                 <StackPanel x:Name="HuntLine" Orientation="Horizontal" Margin="0 0 0 8">
-                    <StackPanel x:Name="ClockPart" Orientation="Horizontal" Margin="0 0 14 0">
-                        <TextBlock Text="{Binding Hunt.Clock}" Style="{StaticResource T_Value}" MinWidth="0" />
-                        <TextBlock Text="{Binding Hunt.ClockLimit}" Style="{StaticResource T_Muted}" Margin="5 0 0 0" VerticalAlignment="Bottom" />
-                    </StackPanel>
-                    <StackPanel x:Name="MealPart" Orientation="Horizontal">
-                        <TextBlock Text="MEAL" Style="{StaticResource T_Label}" Margin="0 0 5 0" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding Hunt.Meal}" Style="{StaticResource T_Value}" MinWidth="0" />
-                    </StackPanel>
+                    <TextBlock Text="{Binding Hunt.Clock}" Style="{StaticResource T_Value}" MinWidth="0" />
+                    <TextBlock Text="{Binding Hunt.ClockLimit}" Style="{StaticResource T_Muted}" Margin="5 0 0 0" VerticalAlignment="Bottom" />
                 </StackPanel>
                 <ContentControl Content="{Binding Sharpness}" />
-                <!--Weapon timers the HUD only hints at: colour dots where the game uses colour, a short label otherwise-->
-                <ItemsControl x:Name="GaugeLine" ItemsSource="{Binding Hunt.Gauge}" Margin="0 0 0 8">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="0 0 14 0">
-                                <Ellipse x:Name="Dot" Width="8" Height="8" Fill="{Binding Dot}" Margin="0 0 5 0" VerticalAlignment="Center" />
-                                <TextBlock x:Name="GaugeLabel" Text="{Binding Label}" Style="{StaticResource T_Label}" Margin="0 0 5 0" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding Time}" Style="{StaticResource T_Value}" MinWidth="0" />
-                            </StackPanel>
-                            <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding Dot}" Value="{x:Null}">
-                                    <Setter TargetName="Dot" Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding Label}" Value="{x:Null}">
-                                    <Setter TargetName="GaugeLabel" Property="Visibility" Value="Collapsed" />
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
                 <ItemsControl x:Name="StatusEffectsControl" ItemsSource="{Binding Source={StaticResource CollectionViewSource}}" Style="{StaticResource A_Style_ItemsControl_PlayerStatusEffects}" />
             </StackPanel>
             </Grid>
@@ -1151,20 +1122,7 @@
                 <Setter TargetName="StatusEffectsControl" Property="ItemsSource" Value="{Binding StatusEffects}" />
             </Trigger>
             <DataTrigger Binding="{Binding Hunt.Clock}" Value="{x:Null}">
-                <Setter TargetName="ClockPart" Property="Visibility" Value="Collapsed" />
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Hunt.Meal}" Value="{x:Null}">
-                <Setter TargetName="MealPart" Property="Visibility" Value="Collapsed" />
-            </DataTrigger>
-            <MultiDataTrigger>
-                <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding Hunt.Clock}" Value="{x:Null}" />
-                    <Condition Binding="{Binding Hunt.Meal}" Value="{x:Null}" />
-                </MultiDataTrigger.Conditions>
                 <Setter TargetName="HuntLine" Property="Visibility" Value="Collapsed" />
-            </MultiDataTrigger>
-            <DataTrigger Binding="{Binding Hunt.Gauge.Count}" Value="0">
-                <Setter TargetName="GaugeLine" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
             <!--Placed on the right half of the screen: mirror the fade-->
             <DataTrigger Binding="{Binding Widget.IsRightAligned, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="True">

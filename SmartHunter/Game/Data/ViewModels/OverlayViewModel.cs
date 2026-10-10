@@ -204,13 +204,6 @@ namespace SmartHunter.Game.Data.ViewModels
             PlayerWidget.Context.Sharpness.Update(new[] { 60, 100, 150, 200, 260, 0, 0 }, 230, 260);
             PlayerWidget.Context.Hunt.Clock = "12:34";
             PlayerWidget.Context.Hunt.ClockLimit = "/ 50:00";
-            PlayerWidget.Context.Hunt.Meal = "21:40";
-            PlayerWidget.Context.Hunt.SetGauge(new[]
-            {
-                new GaugeTimer { Dot = HuntInfo.Frozen(0xD9, 0x4A, 0x45), Time = "0:42" },
-                new GaugeTimer { Dot = HuntInfo.Frozen(0xF2, 0xF2, 0xF2), Time = "0:42" },
-                new GaugeTimer { Dot = HuntInfo.Frozen(0xEE, 0x8A, 0x2E), Time = "0:31" },
-            });
 
             CalloutWidget.Context.Callouts.Add(new MonsterCallout { Name = "Rathalos", IsCapturable = true, IsEnraged = true });
             CalloutWidget.Context.Callouts.Add(new MonsterCallout { Name = "Pukei-Pukei", IsExhausted = true });

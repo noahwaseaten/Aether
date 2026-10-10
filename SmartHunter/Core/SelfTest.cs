@@ -68,6 +68,8 @@ namespace SmartHunter.Core
             // Hunt extras: m:ss, and the quest limit rounded up to the game's known limits
             Check(HuntInfo.Format(65.2f) == "1:06" && HuntInfo.Format(0.5f) == "0:01" && HuntInfo.Format(-1) == null, "timers format as m:ss");
             Check(HuntInfo.QuestLimitSeconds(179990) == 3000 && HuntInfo.QuestLimitSeconds(54000) == 900, "quest limits round up to 50 and 15 minutes");
+            Check(MhwHelper.PowerProlongerMultiplier(0, WeaponType.CHARGE_BLADE) == 1 && Math.Abs(MhwHelper.PowerProlongerMultiplier(3, WeaponType.CHARGE_BLADE) - 1.4f) < 0.001f
+                && Math.Abs(MhwHelper.PowerProlongerMultiplier(3, WeaponType.SWITCH_AXE) - 2.0f) < 0.001f, "Power Prolonger matches HunterPie's formula");
 
             // Blastscourge is a flagged meter, not a timer (the "1 s forever" bug)
             var blastscourge = new PlayerDataConfig().StatusEffects.First(s => s.NameStringId == "LOC_STATUS_EFFECT_BLASTSCOURGE");

@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows.Media;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SmartHunter.Core;
@@ -299,6 +298,10 @@ namespace SmartHunter.Game.Helpers
                     {
                         long timerOffset = timerOffsets[0];
                         timer = MemoryHelper.Read<float>(process, (ulong)((long)sourceAddress + timerOffset));
+                        if (statusEffectConfig.GroupId == "Weapon" && timer > 0)
+                        {
+                            timer = WeaponTimerSeconds(process, statusEffectConfig, sourceAddress, timer.Value);
+                        }
                     }
 
                     if (timer <= 0)
@@ -454,11 +457,7 @@ namespace SmartHunter.Game.Helpers
             sharpness.Update(thresholds, current, cap);
         }
 
-        // Quest clock, meal timer and weapon timers for the Buffs widget (HunterPie v2's World map, build 421810)
-        static readonly Brush s_Red = HuntInfo.Frozen(0xD9, 0x4A, 0x45), s_White = HuntInfo.Frozen(0xF2, 0xF2, 0xF2),
-            s_Orange = HuntInfo.Frozen(0xEE, 0x8A, 0x2E), s_Yellow = HuntInfo.Frozen(0xEC, 0xCF, 0x32);
-        static readonly float[] s_SpiritLevelSeconds = { 0, 200, 140, 70 };
-
+        // Quest clock for the Buffs widget (HunterPie v2's World map, build 421810)
         public static void UpdateHuntInfo(Process process)
         {
             const ulong Base = 0x140000000;
@@ -473,57 +472,36 @@ namespace SmartHunter.Game.Helpers
             bool clockOk = inQuest && limit > 0 && left >= 0 && left <= limit;
             hunt.Clock = clockOk ? HuntInfo.Format(limit - left) : null;
             hunt.ClockLimit = clockOk ? "/ " + HuntInfo.Format(limit) : null;
-
-            // Meal: the canteen's skill timer
-            ulong canteen = MemoryHelper.ReadMultiLevelPointer(false, process, Base + 0x04F87C30, 0x0);
-            float meal = canteen != 0 ? MemoryHelper.Read<float>(process, canteen + 0xE4) : 0;
-            hunt.Meal = meal > 0 && meal < 3 * 3600 ? HuntInfo.Format(meal) : null;
-
-            hunt.SetGauge(ReadWeaponTimers(process, Base));
         }
 
-        static List<GaugeTimer> ReadWeaponTimers(Process process, ulong Base)
+        // Weapon buffs in the buff list (HunterPie v2's World weapon structures). The game stores them without Power
+        // Prolonger, and the Long Sword's spirit level timer as a 0-1 fraction of that level's duration.
+        static readonly float[] s_SpiritLevelSeconds = { 0, 200, 140, 70 };
+        static float WeaponTimerSeconds(Process process, StatusEffectConfig config, ulong weaponAddress, float raw)
         {
-            var timers = new List<GaugeTimer>();
-            var weaponType = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.EquippedWeaponType;
-            ulong mechanics = MemoryHelper.ReadMultiLevelPointer(false, process, Base + 0x050139A0, 0x50, 0x76B0, 0x0);
-            if (mechanics == 0 || DiscordPresence.IsInTown(process))
-                return timers;
+            var weaponType = (WeaponType)config.Source;
+            if (config.NameStringId == "LOC_WEAPON_LONGSWORD_STEADY_SPIRIT_LEVEL")
+            {
+                int level = MemoryHelper.Read<int>(process, weaponAddress + 0x2370);
+                raw = level >= 1 && level <= 3 && raw <= 1 ? raw * s_SpiritLevelSeconds[level] : 0;
+            }
+            else if (config.NameStringId.StartsWith("LOC_WEAPON_LONGSWORD_SPIRIT_GAUGE_REGEN"))
+            {
+                return raw; // regen after Iai Slash / Helm Breaker isn't a Power Prolonger buff
+            }
 
-            // Weapon buffs last longer with Power Prolonger (gear skill 0x35); the game stores the unextended time
-            ulong skills = MemoryHelper.ReadMultiLevelPointer(false, process, Base + 0x050139A0, 0x50, 0x7D20, 0x10, 0x78);
+            ulong skills = MemoryHelper.ReadMultiLevelPointer(false, process, 0x140000000 + 0x050139A0, 0x50, 0x7D20, 0x10, 0x78);
             int prolonger = skills != 0 ? Math.Min(3, (int)MemoryHelper.Read<byte>(process, skills + 0x35 * 24 + 8)) : 0;
-            float multiplier = prolonger <= 0 ? 1 : 1 + (float)Math.Pow(2, prolonger - 1) / 10f
-                + (weaponType == WeaponType.SWITCH_AXE || weaponType == WeaponType.DUAL_BLADES ? 2f * prolonger / 10f : 0);
+            return raw * PowerProlongerMultiplier(prolonger, weaponType);
+        }
 
-            void Add(float seconds, Brush dot, string label)
-            {
-                seconds *= multiplier;
-                if (seconds > 0 && seconds < 600)
-                    timers.Add(new GaugeTimer { Dot = dot, Label = label, Time = HuntInfo.Format(seconds) });
-            }
-
-            switch (weaponType)
-            {
-                case WeaponType.CHARGE_BLADE:
-                    Add(MemoryHelper.Read<float>(process, mechanics + 0x2378), null, "Shield");
-                    Add(MemoryHelper.Read<float>(process, mechanics + 0x237C), null, "Sword");
-                    break;
-                case WeaponType.INSECT_GLAIVE:
-                    Add(MemoryHelper.Read<float>(process, mechanics + 0x2368), s_Red, null);
-                    Add(MemoryHelper.Read<float>(process, mechanics + 0x236C), s_White, null);
-                    Add(MemoryHelper.Read<float>(process, mechanics + 0x2370), s_Orange, null);
-                    break;
-                case WeaponType.LONG_SWORD:
-                    int level = MemoryHelper.Read<int>(process, mechanics + 0x2370);
-                    if (level >= 1 && level <= 3)
-                        Add(MemoryHelper.Read<float>(process, mechanics + 0x2374) * s_SpiritLevelSeconds[level], level == 1 ? s_White : level == 2 ? s_Yellow : s_Red, null);
-                    break;
-                case WeaponType.SWITCH_AXE:
-                    Add(MemoryHelper.Read<float>(process, mechanics + 0x2364), null, "Amped");
-                    break;
-            }
-            return timers;
+        // HunterPie's MHWGameUtils.GetPowerProlongerMultiplier
+        internal static float PowerProlongerMultiplier(int level, WeaponType weaponType)
+        {
+            if (level <= 0)
+                return 1;
+            float multiplier = 1 + (float)Math.Pow(2, level - 1) / 10f;
+            return weaponType == WeaponType.SWITCH_AXE || weaponType == WeaponType.DUAL_BLADES ? multiplier + 2f * level / 10f : multiplier;
         }
 
         private static Player player;
