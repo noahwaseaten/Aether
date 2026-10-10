@@ -77,8 +77,6 @@ namespace SmartHunter.Core.Helpers
             Try("Start Menu shortcut", () => EnsureShortcut(StartMenuShortcut));
             Try("Apps entry", WriteUninstallEntry);
             Try("startup entry", AutoStart.RefreshPath);
-            // Windows' "downloaded from the internet" mark: without this it can warn on every start
-            Try("download mark", () => File.Delete(Exe + ":Zone.Identifier"));
             // The old installer's uninstall script; Settings > Apps does that now
             Try("old uninstaller", () => File.Delete(Path.Combine(FileContainer.InstallFolder, "Uninstall Aether.cmd")));
         }
@@ -91,18 +89,11 @@ namespace SmartHunter.Core.Helpers
 
         static void EnsureShortcut(string path)
         {
-            var shellType = Type.GetTypeFromProgID("WScript.Shell");
-            object shell = Activator.CreateInstance(shellType);
-            object link = shellType.InvokeMember("CreateShortcut", BindingFlags.InvokeMethod, null, shell, new object[] { path });
-            var linkType = link.GetType();
-            if (File.Exists(path) && string.Equals((string)linkType.InvokeMember("TargetPath", BindingFlags.GetProperty, null, link, null), Exe, StringComparison.OrdinalIgnoreCase))
+            if (File.Exists(path) && string.Equals(ShellLink.Target(path), Exe, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
-            linkType.InvokeMember("TargetPath", BindingFlags.SetProperty, null, link, new object[] { Exe });
-            linkType.InvokeMember("WorkingDirectory", BindingFlags.SetProperty, null, link, new object[] { Path.GetDirectoryName(Exe) });
-            linkType.InvokeMember("Description", BindingFlags.SetProperty, null, link, new object[] { "Monster Hunter: World overlay" });
-            linkType.InvokeMember("Save", BindingFlags.InvokeMethod, null, link, null);
+            ShellLink.Save(path, Exe, "Monster Hunter: World overlay");
         }
 
         static void WriteUninstallEntry()
@@ -161,21 +152,17 @@ namespace SmartHunter.Core.Helpers
                 TryQuiet(() => { if (Directory.Exists(path)) Directory.Delete(path, true); else File.Delete(path); });
             }
 
-            // A running exe can't delete itself: a hidden command does it once this one has exited
-            string cleanup = hasBackups ? $"del /f /q \"{Exe}\"" : $"rmdir /s /q \"{folder}\"";
-            Process.Start(new ProcessStartInfo("cmd.exe", $"/c timeout /t 2 /nobreak >nul & {cleanup}") { CreateNoWindow = true, UseShellExecute = false, WindowStyle = ProcessWindowStyle.Hidden });
+            // A running exe can't be deleted, but it can be moved: park it in Temp (Windows clears that out) so the folder
+            // can go. No command shell: "runs cmd.exe to delete itself" is what got Aether flagged as malware.
+            TryQuiet(() => File.Move(Exe, Path.Combine(Path.GetTempPath(), "Aether-removed-" + Guid.NewGuid().ToString("N") + ".exe")));
+            if (!hasBackups)
+            {
+                TryQuiet(() => Directory.Delete(folder, true));
+            }
         }
 
-        static bool PointsHere(string shortcut)
-        {
-            if (!File.Exists(shortcut))
-            {
-                return false;
-            }
-            var shellType = Type.GetTypeFromProgID("WScript.Shell");
-            object link = shellType.InvokeMember("CreateShortcut", BindingFlags.InvokeMethod, null, Activator.CreateInstance(shellType), new object[] { shortcut });
-            return string.Equals((string)link.GetType().InvokeMember("TargetPath", BindingFlags.GetProperty, null, link, null), Exe, StringComparison.OrdinalIgnoreCase);
-        }
+        static bool PointsHere(string shortcut) =>
+            File.Exists(shortcut) && string.Equals(ShellLink.Target(shortcut), Exe, StringComparison.OrdinalIgnoreCase);
 
         static void TryQuiet(Action action)
         {

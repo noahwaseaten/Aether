@@ -12,6 +12,9 @@
         <RootNamespace>SmartHunter</RootNamespace>
         <AssemblyTitle>Aether</AssemblyTitle>
         <Product>Aether</Product>
+        <Company>noahwaseaten</Company>
+        <Description>Aether, an overlay for Monster Hunter: World</Description>
+        <Copyright>Copyright © noahwaseaten. Based on SmartHunter (MIT).</Copyright>
         <ApplicationIcon>Ui\Aether.ico</ApplicationIcon>
         <!-- Release tags (v1.2.3) are compared against this; build.ps1 passes -p:Version=... -->
         <Version>1.0.0</Version>
