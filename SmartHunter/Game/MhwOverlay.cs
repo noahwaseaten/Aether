@@ -21,6 +21,12 @@ namespace SmartHunter.Game
         MhwMemoryUpdater m_MemoryUpdater;
         bool m_HideKeyDown;
 
+        // Layout editing needs Left Alt held on its own for a moment: Alt+Tab, Alt+F4 or Alt+Enter must not flip every
+        // widget into edit mode. Any other key while Alt is down marks it as a shortcut and cancels.
+        const int EditHoldMilliseconds = 250;
+        bool m_EditKeyDown, m_EditKeyCombo, m_EditKeyStartedEditing;
+        System.Windows.Threading.DispatcherTimer m_EditHoldTimer;
+
         public MhwOverlay(Window mainWindow, params WidgetWindow[] widgetWindows) : base(mainWindow, widgetWindows)
         {
             ConfigHelper.Main.Loaded += (s, e) => { UpdateWidgetsFromConfig(); OverlayViewModel.Instance.ApplyDisplaySettings(); };
@@ -69,17 +75,72 @@ namespace SmartHunter.Game
 
         protected override void InputReceived(Key key, bool isDown)
         {
-            foreach (var controlKeyPair in ConfigHelper.Main.Values.Keybinds.Where(keybind => keybind.Value == key))
+            var bindings = ConfigHelper.Main.Values.Keybinds.Where(keybind => keybind.Value == key).ToList();
+            // Shift (no snapping) and Ctrl (fine resize) are part of editing, so they don't count as a shortcut
+            bool isEditModifier = key == Key.LeftShift || key == Key.RightShift || key == Key.LeftCtrl || key == Key.RightCtrl;
+            if (isDown && m_EditKeyDown && !isEditModifier && !bindings.Any(b => b.Key == InputControl.ManipulateWidget))
+            {
+                CancelEditHold();
+            }
+            foreach (var controlKeyPair in bindings)
             {
                 HandleControl(controlKeyPair.Key, isDown);
             }
         }
 
+        void HandleEditKey(bool isDown)
+        {
+            if (isDown)
+            {
+                if (m_EditKeyDown)
+                {
+                    return; // key repeat while held
+                }
+                m_EditKeyDown = true;
+                m_EditKeyCombo = false;
+                if (m_EditHoldTimer == null)
+                {
+                    m_EditHoldTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(EditHoldMilliseconds) };
+                    m_EditHoldTimer.Tick += (s, e) =>
+                    {
+                        m_EditHoldTimer.Stop();
+                        if (m_EditKeyDown && !m_EditKeyCombo && !OverlayViewModel.Instance.CanManipulateWindows)
+                        {
+                            OverlayViewModel.Instance.CanManipulateWindows = true;
+                            m_EditKeyStartedEditing = true;
+                        }
+                    };
+                }
+                m_EditHoldTimer.Start();
+                return;
+            }
+
+            m_EditKeyDown = false;
+            m_EditHoldTimer?.Stop();
+            // Only end editing that the key started; the Edit layout button's mode stays on
+            if (m_EditKeyStartedEditing)
+            {
+                OverlayViewModel.Instance.CanManipulateWindows = false;
+                m_EditKeyStartedEditing = false;
+            }
+        }
+
+        void CancelEditHold()
+        {
+            m_EditKeyCombo = true;
+            m_EditHoldTimer?.Stop();
+            if (m_EditKeyStartedEditing)
+            {
+                OverlayViewModel.Instance.CanManipulateWindows = false;
+                m_EditKeyStartedEditing = false;
+            }
+        }
+
         private void HandleControl(InputControl control, bool isDown)
         {
-            if (control == InputControl.ManipulateWidget && OverlayViewModel.Instance.CanManipulateWindows != isDown)
+            if (control == InputControl.ManipulateWidget)
             {
-                OverlayViewModel.Instance.CanManipulateWindows = isDown;
+                HandleEditKey(isDown);
             }
             else if (control == InputControl.HideWidgets)
             {
