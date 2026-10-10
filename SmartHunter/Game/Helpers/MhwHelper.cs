@@ -388,6 +388,13 @@ namespace SmartHunter.Game.Helpers
             }
         }
 
+        static string PartyMemberName(Process process, int index)
+        {
+            ulong root = MemoryHelper.Read<ulong>(process, 0x140000000UL + 0x05013530);
+            ulong member = root == 0 ? 0 : MemoryHelper.Read<ulong>(process, root + 0x1AB0 + (ulong)(index * 0x58));
+            return member == 0 ? "" : MemoryHelper.ReadString(process, member + 0x49, 32);
+        }
+
         // Weapon for each quest member (party struct from HunterPie's map for build 421810)
         public static void UpdatePartyDetails(Process process)
         {
@@ -515,6 +522,18 @@ namespace SmartHunter.Game.Helpers
 
             playerNameOffset = (ulong)DataOffsets.PlayerNameCollection.PlayerNameLength * (ulong)playerIndex;
             name = MemoryHelper.ReadString(process, playerNameCollectionAddress + DataOffsets.PlayerNameCollection.FirstPlayerName + playerNameOffset, (uint)DataOffsets.PlayerNameCollection.PlayerNameLength);
+            if (String.IsNullOrEmpty(name))
+            {
+                // On expeditions the roster can leave a slot blank (seen: your own), and without your name Aether never
+                // sent your damage to the party. The quest party struct has the same slots filled in.
+                name = PartyMemberName(process, playerIndex);
+                ulong roster = playerNameCollectionAddress + DataOffsets.PlayerNameCollection.FirstPlayerName;
+                uint length = (uint)DataOffsets.PlayerNameCollection.PlayerNameLength;
+                if (Enumerable.Range(0, DataOffsets.PlayerDamageCollection.MaxPlayerCount).Any(i => MemoryHelper.ReadString(process, roster + (ulong)(i * (int)length), length) == name))
+                {
+                    name = ""; // already listed in another slot
+                }
+            }
             firstPlayerPtr = playerDamageCollectionAddress + DataOffsets.PlayerDamageCollection.FirstPlayerPtr;
             currentPlayerPtr = firstPlayerPtr + ((ulong)playerIndex * DataOffsets.PlayerDamageCollection.NextPlayerPtr);
             currentPlayerAddress = MemoryHelper.Read<ulong>(process, currentPlayerPtr);
@@ -916,6 +935,7 @@ namespace SmartHunter.Game.Helpers
 
         // Tells you, once per lobby, where the monster numbers come from
         static string s_NoticeKey;
+        static string s_SyncedKey;
         static DateTime s_ClientSince;
         public static void UpdateSyncNotice()
         {
@@ -952,6 +972,12 @@ namespace SmartHunter.Game.Helpers
                 {
                     kind = "synced";
                     text = $"Getting parts and ailments from {host}'s game.";
+                    s_SyncedKey = game.key;
+                }
+                // Once the host's data came through in this lobby, stay quiet: a calm minute with no part changes
+                // looks the same as no data, and the notice flipped back and forth
+                else if (s_SyncedKey == game.key)
+                {
                 }
                 else if (!sync || (DateTime.Now - s_ClientSince).TotalSeconds > 20)
                 {

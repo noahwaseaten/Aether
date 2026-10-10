@@ -251,7 +251,7 @@ namespace SmartHunter.Game
             string weaponIcon = MhwHelper.WeaponIconName(game.EquippedWeaponType);
 
             // Big image: the monster you're fighting (crown size on hover), else the game's art
-            string largeImage = c.LargeImage, largeText = "Monster Hunter: World";
+            string largeImage = c.LargeImage, largeText = "Hunting with Aether";
             if (target != null && HasPortrait(target.Id))
             {
                 largeImage = $"{AssetBase}SmartHunter/Ui/Monsters/{target.Id}.png";
@@ -269,6 +269,7 @@ namespace SmartHunter.Game
                 {
                     large_image = largeImage,
                     large_text = largeText,
+                    large_url = "https://github.com/noahwaseaten/Aether", // clicking the big image opens Aether's page
                     // Small badge: your weapon, with name, rank and weapon on hover
                     small_image = weaponIcon != null ? $"{AssetBase}assets/discord/weapons/{weaponIcon}.png" : null,
                     small_text = weaponIcon != null ? hover : null,

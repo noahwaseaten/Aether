@@ -28,7 +28,9 @@ namespace SmartHunter.Game.Data.WidgetContexts
             CurrentGame.IsValid = true;
             if (ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer && ServerManager.Instance.IsServerOline == 1)
             {
-                if (CurrentGame.IsPlayerOnline() && CurrentGame.IsPlayerInLobby())
+                // No name yet = the game is still starting, and its session ids are placeholders every copy shares:
+                // syncing then put unrelated players in one lobby
+                if (CurrentGame.IsPlayerOnline() && CurrentGame.IsPlayerInLobby() && CurrentGame.CurrentPlayerName.Length > 0)
                 {
                     if (CurrentGame.IsCurrentPlayerLobbyHost() && !wasHost)
                     {
