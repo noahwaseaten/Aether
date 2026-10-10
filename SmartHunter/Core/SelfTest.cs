@@ -36,6 +36,7 @@ namespace SmartHunter.Core
             Check(!AppUpdater.TryParseTag("latest", out _), "non-version tag is ignored");
             Check(AppUpdater.CleanNotes("## Fixes\r\n- **Bold** `code`") == "Fixes\n• Bold code", "release notes lose their markdown");
             Check(AppUpdater.CleanNotes(null) == "No notes for this release.", "empty release notes get a placeholder");
+            Check(AppUpdater.CleanNotes("- Fix\n\n---\n**Which file?**") == "• Fix", "the release page footer isn't shown in the app");
             Check(WindowHelper.RefreshRate() >= 30, "monitor refresh rate is read or falls back to 60");
 
             // Sharpness: a sane table shows, garbage from loading screens doesn't

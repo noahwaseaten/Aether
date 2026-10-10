@@ -174,9 +174,14 @@ namespace SmartHunter.Core.Helpers
         // Release bodies are GitHub markdown; the app shows plain text
         internal static string CleanNotes(string body)
         {
+            body = (body ?? "").Replace("\r", "");
+            // Everything after a "---" line is the release page's footer (which file to download), not news
+            int footer = ("\n" + body).IndexOf("\n---");
+            if (footer >= 0)
+                body = body.Substring(0, footer);
             if (string.IsNullOrWhiteSpace(body))
                 return "No notes for this release.";
-            var lines = body.Replace("\r", "").Split('\n')
+            var lines = body.Split('\n')
                 .Select(l => l.Replace("**", "").Replace("`", "").TrimEnd())
                 .Select(l => l.TrimStart().StartsWith("#") ? l.TrimStart('#', ' ') : l)
                 .Select(l => l.TrimStart().StartsWith("- ") || l.TrimStart().StartsWith("* ") ? "• " + l.TrimStart().Substring(2) : l);

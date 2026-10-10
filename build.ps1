@@ -56,7 +56,20 @@ if ($Publish) {
     if (-not $Notes) { throw 'Publishing needs -Notes: what players will notice in this version' }
     # Through a file: Windows PowerShell mangles native arguments that contain double quotes
     $notesFile = Join-Path $dist 'notes.md'
-    [IO.File]::WriteAllText($notesFile, $Notes)
+    # The same footer on every release: which download fits whom. The app stops reading notes at the "---" line.
+    $footer = @"
+
+
+---
+
+**Which file should I download?**
+
+- **Aether.exe**: the easy way. Run it and Aether installs itself, adds a Start Menu shortcut (search "Aether") and shows up in Settings > Apps, where you can uninstall it. Your settings live in ``%LocalAppData%\Aether``.
+- **Aether-$Version-portable.zip**: if you'd rather keep it in a folder. Extract it anywhere and run ``Aether.exe`` from there. Nothing is installed and everything stays in that folder; delete the folder to remove it.
+
+Both update themselves.
+"@
+    [IO.File]::WriteAllText($notesFile, $Notes.TrimEnd() + $footer)
     # Aether.exe must be attached as its own asset: that's the file the in-app updater downloads
     gh release create "v$Version" (Join-Path $dist 'Aether.exe') $zip --repo $repo --title "Aether $Version" --notes-file $notesFile
     if ($LASTEXITCODE -ne 0) { throw 'Publishing the release failed' }
