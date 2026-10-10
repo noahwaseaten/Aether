@@ -423,7 +423,7 @@ namespace SmartHunter.Core
                     return null;
                 }
 
-                string backupFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UserDataBackup");
+                string backupFolder = Path.Combine(FileContainer.GetFullPath(), "UserDataBackup");
                 Directory.CreateDirectory(backupFolder);
                 string zipFile = Path.Combine(backupFolder, DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".zip");
                 using (var zip = ZipFile.Open(zipFile, ZipArchiveMode.Create))

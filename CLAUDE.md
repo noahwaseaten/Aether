@@ -7,14 +7,16 @@ anything that writes to it.
 ## Build and test
 
 ```powershell
-.\build.ps1 -Version 0.0.0      # build Release, run the self-test, package dist\Aether-0.0.0.zip
+.\build.ps1 -Version 0.0.0      # build Release, run the self-test, dist\Aether.exe
 ```
 
 - The self-test (`Aether.exe --selftest`, `SmartHunter/Core/SelfTest.cs`) runs pure logic checks with no game.
   Add a `Check(...)` there for new parsing or decision logic.
 - Nothing here can test against the live game. Say so when a change touches memory reading, and don't claim it works in game.
-- To try the UI, copy `SmartHunter\bin\Release\Aether.exe` to a scratch folder and run it there; it writes its
-  configs and `Log.txt` next to the exe. Only one copy can run at a time (a mutex), so close the others first.
+- To try the UI, copy `SmartHunter\bin\Release\Aether.exe` to a scratch folder **with an empty `portable.txt` beside
+  it** and run it there: it then keeps its configs and `Log.txt` next to the exe. Without `portable.txt` it installs
+  itself into `%LocalAppData%\Aether` (the real install) and starts that copy. Only one copy can run at a time (a
+  mutex), so close the others first.
 - A `-Version 0.0.0` build run outside the scratch folder **updates itself** from GitHub. That's handy for testing
   the updater, but don't run it from `bin\Release`.
 
@@ -50,7 +52,8 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
 - Versions are semver `MAJOR.MINOR.PATCH` and the tag is `v1.2.0`. Bump PATCH for fixes, MINOR for new features or
   settings. Never reuse or lower a version; the updater only installs a version higher than the running one.
 - The release must have an asset named exactly `Aether.exe`: that's what the updater downloads. `build.ps1`
-  attaches it, plus `Aether-x.y.z.zip` for new installs, which contains `Install Aether.cmd`.
+  attaches that (it's also the installer, `Core/Helpers/Installer.cs`) plus `Aether-x.y.z-portable.zip`: the exe with a
+  `portable.txt` beside it, for players who want a folder and no install.
 - **Release notes are shown in the app** ("What's new" card), so write them for players, not developers.
   Markdown is cleaned to plain text (`- ` becomes a bullet, `#`, `**` and backticks are stripped). Someone who
   skips versions sees the notes of every version in between, each under its own heading.
@@ -133,6 +136,10 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
 - Each widget's "Show widget" switch also decides whether its data is read (`MhwMemoryUpdater.UpdateMemory`), and
   party sync sends what was read. "Show widgets" (`Overlay.ShowWidgets`) only stops drawing, so a friend can share
   data with no overlay. Don't gate reading on it.
+- `Aether.exe` is the whole app. Run from anywhere, it copies itself to `%LocalAppData%\Aether` (unless a newer copy is
+  there) and starts that one with the same arguments. Data lives there too (`FileContainer.GetFullPath`). Each start
+  keeps a Start Menu shortcut (never Desktop), the Settings > Apps entry (`--uninstall`) and the startup entry
+  pointing at the running exe. Uninstall keeps `UserDataBackup`: those are the player's saves.
 - Widget placement is saved on every drag and resize (`WidgetWindow.PlacementChanged`), not only when edit mode ends.
 - Routine sync calls (pull, push, damage) aren't logged one by one: they filled the log and pushed out what mattered.
   Past sessions' logs are kept in `Logs\`.

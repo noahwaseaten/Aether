@@ -9,7 +9,7 @@ namespace SmartHunter.Core
     public static class Log
     {
         // Next to the exe (not the working folder a shortcut picks)
-        static readonly string s_FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Log.txt");
+        static readonly string s_FileName = Path.Combine(FileContainer.GetFullPath(), "Log.txt");
         static bool s_Trimmed;
 
         public static event EventHandler<GenericEventArgs<string>> LineReceived;
@@ -58,7 +58,7 @@ namespace SmartHunter.Core
             {
                 return;
             }
-            string folder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+            string folder = Path.Combine(FileContainer.GetFullPath(), "Logs");
             Directory.CreateDirectory(folder);
             string target = Path.Combine(folder, $"Log {info.LastWriteTime:yyyy-MM-dd HH-mm-ss}.txt");
             if (File.Exists(target))

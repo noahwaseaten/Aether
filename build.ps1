@@ -1,7 +1,7 @@
 <#
 Builds Aether, runs its self-test and packages it.
 
-  .\build.ps1 -Version 1.0.1               build + dist\Aether-1.0.1.zip
+  .\build.ps1 -Version 1.0.1               build + test, the app goes in dist\Aether.exe
   .\build.ps1 -Version 1.0.1 -Publish -Notes "..."   ...and publish GitHub release v1.0.1 (needs `gh auth login`)
                                                     Notes are shown in the app as "What's new"; push main first
 
@@ -38,17 +38,18 @@ $exeVersion = (Get-Item (Join-Path $out 'Aether.exe')).VersionInfo.ProductVersio
 if (-not $exeVersion.StartsWith($Version)) { throw "Aether.exe reports version $exeVersion, expected $Version" }
 
 New-Item -ItemType Directory -Force $dist | Out-Null
+# Aether.exe is the whole app: run from anywhere, it installs itself (Core/Helpers/Installer.cs)
+Copy-Item (Join-Path $out 'Aether.exe') (Join-Path $dist 'Aether.exe') -Force
+# The portable zip: the same exe with portable.txt beside it keeps everything in its folder and installs nothing
 $stage = Join-Path $dist 'Aether'
 Remove-Item -Recurse -Force $stage -ErrorAction SilentlyContinue
 New-Item -ItemType Directory $stage | Out-Null
 Copy-Item (Join-Path $out 'Aether.exe') $stage
-Copy-Item (Join-Path $root 'installer\*.cmd') $stage
-Copy-Item (Join-Path $root 'installer\Read me.txt') $stage
-$zip = Join-Path $dist "Aether-$Version.zip"
+[IO.File]::WriteAllText((Join-Path $stage 'portable.txt'), "This file keeps Aether's settings in this folder instead of installing it.`r`nDelete it, and Aether installs itself the next time it starts.`r`n")
+$zip = Join-Path $dist "Aether-$Version-portable.zip"
 Remove-Item $zip -ErrorAction SilentlyContinue
 Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $zip
-Copy-Item (Join-Path $out 'Aether.exe') (Join-Path $dist 'Aether.exe') -Force
-Write-Host "Packaged $zip"
+Write-Host "Packaged dist\Aether.exe and $(Split-Path $zip -Leaf)"
 
 if ($Publish) {
     # The app shows these notes as "What's new", so they must say what changed

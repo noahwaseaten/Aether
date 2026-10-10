@@ -40,7 +40,7 @@ namespace SmartHunter
         {
             // Startup crashes happen before the log exists; leave a trace next to the exe
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
-                File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Crash.txt"), $"[{DateTime.Now}] {e.ExceptionObject}\r\n\r\n");
+                File.AppendAllText(Path.Combine(FileContainer.GetFullPath(), "Crash.txt"), $"[{DateTime.Now}] {e.ExceptionObject}\r\n\r\n");
             // An error on the UI thread used to close Aether mid-hunt. Keep running, and say so in the window.
             DispatcherUnhandledException += (s, e) =>
             {
@@ -59,6 +59,21 @@ namespace SmartHunter
             if (Array.IndexOf(e.Args, "--selftest") >= 0)
             {
                 Environment.Exit(SelfTest.Run());
+            }
+
+            // Settings > Apps > Uninstall runs the installed exe with this
+            if (Array.IndexOf(e.Args, "--uninstall") >= 0)
+            {
+                Installer.Uninstall();
+                Shutdown();
+                return;
+            }
+
+            // Started from Downloads or anywhere else: install (or update) the copy in %LocalAppData%\Aether and start that
+            if (Installer.InstallAndHandOver(e.Args))
+            {
+                Shutdown();
+                return;
             }
 
             if (Array.IndexOf(e.Args, "--wait") >= 0)
@@ -88,6 +103,7 @@ namespace SmartHunter
             var consoleViewModel = ConsoleViewModel.Instance;
 
             Log.WriteLine($"Started {Assembly.GetExecutingAssembly().GetName().Version}");
+            Installer.Register();
             //Log.WriteLine($"Culture: {System.Globalization.CultureInfo.CurrentCulture.Name}");
 
             SetPerMonitorDpiAwareness();

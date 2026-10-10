@@ -32,15 +32,18 @@ Aether only **reads** the game. It never changes it, injects into it or hooks it
 
 ## Installation
 
-1. Download `Aether-x.y.z.zip` from the [latest release][Releases].
-2. Extract the whole zip and run **`Install Aether.cmd`**. It installs to `%LocalAppData%\Aether` and adds Start Menu and
-   Desktop shortcuts. No admin rights needed.
+1. Download **`Aether.exe`** from the [latest release][Releases] and run it. That's the whole app.
+2. It installs itself (no admin rights needed) and adds a Start Menu shortcut, so from then on you find it by searching
+   "Aether". You can delete the downloaded file.
 3. Start the game and Aether in any order. Aether finds the game on its own.
 
 > Windows may warn you because Aether isn't signed. Click **More info**, then **Run anyway**.
 
+**Prefer a folder instead?** Download `Aether-x.y.z-portable.zip`, extract it anywhere and run `Aether.exe` from it.
+Everything stays in that folder and nothing is installed; delete the folder to remove it.
+
 Aether **updates itself**. When a new version is out it downloads it, checks it, and shows you what changed.
-To remove it, run `Uninstall Aether.cmd` in its folder.
+To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. Your save backups are kept.
 
 ## Features
 
@@ -161,7 +164,7 @@ Reading another program's memory looks suspicious to some antivirus tools. Aethe
 ## Building
 
 ```powershell
-.\build.ps1 -Version 0.0.0      # build, run the self-test, zip goes in dist\
+.\build.ps1 -Version 0.0.0      # build, run the self-test, the app goes in dist\
 ```
 
 Needs Visual Studio 2022 or the .NET SDK with the .NET Framework 4.8 targeting pack.

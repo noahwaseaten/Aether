@@ -55,6 +55,19 @@ namespace SmartHunter.Core.Helpers
             }
         }
 
+        // The startup entry follows the exe if it moved (e.g. a copy in Downloads that installed itself)
+        public static void RefreshPath()
+        {
+            using (var key = Registry.CurrentUser.OpenSubKey(RunKey, true))
+            {
+                string wanted = $"\"{Exe}\" --wait";
+                if (key?.GetValue(ValueName) is string current && current != wanted)
+                {
+                    key.SetValue(ValueName, wanted);
+                }
+            }
+        }
+
         // A game that's already running when the waiter starts has had its Aether (or the player closed it on purpose)
         public static void StartWaiter()
         {

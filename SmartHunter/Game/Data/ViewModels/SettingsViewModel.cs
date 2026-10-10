@@ -228,7 +228,7 @@ namespace SmartHunter.Game.Data.ViewModels
             const string About = "About";
             const string Repo = "https://github.com/noahwaseaten/Aether";
             string version = Core.Helpers.AppUpdater.CurrentVersion.ToString(3);
-            string folder = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
+            string folder = FileContainer.GetFullPath().TrimEnd('\\');
             Settings.Add(new Setting(About, "Version", "What changed in each version, on GitHub.", "Release notes",
                 new Command(_ => Open(Repo + "/releases"))) { Detail = $"Aether {version} · {WindowsVersion()}" });
             Toggle(About, "Update automatically", "Downloads new versions from GitHub when Aether starts and shows what changed. "
