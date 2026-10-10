@@ -20,7 +20,7 @@ namespace SmartHunter.Game.Config
         public bool BackupWhenProcessExits = true;
         public bool AutomaticallyCheckAndDownloadUpdates = true;
         public bool UseSoftwareRendering = false; // fallback for graphics drivers that draw transparent overlay windows wrong
-        public bool StartMHWWhenSmartHunterStart = true;
+        public bool StartMHWWhenSmartHunterStart = false;
 
         public OverlayConfig Overlay = new OverlayConfig();
 

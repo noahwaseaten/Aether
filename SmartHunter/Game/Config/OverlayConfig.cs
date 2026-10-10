@@ -18,12 +18,12 @@ namespace SmartHunter.Game.Config
         public int UpdatesPerSecond = 10; // bars ease between reads, so 10 looks as smooth as 20 at half the cost
 
         // Positions for a 1920x1080 screen; ForScreen scales them to the actual one
-        public TeamWidgetConfig TeamWidget = new TeamWidgetConfig(390, 774);
-        public MonsterWidgetConfig MonsterWidget = new MonsterWidgetConfig(704, 0);
-        public PlayerWidgetConfig PlayerWidget = new PlayerWidgetConfig(1478, 179);
+        public TeamWidgetConfig TeamWidget = new TeamWidgetConfig(390, 745);
+        public MonsterWidgetConfig MonsterWidget = new MonsterWidgetConfig(704, -1);
+        public PlayerWidgetConfig PlayerWidget = new PlayerWidgetConfig(1528, 253);
         public DebugWidgetConfig DebugWidget = new DebugWidgetConfig(20, 860);
         public Core.Config.WidgetConfig CalloutWidget = new Core.Config.WidgetConfig(560, 20) { IsVisible = false };
-        public Core.Config.WidgetConfig RecapWidget = new Core.Config.WidgetConfig(1026, 652);
+        public Core.Config.WidgetConfig RecapWidget = new Core.Config.WidgetConfig(1283, 774) { Scale = 0.73f };
 
         // The overlay sizes offered in Settings
         public static readonly float[] UiScales = { 0.75f, 0.9f, 1f, 1.15f, 1.3f, 1.6f, 2f };
