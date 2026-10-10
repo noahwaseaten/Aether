@@ -36,6 +36,13 @@ namespace SmartHunter
             // Startup crashes happen before the log exists; leave a trace next to the exe
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
                 File.AppendAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Crash.txt"), $"[{DateTime.Now}] {e.ExceptionObject}\r\n\r\n");
+            // An error on the UI thread used to close Aether mid-hunt. Keep running, and say so in the window.
+            DispatcherUnhandledException += (s, e) =>
+            {
+                Log.WriteException(e.Exception);
+                Problems.Report("ui", "Something went wrong in Aether, but it kept running. If a widget looks wrong, restart Aether.");
+                e.Handled = true;
+            };
         }
 
         protected override void OnStartup(StartupEventArgs e)

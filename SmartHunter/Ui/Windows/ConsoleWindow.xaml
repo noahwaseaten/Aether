@@ -325,6 +325,25 @@
                 </StackPanel>
             </Border>
 
+            <!--Problems: what's not working right now, in plain words. Details are in the Log tab.-->
+            <Border Margin="0 14 0 0" Padding="14 10" CornerRadius="10" Background="#1FE0705A" BorderBrush="#59E0705A" BorderThickness="1"
+                    DataContext="{x:Static core:Problems.Instance}"
+                    Visibility="{Binding HasAny, Converter={StaticResource A_Converter_BoolToVisibility}}">
+                <StackPanel>
+                    <ItemsControl ItemsSource="{Binding Items}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0 2">
+                                    <Button DockPanel.Dock="Right" Content="Dismiss" Command="{Binding DismissCommand}" Style="{StaticResource PillButton}" Margin="12 0 0 0" VerticalAlignment="Top" />
+                                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="12.5" VerticalAlignment="Center" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="The Log tab has the details." Foreground="{StaticResource Muted}" FontSize="11.5" Margin="0 4 0 0" />
+                </StackPanel>
+            </Border>
+
             <!--Layout editing: the button and holding Left Alt in game do the same thing-->
             <Border Margin="0 14 0 0" Padding="14 12" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1"
                     DataContext="{x:Static viewModels:OverlayViewModel.Instance}">

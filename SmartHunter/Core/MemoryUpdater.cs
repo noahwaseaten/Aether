@@ -98,20 +98,20 @@ namespace SmartHunter.Core
                                         }
                                         else
                                         {
-                                            Log.WriteLine("The sync server returned an error. Party sync is off; restart Aether to try again. Everything else works without it.");
+                                            Problems.Report("sync", "The party sync server returned an error, so party sync is off. Restart Aether to try again; everything else works without it.");
                                         }
                                         ServerManager.Instance.IsServerOline = -1;
                                     }
                                 }
                                 else
                                 {
-                                    Log.WriteLine("Couldn't reach the sync server. Party sync is off; restart Aether to try again. Everything else works without it.");
+                                    Problems.Report("sync", "Couldn't reach the party sync server, so party sync is off. Restart Aether to try again; everything else works without it.");
                                     ServerManager.Instance.IsServerOline = -1;
                                 }
                                 ServerManager.Instance.ResetStats();
                             }, (error) =>
                             {
-                                Log.WriteLine("Couldn't reach the sync server. Party sync is off; restart Aether to try again. Everything else works without it.");
+                                Problems.Report("sync", "Couldn't reach the party sync server, so party sync is off. Restart Aether to try again; everything else works without it.");
                                 ServerManager.Instance.IsServerOline = -1;
                                 ServerManager.Instance.ResetStats();
                             });
@@ -273,7 +273,12 @@ namespace SmartHunter.Core
                                 string failedPatterns = String.Join(" ", failedMemoryScans.Select(failedMemoryScan => failedMemoryScan.Pattern.Config.Name));
                                 Log.WriteLine($"Failed Patterns [{failedMemoryScans.Count()}/{m_MemoryScans.Count()}]: {failedPatterns}");
                                 Log.WriteLine($"The application will continue to work but with limited functionalities...");
+                                Problems.Report("patterns", "Aether couldn't find some of the game's data, so some widgets may stay empty. If the game just updated, Aether needs an update too.");
                                 m_MemoryScans.RemoveAll(scan => failedMemoryScans.Contains(scan));
+                            }
+                            else
+                            {
+                                Problems.Clear("patterns");
                             }
                             ConfigHelper.Memory.Save(false);
                             m_MemoryScans.AddRange(m_FastMemoryScans.Where(f => f.Results.Where(r => r.Matches.Any()).Any()));
@@ -297,6 +302,7 @@ namespace SmartHunter.Core
                         () =>
                         {
                             Log.WriteLine("Couldn't find the game data. Retrying in 30 seconds; if this keeps happening, the game may have updated and Aether needs an update too.");
+                            Problems.Report("patterns", "Aether can't find the game's data, so the overlay is empty. It retries every 30 seconds; if this keeps happening, the game may have updated and Aether needs an update too.");
                             m_ScanFailedTime = DateTime.Now;
                         }),
                     new StateMachine<State>.Transition(
@@ -331,10 +337,20 @@ namespace SmartHunter.Core
                     try
                     {
                         UpdateMemory();
+                        if (m_FailedReadsInARow > 0)
+                        {
+                            m_FailedReadsInARow = 0;
+                            Problems.Clear("reading");
+                        }
                     }
                     catch (Exception ex)
                     {
                         LogThrottled(ex);
+                        // One bad read during a loading screen is normal; failing for seconds on end is not
+                        if (++m_FailedReadsInARow == 30)
+                        {
+                            Problems.Report("reading", "Aether keeps failing to read the game, so widgets may be frozen or empty. Restarting Aether usually helps.");
+                        }
                     }
                 },
                 new StateMachine<State>.Transition[]
@@ -442,6 +458,7 @@ namespace SmartHunter.Core
                 if (!folders.Any())
                 {
                     Log.WriteLine($"No Monster Hunter: World saves in {userDataPath}; check the Steam save folder in Settings");
+                    Problems.Report("backup", "Your saves weren't backed up: Aether found no Monster Hunter: World saves in the Steam save folder. Check the folder in Settings.");
                     return null;
                 }
 
@@ -466,6 +483,7 @@ namespace SmartHunter.Core
             catch (Exception ex)
             {
                 Log.WriteLine($"Couldn't back up the saves: {ex.Message}");
+                Problems.Report("backup", "Your saves couldn't be backed up when the game closed.");
                 return null;
             }
         }
@@ -486,6 +504,8 @@ namespace SmartHunter.Core
         // A bad read repeats every tick; log each distinct error once a minute instead of 20 times a second
         string m_LastError;
         DateTime m_LastErrorTime;
+        int m_FailedReadsInARow;
+
         void LogThrottled(Exception ex)
         {
             string error = ex.GetType().Name + ex.Message + ex.TargetSite;

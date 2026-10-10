@@ -31,6 +31,7 @@ namespace SmartHunter.Game
         {
             ConfigHelper.Main.Loaded += (s, e) => { UpdateWidgetsFromConfig(); OverlayViewModel.Instance.ApplyDisplaySettings(); };
             OverlayViewModel.Instance.ApplyDisplaySettings();
+            WidgetWindow.PlacementChanged += SaveMovedWidgets;
             ConfigHelper.Localization.Loaded += (s, e) => { RefreshWidgetsLayout(); };
             ConfigHelper.MonsterData.Loaded += (s, e) => { RefreshWidgetsLayout(); };
             ConfigHelper.PlayerData.Loaded += (s, e) => { RefreshWidgetsLayout(); };
@@ -52,7 +53,6 @@ namespace SmartHunter.Game
         // Editing: widgets take the mouse (drag, scroll to scale). Done: back to click-through, and save where they ended up.
         void ApplyEditMode(bool isEditing)
         {
-            bool canSaveConfig = false;
             foreach (var widgetWindow in WidgetWindows)
             {
                 if (isEditing)
@@ -62,9 +62,22 @@ namespace SmartHunter.Game
                 else
                 {
                     WindowHelper.SetTopMostTransparent(widgetWindow as Window);
-                    canSaveConfig |= widgetWindow.Widget.CanSaveConfig;
-                    widgetWindow.Widget.CanSaveConfig = false;
                 }
+            }
+
+            if (!isEditing)
+            {
+                SaveMovedWidgets();
+            }
+        }
+
+        void SaveMovedWidgets()
+        {
+            bool canSaveConfig = false;
+            foreach (var widgetWindow in WidgetWindows)
+            {
+                canSaveConfig |= widgetWindow.Widget.CanSaveConfig;
+                widgetWindow.Widget.CanSaveConfig = false;
             }
 
             if (canSaveConfig)

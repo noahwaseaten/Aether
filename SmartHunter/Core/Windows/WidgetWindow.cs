@@ -75,6 +75,7 @@ namespace SmartHunter.Core.Windows
             if (e.ClickCount == 2)
             {
                 Widget.Scale = 1;
+                PlacementChanged?.Invoke();
                 return;
             }
 
@@ -136,7 +137,12 @@ namespace SmartHunter.Core.Windows
             m_IsDragging = false;
             ReleaseMouseCapture();
             GuideWindow.Instance.Hide();
+            PlacementChanged?.Invoke();
         }
+
+        // Saved right away: saving only on leaving edit mode lost the layout whenever Aether closed or restarted
+        // for an update while you were still editing
+        public static event Action PlacementChanged;
 
         static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));
 
@@ -197,6 +203,7 @@ namespace SmartHunter.Core.Windows
             float step = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) ? ScaleStep / 4 : ScaleStep;
             float scale = Widget.Scale + step * Math.Sign(e.Delta);
             Widget.Scale = (float)Math.Round(Math.Min(Math.Max(scale, ScaleMin), ScaleMax), 3);
+            PlacementChanged?.Invoke();
         }
     }
 

@@ -69,6 +69,7 @@ namespace SmartHunter.Core.Config
                 catch (Exception ex)
                 {
                     Log.WriteException(ex);
+                    Problems.Report("load " + FileName, $"Couldn't read {FileName}, so some settings are back to their defaults.");
                 }
             }
             else
@@ -104,10 +105,12 @@ namespace SmartHunter.Core.Config
                 {
                     Log.WriteLine($"{FileName} saved");
                 }
+                Problems.Clear("save " + FileName);
             }
             catch (Exception ex)
             {
                 Log.WriteException(ex);
+                Problems.Report("save " + FileName, $"Couldn't save {FileName}, so changes may be lost when Aether closes. Is Aether in a folder it can write to?");
             }
 
             TryUnpauseWatching();

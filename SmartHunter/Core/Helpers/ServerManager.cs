@@ -71,6 +71,10 @@ namespace SmartHunter.Core.Helpers
 
         private static readonly ServerManager instance = new ServerManager();
 
+        // One client for every request: a new one per request (about one a second in a party) opened a new connection
+        // each time. The short timeout keeps one stuck reply from stalling party sync for the default 100 s.
+        static readonly HttpClient s_Client = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
+
         public static Dictionary<Command, long[]> Stats { get; set; }
 
         static ServerManager()
@@ -163,7 +167,7 @@ namespace SmartHunter.Core.Helpers
         {
             try
             {
-                using var client = new HttpClient();
+                var client = s_Client;
                 Dictionary<string, string> parameters = new Dictionary<string, string>();
                 string command = commandToStr(cmd);
                 parameters.Add("command", command);
@@ -180,7 +184,10 @@ namespace SmartHunter.Core.Helpers
                 Stats[cmd][2] += (long)stringContent.Headers.ContentLength;
 
 
-                if (ConfigHelper.Main.Values.Debug.ShowServerLogs)
+                // Pull, push and damage go out about once a second: logging each one pushed everything else out of the log.
+                // The per-lobby summary counts them, and failures are still logged.
+                bool routine = cmd == Command.PULL || cmd == Command.PUSH || cmd == Command.DAMAGE;
+                if (ConfigHelper.Main.Values.Debug.ShowServerLogs && !routine)
                 {
                     switch (cmd)
                     {
@@ -209,25 +216,35 @@ namespace SmartHunter.Core.Helpers
                 {
                     Stats[cmd][3] += (long)response.Content.Headers.ContentLength;
                     string r = await response.Content.ReadAsStringAsync();
-                    if (ConfigHelper.Main.Values.Debug.ShowServerLogs)
+                    if (ConfigHelper.Main.Values.Debug.ShowServerLogs && (!routine || r.Contains("\"error\"")))
                     {
-                        if (cmd == Command.PULL)
-                        {
-                            Log.WriteLine($"Received {command.ToUpper()} with response of size {response.Content.Headers.ContentLength} byte");
-                        }
-                        else
-                        {
-                            Log.WriteLine($"Received {command.ToUpper()} with response {r}");
-                        }
+                        Log.WriteLine(cmd == Command.PULL
+                            ? $"Received {command.ToUpper()} with response of size {response.Content.Headers.ContentLength} byte"
+                            : $"Received {command.ToUpper()} with response {r}");
+                    }
+                    var json = JObject.Parse(r);
+                    string status = json["status"]?.ToString(), result = json["result"]?.ToString();
+                    if (status == "error" && result == "v")
+                    {
+                        Problems.Report("sync", "The party sync server no longer accepts this version of Aether. Party sync is off until Aether updates.");
+                    }
+                    else if (status == "error" && result == "dev")
+                    {
+                        Problems.Report("sync", "The party sync server is down for maintenance. Party sync is off for now; everything else works.");
+                    }
+                    else
+                    {
+                        Problems.Clear("sync");
                     }
                     if (callback != null)
                     {
-                        callback(JObject.Parse(r), stpw.ElapsedMilliseconds);
+                        callback(json, stpw.ElapsedMilliseconds);
                     }
                 }
                 else
                 {
                     Stats[cmd][1]++;
+                    Problems.Report("sync", $"The party sync server isn't answering properly (error {(int)response.StatusCode}), so parts and teammates' damage may not update. Aether keeps trying.");
                     if (ConfigHelper.Main.Values.Debug.ShowServerLogs)
                     {
                         Log.WriteLine($"Received {command.ToUpper()} with error code {response.StatusCode}");
@@ -245,7 +262,8 @@ namespace SmartHunter.Core.Helpers
                 {
                     Log.WriteLine($"Sync server request failed: {e.Message}");
                 }
-                onError(e);
+                Problems.Report("sync", "Can't reach the party sync server, so parts and teammates' damage may not update. Aether keeps trying.");
+                onError?.Invoke(e); // some calls pass no handler, and throwing here (async void) would take the app down
             }
         }
     }
