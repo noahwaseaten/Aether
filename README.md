@@ -115,6 +115,8 @@ Every setting is one click and applies instantly. Hover a setting to see what it
 
 ### Keyboard
 
+The layout editor and hide keys can be changed in **Settings > Keyboard**: click the key and press a new one.
+
 | Key | What it does |
 | --- | --- |
 | <kbd>Scroll Lock</kbd> | Open or close the layout editor |

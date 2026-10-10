@@ -137,6 +137,27 @@ namespace SmartHunter.Core.Helpers
             WindowsApi.SetWindowPos(handle, -1, 0, 0, 0, 0, TopMostWindowSizePositions);
         }
 
+        // Clicking the window never makes it the active one (WM_MOUSEACTIVATE -> MA_NOACTIVATE), whatever WPF does
+        public static void RefuseFocus(Window window)
+        {
+            System.Windows.Interop.HwndSource.FromHwnd(new System.Windows.Interop.WindowInteropHelper(window).Handle)?.AddHook(
+                (IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) =>
+                {
+                    const int WM_MOUSEACTIVATE = 0x0021, MA_NOACTIVATE = 3;
+                    if (msg != WM_MOUSEACTIVATE)
+                    {
+                        return IntPtr.Zero;
+                    }
+                    handled = true;
+                    return (IntPtr)MA_NOACTIVATE;
+                });
+        }
+
+        public static bool IsOwnWindow(IntPtr handle)
+        {
+            return handle != IntPtr.Zero && WindowsApi.GetWindowThreadProcessId(handle, out uint pid) != 0 && pid == (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+        }
+
         // Windows only lets the app the user is using bring a window forward. Sharing the foreground window's input
         // queue for a moment makes the request count as coming from it.
         public static void BringToForeground(IntPtr handle)

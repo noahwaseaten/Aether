@@ -84,6 +84,10 @@ namespace SmartHunter.Game.Data.ViewModels
             }
         }
 
+        // For the Aether window's hint; the key can be changed in Settings > Keyboard
+        public string EditKeyName => KeyBinder.KeyName(ConfigHelper.Main.Values.Keybinds[InputControl.ManipulateWidget]);
+        public void NotifyKeysChanged() => NotifyPropertyChanged(nameof(EditKeyName));
+
         // Default spots scaled to this screen, so nothing overlaps or lands off screen
         public void ResetLayout()
         {

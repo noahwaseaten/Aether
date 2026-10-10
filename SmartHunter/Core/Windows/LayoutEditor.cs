@@ -5,7 +5,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using SmartHunter.Core.Helpers;
 
@@ -19,9 +18,10 @@ namespace SmartHunter.Core.Windows
         static LayoutEditor s_Instance;
         public static LayoutEditor Instance => s_Instance ?? (s_Instance = new LayoutEditor());
 
-        readonly Canvas m_Guides = new Canvas { IsHitTestVisible = false };
+        // Guides are two 1-pixel windows moved around, not lines on the full-screen layer: redrawing that layer (8 MB a
+        // frame on the CPU) for every mouse move made dragging lag
+        readonly Window m_GuideX, m_GuideY;
         readonly StackPanel m_Chips = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-        readonly Brush m_GuideBrush;
         // Its own small window, so it can stack above the widgets: on the backdrop it hid under the monster widget
         readonly Window m_Toolbar;
         readonly Brush m_Accent;
@@ -53,13 +53,10 @@ namespace SmartHunter.Core.Windows
             SourceInitialized += (s, e) => WindowHelper.SetTopMostFocusable(this);
 
             m_Accent = Application.Current.TryFindResource("B_Accent") as Brush ?? Frozen(Color.FromRgb(0xE2, 0xC2, 0x7A));
-            var guide = ((SolidColorBrush)m_Accent).Color;
-            m_GuideBrush = Frozen(Color.FromArgb(0xE6, guide.R, guide.G, guide.B));
-
-            var root = new Grid();
-            root.Children.Add(new Border { Background = Frozen(Color.FromArgb(0x99, 0x06, 0x07, 0x09)) });
-            root.Children.Add(m_Guides);
-            Content = root;
+            // Drawn once when the editor opens and never again: no fade, no guides on it
+            Content = new Border { Background = Frozen(Color.FromArgb(0x99, 0x06, 0x07, 0x09)) };
+            m_GuideX = GuideLine(true);
+            m_GuideY = GuideLine(false);
 
             m_Toolbar = new Window
             {
@@ -73,24 +70,48 @@ namespace SmartHunter.Core.Windows
                 SizeToContent = SizeToContent.WidthAndHeight,
                 Content = BuildToolbar(),
             };
-            m_Toolbar.SourceInitialized += (s, e) => WindowHelper.SetTopMostSelectable(m_Toolbar);
-            // Alt-Tab or the Windows key while editing: finish, or the dark layer would cover whatever you switched to.
-            // Clicking the widgets or the toolbar doesn't count, they never take focus.
-            Deactivated += (s, e) =>
+            m_Toolbar.SourceInitialized += (s, e) =>
             {
-                if (m_IsOpen)
+                WindowHelper.SetTopMostSelectable(m_Toolbar);
+                WindowHelper.RefuseFocus(m_Toolbar);
+            };
+            // Alt-Tab or the Windows key while editing: finish, or the dark layer would cover whatever you switched to.
+            // Focus moving to one of Aether's own windows doesn't count: clicking a widget or the toolbar closed the editor.
+            Deactivated += (s, e) => Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (m_IsOpen && !WindowHelper.IsOwnWindow(WindowsApi.GetForegroundWindow()))
                 {
                     Log.WriteLine("Layout editor lost focus, closing it");
                     m_ReturnFocusTo = IntPtr.Zero;
                     m_Done?.Invoke();
                 }
-            };
+            }), System.Windows.Threading.DispatcherPriority.Input);
             // Centred on the primary screen: the middle is where the hunter stands, so no widget lives there
             m_Toolbar.SizeChanged += (s, e) =>
             {
                 m_Toolbar.Left = (SystemParameters.PrimaryScreenWidth - m_Toolbar.ActualWidth) / 2;
                 m_Toolbar.Top = (SystemParameters.PrimaryScreenHeight - m_Toolbar.ActualHeight) / 2;
             };
+        }
+
+        Window GuideLine(bool vertical)
+        {
+            var line = new Window
+            {
+                WindowStyle = WindowStyle.None,
+                ResizeMode = ResizeMode.NoResize,
+                ShowInTaskbar = false,
+                ShowActivated = false,
+                Topmost = true,
+                Background = m_Accent,
+                Width = vertical ? 1 : SystemParameters.VirtualScreenWidth,
+                Height = vertical ? SystemParameters.VirtualScreenHeight : 1,
+                Left = SystemParameters.VirtualScreenLeft,
+                Top = SystemParameters.VirtualScreenTop,
+                Title = "Aether layout guide",
+            };
+            line.SourceInitialized += (s, e) => WindowHelper.SetTopMostTransparent(line);
+            return line;
         }
 
         static Brush Frozen(Color color)
@@ -208,9 +229,7 @@ namespace SmartHunter.Core.Windows
             }
 
             m_IsOpen = true;
-            m_Guides.Children.Clear();
-            BeginAnimation(OpacityProperty, null);
-            Opacity = 0;
+            ShowGuides(new Guide[0]);
             if (!IsVisible)
             {
                 Show();
@@ -226,7 +245,6 @@ namespace SmartHunter.Core.Windows
             }
             WindowHelper.BringToForeground(handle);
             WindowsApi.ClipCursor(IntPtr.Zero);
-            BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(160)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
         }
 
         // Call after the widgets are raised (and again when one is shown), so the toolbar stays on top of them
@@ -236,8 +254,6 @@ namespace SmartHunter.Core.Windows
             {
                 return;
             }
-            m_Toolbar.BeginAnimation(OpacityProperty, null);
-            m_Toolbar.Opacity = 1;
             if (!m_Toolbar.IsVisible)
             {
                 m_Toolbar.Show();
@@ -245,53 +261,40 @@ namespace SmartHunter.Core.Windows
             WindowHelper.SetTopMostSelectable(m_Toolbar);
         }
 
-        public void Close(bool animate = true)
+        // Not Window.Close: the editor is hidden and reused
+        public void CloseEditor()
         {
             m_IsOpen = false;
             if (!IsVisible)
             {
                 return;
             }
-            m_Guides.Children.Clear();
+            ShowGuides(new Guide[0]);
             m_Toolbar.Hide();
+            Hide();
             WindowHelper.BringToForeground(m_ReturnFocusTo);
             m_ReturnFocusTo = IntPtr.Zero;
-            var fade = new DoubleAnimation(0, TimeSpan.FromMilliseconds(animate ? 140 : 0));
-            fade.Completed += (s, e) =>
-            {
-                // Opened again while fading out
-                if (Opacity == 0)
-                {
-                    Hide();
-                }
-            };
-            BeginAnimation(OpacityProperty, fade);
         }
 
+        // At most one vertical and one horizontal guide: the snap that won on each axis
         public void ShowGuides(IEnumerable<Guide> guides)
         {
-            m_Guides.Children.Clear();
-            foreach (var guide in guides)
+            var vertical = guides.Where(g => g.IsVertical).Select(g => (double?)g.Position).FirstOrDefault();
+            var horizontal = guides.Where(g => !g.IsVertical).Select(g => (double?)g.Position).FirstOrDefault();
+            Place(m_GuideX, vertical, true);
+            Place(m_GuideY, horizontal, false);
+        }
+
+        void Place(Window line, double? position, bool vertical)
+        {
+            if (position == null)
             {
-                var line = new Line
-                {
-                    Stroke = m_GuideBrush,
-                    StrokeThickness = 1,
-                    StrokeDashArray = new DoubleCollection { 4, 4 },
-                    SnapsToDevicePixels = true,
-                };
-                if (guide.IsVertical)
-                {
-                    line.X1 = line.X2 = guide.Position - Left;
-                    line.Y2 = Height;
-                }
-                else
-                {
-                    line.Y1 = line.Y2 = guide.Position - Top;
-                    line.X2 = Width;
-                }
-                m_Guides.Children.Add(line);
+                if (line.IsVisible) line.Hide();
+                return;
             }
+            if (vertical) line.Left = position.Value; else line.Top = position.Value;
+            if (!line.IsVisible) line.Show();
+            WindowHelper.SetTopMostTransparent(line); // above the widget being dragged
         }
     }
 }

@@ -60,7 +60,7 @@ namespace SmartHunter.Game
             }
             else
             {
-                LayoutEditor.Instance.Close();
+                LayoutEditor.Instance.CloseEditor();
             }
 
             // After the editor opens, so the widgets stack above it
@@ -113,6 +113,17 @@ namespace SmartHunter.Game
 
         protected override void InputReceived(Key key, bool isDown)
         {
+            if (KeyBinder.Pending != null)
+            {
+                if (isDown)
+                {
+                    var bind = KeyBinder.Pending;
+                    KeyBinder.Pending = null;
+                    bind(key);
+                }
+                return;
+            }
+
             if (key == Key.Escape && isDown && OverlayViewModel.Instance.CanManipulateWindows)
             {
                 OverlayViewModel.Instance.CanManipulateWindows = false;

@@ -167,10 +167,11 @@
     <Style x:Key="A_Style_TextBlock_Standard_Centered" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Standard}">
         <Setter Property="TextAlignment" Value="Center" />
     </Style>
+    <!--Section labels: sentence case and calm, no small gold capitals (eyebrows). Colour carries meaning only where it's set.-->
     <Style x:Key="T_Label" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Foreground" Value="{StaticResource B_Accent}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource B_TextMuted}" />
     </Style>
     <Style x:Key="T_Body" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="14" />
@@ -483,7 +484,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock x:Name="Tag" Text="BROKEN" Style="{StaticResource T_Label}" Margin="5 0 0 0" Visibility="Collapsed" />
+                    <TextBlock x:Name="Tag" Text="Broken" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Accent}" Margin="5 0 0 0" Visibility="Collapsed" />
                     <TextBlock x:Name="Count" Style="{StaticResource T_CellValue}" Text="{Binding TimesBrokenCount, StringFormat=emptied ×{0}}" Visibility="Collapsed" />
                 </StackPanel>
                 <TextBlock x:Name="NameBlock" Text="{Binding Name}" Style="{StaticResource T_Cell}" />
@@ -522,7 +523,7 @@
                     <Condition Binding="{Binding IsBroken}" Value="True" />
                     <Condition Binding="{Binding IsRemovable}" Value="True" />
                 </MultiDataTrigger.Conditions>
-                <Setter TargetName="Tag" Property="Text" Value="CUT" />
+                <Setter TargetName="Tag" Property="Text" Value="Cut" />
             </MultiDataTrigger>
             <DataTrigger Binding="{Binding DataContext.ShowBars, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="False">
                 <Setter TargetName="Bar" Property="Visibility" Value="Collapsed" />
@@ -551,18 +552,18 @@
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                             <Border x:Name="Enraged" Style="{StaticResource A_Style_Chip}" Background="{StaticResource B_Danger}">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="ENRAGED" Style="{StaticResource T_Chip}" />
+                                    <TextBlock Text="Enraged" Style="{StaticResource T_Chip}" />
                                     <TextBlock Style="{StaticResource T_Chip}" FontWeight="SemiBold" Margin="5 0 0 0" Text="{Binding Rage.Duration.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
                                 </StackPanel>
                             </Border>
                             <Border x:Name="Exhausted" Style="{StaticResource A_Style_Chip}" Background="#4C8DFF">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="TIRED" Style="{StaticResource T_Chip}" />
+                                    <TextBlock Text="Tired" Style="{StaticResource T_Chip}" />
                                     <TextBlock Style="{StaticResource T_Chip}" FontWeight="SemiBold" Margin="5 0 0 0" Text="{Binding Fatigue.Duration.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
                                 </StackPanel>
                             </Border>
                             <Border x:Name="Estimate" Style="{StaticResource A_Style_Chip}" Background="#33FFFFFF">
-                                <TextBlock Text="ESTIMATE" Style="{StaticResource T_Chip}" Foreground="{StaticResource B_Text}" />
+                                <TextBlock Text="Estimate" Style="{StaticResource T_Chip}" Foreground="{StaticResource B_Text}" />
                             </Border>
                             <TextBlock x:Name="HealthPct" Style="{StaticResource T_Big}" FontSize="20" Margin="10 0 0 0" Text="{Binding Health.Fraction, Converter={StaticResource A_Converter_FractionToPercentage}}" />
                         </StackPanel>
@@ -615,7 +616,7 @@
                             </TextBlock.Text>
                         </TextBlock>
                         <StackPanel x:Name="StaminaPanel" DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="STAMINA" Style="{StaticResource T_Label}" FontSize="12" Foreground="{StaticResource B_TextMuted}" Margin="0 0 6 0" />
+                            <TextBlock Text="Stamina" Style="{StaticResource T_Label}" FontSize="12" Foreground="{StaticResource B_TextMuted}" Margin="0 0 6 0" />
                             <Grid Width="72" Height="4">
                                 <Rectangle Fill="{StaticResource B_Track}" />
                                 <Rectangle Fill="{StaticResource B_Status}" behaviors:SmoothBar.Fraction="{Binding Stamina.Buildup.Fraction}" />
@@ -642,7 +643,7 @@
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Name}" Style="{StaticResource T_Body}" Foreground="{StaticResource B_TextMuted}" />
-                        <TextBlock x:Name="CompactRage" Text="ENRAGED" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Danger}" Margin="8 0 0 0" Visibility="Collapsed" />
+                        <TextBlock x:Name="CompactRage" Text="Enraged" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Danger}" Margin="8 0 0 0" Visibility="Collapsed" />
                     </StackPanel>
                     <Grid Height="3" Margin="0 3 0 0">
                         <Rectangle Fill="{StaticResource B_Track}" />
@@ -959,7 +960,7 @@
     <DataTemplate DataType="{x:Type data:Sharpness}">
         <StackPanel x:Name="Root" Margin="0 0 0 8">
             <DockPanel LastChildFill="False">
-                <TextBlock x:Name="Label" Text="SHARPNESS" Style="{StaticResource T_Label}" />
+                <TextBlock x:Name="Label" Text="Sharpness" Style="{StaticResource T_Label}" />
                 <TextBlock DockPanel.Dock="Right" Style="{StaticResource T_Value}" MinWidth="0" Text="{Binding HitsLeft}" />
                 <TextBlock DockPanel.Dock="Right" Style="{StaticResource T_Muted}" Foreground="{Binding LevelBrush}" Margin="0 0 6 0" Text="{Binding LevelName}" />
             </DockPanel>
@@ -983,7 +984,7 @@
                     </ItemsControl>
                 </Canvas>
             </Grid>
-            <TextBlock x:Name="Danger" Text="SHARPEN" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Danger}" Margin="0 4 0 0" Visibility="Collapsed" />
+            <TextBlock x:Name="Danger" Text="Sharpen" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Danger}" Margin="0 4 0 0" Visibility="Collapsed" />
         </StackPanel>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding IsAvailable}" Value="False">
@@ -1025,7 +1026,7 @@
                 <Border x:Name="Notice" Width="462" HorizontalAlignment="Left" Margin="0 0 0 10" Padding="12 8 12 8" CornerRadius="6"
                         Background="#EB101114" BorderBrush="{StaticResource B_Accent}" BorderThickness="1" Visibility="Collapsed">
                     <DockPanel>
-                        <TextBlock Text="SYNC" Style="{StaticResource T_Label}" DockPanel.Dock="Left" VerticalAlignment="Top" Margin="0 1 10 0" />
+                        <TextBlock Text="Sync" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Accent}" DockPanel.Dock="Left" VerticalAlignment="Top" Margin="0 1 10 0" />
                         <TextBlock Text="{Binding Notice}" Style="{StaticResource T_Body}" TextWrapping="Wrap" />
                     </DockPanel>
                 </Border>
@@ -1146,7 +1147,7 @@
             <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" Opacity="{Binding ShadeOpacity, Source={x:Static viewModels:OverlayViewModel.Instance}}" OpacityMask="{StaticResource B_ScrimFeather}" />
             <StackPanel x:Name="Body" Effect="{StaticResource A_Effect_Halo}" Margin="18 14 44 14">
                 <DockPanel LastChildFill="False">
-                    <TextBlock Text="DAMAGE" Style="{StaticResource T_Label}" />
+                    <TextBlock Text="Damage" Style="{StaticResource T_Label}" />
                 </DockPanel>
                 <Rectangle Height="1" Margin="0 4 0 4" Fill="{StaticResource B_Hairline}" />
 
@@ -1218,13 +1219,13 @@
                     <Border.RenderTransform>
                         <ScaleTransform />
                     </Border.RenderTransform>
-                    <TextBlock Text="CAPTURE" Style="{StaticResource T_Tag}" Foreground="#1C1400" />
+                    <TextBlock Text="Capture" Style="{StaticResource T_Tag}" Foreground="#1C1400" />
                 </Border>
                 <Border x:Name="Enraged" Style="{StaticResource A_Style_Tag}" Background="{StaticResource B_Danger}">
-                    <TextBlock Text="ENRAGED" Style="{StaticResource T_Tag}" Foreground="White" />
+                    <TextBlock Text="Enraged" Style="{StaticResource T_Tag}" Foreground="White" />
                 </Border>
                 <Border x:Name="Exhausted" Style="{StaticResource A_Style_Tag}" Background="#4C8DFF">
-                    <TextBlock Text="EXHAUSTED" Style="{StaticResource T_Tag}" Foreground="White" />
+                    <TextBlock Text="Exhausted" Style="{StaticResource T_Tag}" Foreground="White" />
                 </Border>
             </StackPanel>
         </Grid>
@@ -1357,7 +1358,8 @@
     </DataTemplate>
 
     <Style x:Key="T_StatLabel" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource T_Label}">
-        <Setter Property="FontSize" Value="10" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
     <Style x:Key="T_StatValue" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource T_Big}">
@@ -1397,7 +1399,7 @@
                 <!--Versus the party-->
                 <StackPanel x:Name="Party">
                     <DockPanel LastChildFill="False" Margin="0 0 0 6">
-                        <TextBlock Text="VERSUS PARTY" Style="{StaticResource T_Label}" />
+                        <TextBlock Text="Versus party" Style="{StaticResource T_Label}" />
                         <TextBlock DockPanel.Dock="Right" Text="{Binding Headline}" Style="{StaticResource T_Muted}" />
                     </DockPanel>
                     <ItemsControl ItemsSource="{Binding Hunters}" />
@@ -1406,11 +1408,11 @@
                 <!--Solo: three plain stats-->
                 <UniformGrid x:Name="Solo" Columns="2" Visibility="Collapsed">
                     <StackPanel>
-                        <TextBlock Text="DAMAGE" Style="{StaticResource T_StatLabel}" />
+                        <TextBlock Text="Damage" Style="{StaticResource T_StatLabel}" />
                         <TextBlock Text="{Binding MyDamage, StringFormat={}{0:N0}}" Style="{StaticResource T_StatValue}" />
                     </StackPanel>
                     <StackPanel>
-                        <TextBlock Text="CARTS" Style="{StaticResource T_StatLabel}" />
+                        <TextBlock Text="Carts" Style="{StaticResource T_StatLabel}" />
                         <TextBlock Text="{Binding Carts}" Style="{StaticResource T_StatValue}" />
                     </StackPanel>
                 </UniformGrid>

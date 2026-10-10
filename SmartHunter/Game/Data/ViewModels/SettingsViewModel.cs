@@ -79,6 +79,27 @@ namespace SmartHunter.Game.Data.ViewModels
             Settings.Add(setting);
         }
 
+        // A button row showing a shortcut; click it, then press the new key (Esc keeps the old one)
+        void KeyRow(string group, string name, string description, InputControl control)
+        {
+            Setting setting = null;
+            setting = new Setting(group, name, description, KeyBinder.KeyName(C.Keybinds[control]), new Command(_ =>
+            {
+                setting.ActionLabel = "Press a key…";
+                KeyBinder.Pending = key =>
+                {
+                    if (key != System.Windows.Input.Key.Escape)
+                    {
+                        C.Keybinds[control] = key;
+                        ConfigHelper.Main.Save();
+                        OverlayViewModel.Instance.NotifyKeysChanged();
+                    }
+                    setting.ActionLabel = KeyBinder.KeyName(C.Keybinds[control]);
+                };
+            }));
+            Settings.Add(setting);
+        }
+
         public SettingsViewModel()
         {
             const string Monster = "Monster widget";
@@ -132,13 +153,17 @@ namespace SmartHunter.Game.Data.ViewModels
                 () => C.Overlay.Shading, v => C.Overlay.Shading = v);
             Toggle(Overlay, "Colorblind-friendly colors", "Player colors that stay distinct with red-green color blindness.",
                 () => C.Overlay.ColorblindColors, v => C.Overlay.ColorblindColors = v);
-            Choice(Overlay, "F1 hides the overlay", "Clears the screen for screenshots or cutscenes.",
-                new[] { ("Hold", "While held"), ("Toggle", "Press to toggle") },
-                () => C.Overlay.HideKeyToggles ? "Toggle" : "Hold", v => C.Overlay.HideKeyToggles = v == "Toggle");
             Toggle(Overlay, "Hide when the game isn't focused", "Widgets disappear while you're alt-tabbed, so they don't cover other windows.",
                 () => C.Overlay.HideWhenGameWindowIsInactive, v => C.Overlay.HideWhenGameWindowIsInactive = v);
             Toggle(Overlay, "Hide while a game menu is open", "Widgets disappear while the map or a menu is open, so they don't cover it.",
                 () => C.Overlay.HideWhenGameMenuIsOpen, v => C.Overlay.HideWhenGameMenuIsOpen = v);
+
+            const string Keyboard = "Keyboard";
+            KeyRow(Keyboard, "Layout editor", "Opens and closes the layout editor in game. Click, then press the key you want; Esc keeps the current one.", InputControl.ManipulateWidget);
+            KeyRow(Keyboard, "Hide overlay", "Clears the screen for screenshots or cutscenes. Click, then press the key you want; Esc keeps the current one.", InputControl.HideWidgets);
+            Choice(Keyboard, "Hide overlay key", "Hide everything only while the key is held, or press once to hide and again to show.",
+                new[] { ("Hold", "While held"), ("Toggle", "Press to toggle") },
+                () => C.Overlay.HideKeyToggles ? "Toggle" : "Hold", v => C.Overlay.HideKeyToggles = v == "Toggle");
 
             const string Party = "Party sync";
             Toggle(Party, "Share data with your party", "Only the host's game has exact part HP and ailment buildup, and the game doesn't track damage on expeditions. "

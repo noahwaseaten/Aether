@@ -6,13 +6,12 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 
 namespace SmartHunter.Core.Windows
 {
     // What a widget shows while the layout is edited: an outline, a tab with its name, size and a hide button (like the
-    // header bar on Discord's overlay widgets), and a corner grip that resizes it (like Lunar's HUD editor). Fades in and
-    // out with edit mode. Put one last inside the widget window's root grid.
+    // header bar on Discord's overlay widgets), and a corner grip that resizes it (like Lunar's HUD editor). Shown only
+    // in edit mode. Put one last inside the widget window's root grid.
     public class EditChrome : Grid
     {
         public static readonly DependencyProperty IsEditingProperty = DependencyProperty.Register(
@@ -37,7 +36,6 @@ namespace SmartHunter.Core.Windows
         public EditChrome()
         {
             Margin = new Thickness(-8);
-            Opacity = 0;
             Visibility = Visibility.Hidden;
             SetBinding(IsEditingProperty, new Binding("CanManipulateWindows"));
 
@@ -119,18 +117,10 @@ namespace SmartHunter.Core.Windows
             m_Tab.HorizontalAlignment = right ? HorizontalAlignment.Right : HorizontalAlignment.Left;
         }
 
+        // Instant, no fade: animating the chrome re-rendered every transparent widget window for each frame
         void Fade(bool show)
         {
-            if (show)
-            {
-                Visibility = Visibility.Visible;
-            }
-            var animation = new DoubleAnimation(show ? 1 : 0, TimeSpan.FromMilliseconds(show ? 160 : 200));
-            if (!show)
-            {
-                animation.Completed += (s, e) => { if (!IsEditing) Visibility = Visibility.Hidden; };
-            }
-            BeginAnimation(OpacityProperty, animation);
+            Visibility = show ? Visibility.Visible : Visibility.Hidden;
         }
 
         void Grip_Down(object sender, MouseButtonEventArgs e)

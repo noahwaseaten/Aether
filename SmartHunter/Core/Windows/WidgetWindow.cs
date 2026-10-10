@@ -33,6 +33,8 @@ namespace SmartHunter.Core.Windows
         public WidgetWindow(Widget widget)
         {
             Widget = widget;
+            // While the layout is edited, clicking a widget must not take focus from the editor (that closed it)
+            SourceInitialized += (s, e) => WindowHelper.RefuseFocus(this);
             LocationChanged += (s, e) => UpdateSide();
             SizeChanged += (s, e) =>
             {

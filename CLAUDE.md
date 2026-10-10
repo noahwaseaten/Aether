@@ -124,6 +124,12 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   which is also how Discord's 2025 overlay draws over games without hooking them. The toolbar is its own window so it
   stacks above the widgets. Widgets and the toolbar use `WS_EX_NOACTIVATE`, so clicking them doesn't take focus from the editor. Leaving edit mode saves only
   after the widgets shrink back: right-side widgets shift while they shrink, and saving at once stored the shifted spot.
+- The editor never animates. Its full-screen dim layer is a per-pixel transparent window: fading it, or drawing guides
+  on it, re-uploaded 8 MB a frame on the CPU and made opening and dragging lag. It's drawn once on open; the guides are
+  two 1-pixel windows that move. Widget and toolbar windows refuse activation (`WindowHelper.RefuseFocus`) and the
+  editor ignores focus moving to Aether's own windows: a click on a widget used to close the editor.
+- Overlay text has no eyebrows (small bold capitals): labels are sentence case in `T_Label`. Keep it that way.
+- Shortcuts are rebound in Settings > Keyboard (`KeyBinder`): the next key from the global hook is taken, Esc cancels.
 - Widget placement is saved on every drag and resize (`WidgetWindow.PlacementChanged`), not only when edit mode ends.
 - Routine sync calls (pull, push, damage) aren't logged one by one: they filled the log and pushed out what mattered.
   Past sessions' logs are kept in `Logs\`.

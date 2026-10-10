@@ -181,7 +181,7 @@ namespace SmartHunter.Game
             var recap = new HuntRecap
             {
                 IsSuccess = state == 3 || state == 4,
-                Result = state == 3 || state == 4 ? "QUEST COMPLETE" : state == 5 ? "QUEST FAILED" : "QUEST ABANDONED",
+                Result = state == 3 || state == 4 ? "Quest complete" : state == 5 ? "Quest failed" : "Quest abandoned",
                                 Stars = s_Stars > 0 ? new string('★', Math.Min(s_Stars, 10)) : "",
                 Carts = s_Carts,
             };
@@ -226,7 +226,7 @@ namespace SmartHunter.Game
         // Debug.UseSampleData preview
         public static HuntRecap SampleRecap()
         {
-            var recap = new HuntRecap { IsSuccess = true, Result = "QUEST COMPLETE", Stars = "★★★★★★", Carts = 1, MyDamage = 18420, IsSolo = false };
+            var recap = new HuntRecap { IsSuccess = true, Result = "Quest complete", Stars = "★★★★★★", Carts = 1, MyDamage = 18420, IsSolo = false };
             recap.Hunters.Add(new RecapHunter { Rank = 1, Name = "Lythia", WeaponIcon = "ICON_SWITCHAXE", ColorIndex = 0, Damage = 18420, Share = 0.47f, Bar = 1, IsMe = true, IsMvp = true });
             recap.Hunters.Add(new RecapHunter { Rank = 2, Name = "Kabuto", WeaponIcon = "ICON_LONGSWORD", ColorIndex = 1, Damage = 13950, Share = 0.36f, Bar = 0.76f });
             recap.Hunters.Add(new RecapHunter { Rank = 3, Name = "mike the father", WeaponIcon = "ICON_BOW", ColorIndex = 2, Damage = 6630, Share = 0.17f, Bar = 0.36f });
