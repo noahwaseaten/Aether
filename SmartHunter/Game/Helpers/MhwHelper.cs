@@ -221,25 +221,6 @@ namespace SmartHunter.Game.Helpers
             return offsets != null && offsets.Length > 0 ? offsets : null;
         }
 
-        // A real debuff counts down. A timer frozen at one value (Blastscourge's slot sat at 1 s forever with some
-        // gear) isn't an active debuff. ponytail: also hides a debuff while the solo pause menu freezes timers.
-        static readonly Dictionary<int, (float Value, DateTime Since)> s_DebuffTimers = new Dictionary<int, (float, DateTime)>();
-        internal static bool IsTimerStuck(int index, float? timer, DateTime? now = null)
-        {
-            var time = now ?? DateTime.Now;
-            if (timer == null || timer <= 0)
-            {
-                s_DebuffTimers.Remove(index);
-                return false;
-            }
-            if (!s_DebuffTimers.TryGetValue(index, out var last) || last.Value != timer.Value)
-            {
-                s_DebuffTimers[index] = (timer.Value, time);
-                return false;
-            }
-            return (time - last.Since).TotalSeconds > 2;
-        }
-
         public static void UpdatePlayerWidget(Process process, ulong baseAddress, ulong equipmentAddress, ulong weaponAddress)
         {
             for (int index = 0; index < ConfigHelper.PlayerData.Values.StatusEffects.Length; ++index)
@@ -271,7 +252,11 @@ namespace SmartHunter.Game.Helpers
                         var conditionAddress = MemoryHelper.ReadMultiLevelPointer(false, process, sourceAddress + (ulong)offsets[0], offsets.Skip(1).ToArray());
 
                         bool isPassed = false;
-                        if (condition.ByteValue.HasValue)
+                        if (condition.ByteNonZero)
+                        {
+                            isPassed = MemoryHelper.Read<byte>(process, conditionAddress) != 0;
+                        }
+                        else if (condition.ByteValue.HasValue)
                         {
                             var conditionValue = MemoryHelper.Read<byte>(process, conditionAddress);
                             isPassed = conditionValue == condition.ByteValue;
@@ -320,11 +305,6 @@ namespace SmartHunter.Game.Helpers
                         timer = 0;
                         allConditionsPassed = false;
                     }
-                }
-
-                if (statusEffectConfig.GroupId == "Debuff" && IsTimerStuck(index, timer))
-                {
-                    allConditionsPassed = false;
                 }
 
                 OverlayViewModel.Instance.PlayerWidget.Context.UpdateAndGetPlayerStatusEffect(index, timer, allConditionsPassed);
@@ -444,7 +424,10 @@ namespace SmartHunter.Game.Helpers
             const ulong Base = 0x140000000;
             ulong weapon = MemoryHelper.ReadMultiLevelPointer(false, process, Base + 0x050139A0, 0x50, 0x98, 0x10, 0x70, 0x18, 0x550, 0x0);
             ulong weaponData = MemoryHelper.Read<ulong>(process, Base + 0x05012080);
-            if (!isMelee || weapon < 0xFFFF || weaponData == 0 || DiscordPresence.IsInTown(process))
+            // Quest over (results screen, then the load back to town): sharpness no longer matters
+            ulong quest = MemoryHelper.ReadMultiLevelPointer(false, process, Base + 0x0500ED30, 0x0);
+            bool questOver = MemoryHelper.Read<int>(process, quest + 0x54) >= 3;
+            if (!isMelee || weapon < 0xFFFF || weaponData == 0 || questOver || DiscordPresence.IsInTown(process))
             {
                 sharpness.IsAvailable = false;
                 return;

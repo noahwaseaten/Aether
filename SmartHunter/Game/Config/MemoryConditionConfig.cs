@@ -6,6 +6,7 @@
         public byte? ByteValue;
         public int? IntValue;
         public string StringRegexValue;
+        public bool ByteNonZero; // passes when the byte is anything but 0
 
         public MemoryConditionConfig()
         {

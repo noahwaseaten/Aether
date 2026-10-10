@@ -119,8 +119,9 @@ namespace SmartHunter.Game.Config
             new StatusEffectConfig("Debuff", "LOC_STATUS_EFFECT_ELEMENTAL_RESISTANCE_DOWN", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(389)),
             new StatusEffectConfig("Debuff", "LOC_STATUS_EFFECT_NO_ITEMS", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(391)),
             new StatusEffectConfig("Debuff", "LOC_STATUS_EFFECT_BLASTBLIGHT", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(392)),
-            //BLASTSCOURGE Always Display?
-            new StatusEffectConfig("Debuff", "LOC_STATUS_EFFECT_BLASTSCOURGE", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(399)),
+            // Blastscourge's value is a 0-100 meter, not a timer, and only counts while the flag 16 bytes before it is set
+            // (HunterPie's AbnormalityData: HasConditions, ConditionOffset -16). Read as a timer it sat at "1 s" forever.
+            new StatusEffectConfig("Debuff", "LOC_STATUS_EFFECT_BLASTSCOURGE", (uint)StatusEffectConfig.MemorySource.Base, null, new MemoryConditionConfig { Offsets = new[] { indexToHexStrNoOffset(395) }, ByteNonZero = true }),
             new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_DASH_JUICE", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(420)),
             new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_WIGGLY_LITCHI", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(421)),
             new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_IMMUNIZER", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(422)),

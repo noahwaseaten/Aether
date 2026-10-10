@@ -21,7 +21,16 @@ namespace SmartHunter.Game
             public string Name;
             public float LastFraction = 1;
             public bool WasCapturable;
+            public bool Fought;   // lost HP during the quest; untouched monsters on the map stay out of the recap
+            public bool Slain;
+            public bool Captured;
         }
+
+        // The quest state can flip on the same tick as the killing blow, before the monster reads as dead, which made a
+        // slain monster look "captured". Keep watching for a moment after the end before building the recap.
+        const double RecapDelaySeconds = 3;
+        static DateTime? s_EndedAt;
+        static int s_EndState;
 
         static DateTime? s_QuestStart;
         static int s_LastState = -1, s_Stars, s_Carts;
@@ -68,10 +77,21 @@ namespace SmartHunter.Game
 
             if (s_QuestStart.HasValue && state >= 3 && state <= 7 && s_LastState == 2)
             {
-                recap.Recap = BuildRecap(state);
-                recap.IsShowing = true;
-                s_RecapShownAt = DateTime.Now;
+                s_EndedAt = DateTime.Now;
+                s_EndState = state;
                 s_QuestStart = null;
+            }
+
+            if (s_EndedAt.HasValue)
+            {
+                UpdateMonsters(process, null);
+                if ((DateTime.Now - s_EndedAt.Value).TotalSeconds >= RecapDelaySeconds)
+                {
+                    recap.Recap = BuildRecap(s_EndState);
+                    recap.IsShowing = true;
+                    s_RecapShownAt = DateTime.Now;
+                    s_EndedAt = null;
+                }
             }
 
             if (recap.IsShowing && (DateTime.Now - s_RecapShownAt).TotalSeconds > RecapWidgetContext.SecondsOnScreen)
@@ -119,9 +139,15 @@ namespace SmartHunter.Game
                 }
                 seen.Name = monster.Name;
                 seen.LastFraction = fraction;
-                seen.WasCapturable |= capturable || monster.IsCaptured;
-                if (!monster.IsAlive) seen.LastFraction = monster.IsCaptured ? fraction : 0;
+                seen.WasCapturable |= capturable;
+                seen.Fought |= monster.LastDamagedTime.HasValue;
+                seen.Captured |= monster.IsCaptured;
+                seen.Slain |= !monster.IsAlive && !monster.IsCaptured;
 
+                if (callouts == null)
+                {
+                    continue; // quest over: only recording outcomes
+                }
                 var callout = callouts.Callouts.FirstOrDefault(c => c.Address == monster.Address);
                 bool show = monster.IsAlive && (capturable || monster.IsEnraged || exhausted);
                 if (!show)
@@ -140,6 +166,10 @@ namespace SmartHunter.Game
                 callout.IsExhausted = exhausted;
             }
 
+            if (callouts == null)
+            {
+                return;
+            }
             foreach (var gone in callouts.Callouts.Where(c => monsters.All(m => m.Address != c.Address)).ToList())
             {
                 callouts.Callouts.Remove(gone);
@@ -178,9 +208,11 @@ namespace SmartHunter.Game
                     : $"{Ordinal(me.Rank)} of {recap.Hunters.Count} · {me.Damage:N0} damage";
             }
 
-            foreach (var m in s_Monsters.Values.Where(m => !string.IsNullOrEmpty(m.Name)))
+            foreach (var m in s_Monsters.Values.Where(m => !string.IsNullOrEmpty(m.Name) && (m.Fought || m.Slain || m.Captured)))
             {
-                string outcome = m.LastFraction <= 0 ? "Slain"
+                // Seen captured or seen dead wins; the capture-threshold guess is only for a capture we didn't catch
+                string outcome = m.Captured ? "Captured"
+                    : m.Slain || m.LastFraction <= 0 ? "Slain"
                     : recap.IsSuccess && m.WasCapturable ? "Captured"
                     : $"{m.LastFraction:P0} HP";
                 recap.Monsters.Add(new RecapMonster { Name = m.Name, Outcome = outcome });

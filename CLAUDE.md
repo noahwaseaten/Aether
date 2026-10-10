@@ -80,6 +80,12 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
 - `App.xaml.cs` caps every WPF animation at 30 fps to keep the in-game overlay cheap. The Aether window's
   animations opt out and run at the monitor's refresh rate (`WindowHelper.RefreshRate`). Do the same for new
   window animations, but not for overlay widgets.
+- Player buffs and debuffs (`PlayerDataConfig.cs`) mirror HunterPie-legacy's
+  `HunterPie/HunterPie.Resources/Data/AbnormalityData.xml`: offset = index × 4. Check its `HasConditions`,
+  `ConditionOffset` and `IsPercentageBuff` flags when adding one. Blastscourge ignored them and showed "1 s" forever.
+  Player paralysis, sleep and stun aren't readable timers there, so Aether can't show them.
+- The quest recap is built 3 s after the quest ends (`HuntTracker`). The quest state can flip on the same tick as
+  the killing blow, and building it immediately made a slain monster look "captured".
 - Discord Rich Presence images are loaded by URL from `main` on GitHub: monster portraits from `SmartHunter/Ui/Monsters/`
   and weapon icons from `assets/discord/weapons/` (rendered by `assets/render-weapon-icons.ps1`). Moving or renaming
   those files breaks the images for every installed copy. It uses Discord's verified MHW app id. Buttons are links

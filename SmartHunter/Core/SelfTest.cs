@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using SmartHunter.Core.Helpers;
+using SmartHunter.Game.Config;
 using SmartHunter.Game.Data;
 using SmartHunter.Game.Data.ViewModels;
 using SmartHunter.Game.Helpers;
@@ -63,12 +65,9 @@ namespace SmartHunter.Core
             }
             Check(MhwHelper.WeaponIconName(WeaponType.LONG_SWORD) == "longsword", "long sword maps to longsword.png");
 
-            // Debuff timers: a frozen value is hidden, a ticking one isn't
-            var t0 = new DateTime(2026, 1, 1);
-            MhwHelper.IsTimerStuck(-1, 1f, t0);
-            Check(MhwHelper.IsTimerStuck(-1, 1f, t0.AddSeconds(3)), "a debuff timer stuck at 1 s is hidden");
-            MhwHelper.IsTimerStuck(-2, 30f, t0);
-            Check(!MhwHelper.IsTimerStuck(-2, 27f, t0.AddSeconds(3)), "a counting-down debuff stays visible");
+            // Blastscourge is a flagged meter, not a timer (the "1 s forever" bug)
+            var blastscourge = new PlayerDataConfig().StatusEffects.First(s => s.NameStringId == "LOC_STATUS_EFFECT_BLASTSCOURGE");
+            Check(blastscourge.TimerOffset == null && blastscourge.Conditions.Single().ByteNonZero, "Blastscourge shows only while its flag is set");
 
             // Rage: the stored value is time left, so a calm monster reads exactly max
             int rage = Array.FindIndex(ConfigHelper.MonsterData.Values.StatusEffects, s => s.GroupId == "Rage");
