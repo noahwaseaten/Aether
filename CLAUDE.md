@@ -118,9 +118,11 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   checks for the game every 3 s, then starts normally and closes with the game. Each game start counts once, so closing
   Aether mid-hunt doesn't reopen it. Testing it with "Start the game with Aether" on launches the game.
 - Layout editing (Scroll Lock, as in HunterPie, or the Edit layout button) dims the game behind `LayoutEditor` and gives
-  each widget an `EditChrome`: a name tab with a hide button and a corner resize grip. Widgets stay separate windows,
+  each widget an `EditChrome`: a name tab with a hide button and a corner resize grip. The editor takes focus while open,
+  because the focused game pins the cursor to the middle of the screen, and gives it back when you're done; Alt-Tab
+  away closes it. (Left Alt worked before only because holding Alt makes the game let go of the cursor.) Widgets stay separate windows,
   which is also how Discord's 2025 overlay draws over games without hooking them. The toolbar is its own window so it
-  stacks above the widgets. Edit windows use `WS_EX_NOACTIVATE`, so the game keeps focus. Leaving edit mode saves only
+  stacks above the widgets. Widgets and the toolbar use `WS_EX_NOACTIVATE`, so clicking them doesn't take focus from the editor. Leaving edit mode saves only
   after the widgets shrink back: right-side widgets shift while they shrink, and saving at once stored the shifted spot.
 - Widget placement is saved on every drag and resize (`WidgetWindow.PlacementChanged`), not only when edit mode ends.
 - Routine sync calls (pull, push, damage) aren't logged one by one: they filled the log and pushed out what mattered.

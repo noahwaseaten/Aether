@@ -51,6 +51,7 @@ namespace SmartHunter.Game
         // Done: back to click-through, and save where they ended up.
         void ApplyEditMode(bool isEditing)
         {
+            Log.WriteLine(isEditing ? "Layout editor opened" : "Layout editor closed");
             if (isEditing)
             {
                 // The debug widget is for development; it's shown from its setting only

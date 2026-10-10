@@ -79,8 +79,8 @@ namespace SmartHunter.Game.Data.ViewModels
         {
             get
             {
-                // While editing the layout from the app window the game isn't focused, but you still need to see what you move
-                return (IsGameActive || CanManipulateWindows) && !HideWidgetsRequested;
+                // While editing the game isn't focused, and the hide key may be on, but you still need to see what you move
+                return CanManipulateWindows || (IsGameActive && !HideWidgetsRequested);
             }
         }
 

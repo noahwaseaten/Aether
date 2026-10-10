@@ -125,6 +125,36 @@ namespace SmartHunter.Core.Helpers
             WindowsApi.SetWindowPos(handle, -1, 0, 0, 0, 0, TopMostWindowSizePositions);
         }
 
+        // Topmost and clickable, and it can take focus: the layout editor's backdrop has to, or the game keeps the
+        // cursor pinned to the middle of the screen
+        public static void SetTopMostFocusable(Window window)
+        {
+            if (!TryGetHandle(window, out var handle))
+            {
+                return;
+            }
+            WindowsApi.SetWindowLong(handle, (int)WindowsApi.WindowLongGroup.GWL_EXSTYLE, TopMostSelectableWindowStyleFlags & ~(uint)WindowsApi.WindowStyleFlag.WS_EX_NOACTIVATE);
+            WindowsApi.SetWindowPos(handle, -1, 0, 0, 0, 0, TopMostWindowSizePositions);
+        }
+
+        // Windows only lets the app the user is using bring a window forward. Sharing the foreground window's input
+        // queue for a moment makes the request count as coming from it.
+        public static void BringToForeground(IntPtr handle)
+        {
+            if (handle == IntPtr.Zero || !WindowsApi.IsWindow(handle))
+            {
+                return;
+            }
+            uint foregroundThread = WindowsApi.GetWindowThreadProcessId(WindowsApi.GetForegroundWindow(), IntPtr.Zero);
+            uint thisThread = WindowsApi.GetCurrentThreadId();
+            bool attached = foregroundThread != 0 && foregroundThread != thisThread && WindowsApi.AttachThreadInput(thisThread, foregroundThread, true);
+            WindowsApi.SetForegroundWindow(handle);
+            if (attached)
+            {
+                WindowsApi.AttachThreadInput(thisThread, foregroundThread, false);
+            }
+        }
+
         public static void SetTopMostTransparent(Window window)
         {
             if (!TryGetHandle(window, out var handle))

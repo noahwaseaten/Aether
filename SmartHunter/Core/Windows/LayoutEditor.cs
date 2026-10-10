@@ -28,6 +28,8 @@ namespace SmartHunter.Core.Windows
         Action m_Done, m_Reset;
         Action<WidgetWindow> m_Toggle;
         IList<WidgetWindow> m_Widgets = new List<WidgetWindow>();
+        IntPtr m_ReturnFocusTo;
+        bool m_IsOpen;
 
         static readonly Brush Surface = Frozen(Color.FromArgb(0xF2, 0x1A, 0x1B, 0x1E));
         static readonly Brush Stroke = Frozen(Color.FromArgb(0xFF, 0x2E, 0x30, 0x36));
@@ -48,7 +50,7 @@ namespace SmartHunter.Core.Windows
             Top = SystemParameters.VirtualScreenTop;
             Width = SystemParameters.VirtualScreenWidth;
             Height = SystemParameters.VirtualScreenHeight;
-            SourceInitialized += (s, e) => WindowHelper.SetTopMostSelectable(this);
+            SourceInitialized += (s, e) => WindowHelper.SetTopMostFocusable(this);
 
             m_Accent = Application.Current.TryFindResource("B_Accent") as Brush ?? Frozen(Color.FromRgb(0xE2, 0xC2, 0x7A));
             var guide = ((SolidColorBrush)m_Accent).Color;
@@ -72,6 +74,17 @@ namespace SmartHunter.Core.Windows
                 Content = BuildToolbar(),
             };
             m_Toolbar.SourceInitialized += (s, e) => WindowHelper.SetTopMostSelectable(m_Toolbar);
+            // Alt-Tab or the Windows key while editing: finish, or the dark layer would cover whatever you switched to.
+            // Clicking the widgets or the toolbar doesn't count, they never take focus.
+            Deactivated += (s, e) =>
+            {
+                if (m_IsOpen)
+                {
+                    Log.WriteLine("Layout editor lost focus, closing it");
+                    m_ReturnFocusTo = IntPtr.Zero;
+                    m_Done?.Invoke();
+                }
+            };
             // Centred on the primary screen: the middle is where the hunter stands, so no widget lives there
             m_Toolbar.SizeChanged += (s, e) =>
             {
@@ -194,6 +207,7 @@ namespace SmartHunter.Core.Windows
                 }
             }
 
+            m_IsOpen = true;
             m_Guides.Children.Clear();
             BeginAnimation(OpacityProperty, null);
             Opacity = 0;
@@ -201,6 +215,17 @@ namespace SmartHunter.Core.Windows
             {
                 Show();
             }
+
+            // Take focus like Discord's overlay does: while the game has it, it hides the cursor and pins it to the
+            // middle of the screen, so nothing could be dragged. The game gets focus back when editing ends.
+            var foreground = WindowsApi.GetForegroundWindow();
+            var handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            if (foreground != handle)
+            {
+                m_ReturnFocusTo = foreground;
+            }
+            WindowHelper.BringToForeground(handle);
+            WindowsApi.ClipCursor(IntPtr.Zero);
             BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(160)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
         }
 
@@ -222,12 +247,15 @@ namespace SmartHunter.Core.Windows
 
         public void Close(bool animate = true)
         {
+            m_IsOpen = false;
             if (!IsVisible)
             {
                 return;
             }
             m_Guides.Children.Clear();
             m_Toolbar.Hide();
+            WindowHelper.BringToForeground(m_ReturnFocusTo);
+            m_ReturnFocusTo = IntPtr.Zero;
             var fade = new DoubleAnimation(0, TimeSpan.FromMilliseconds(animate ? 140 : 0));
             fade.Completed += (s, e) =>
             {

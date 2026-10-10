@@ -238,8 +238,9 @@
         <Setter Property="TextWrapping" Value="Wrap" />
         <Setter Property="TextAlignment" Value="Center" />
         <Setter Property="HorizontalAlignment" Value="Center" />
-        <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="Margin" Value="16 4" />
+        <!--At the bottom of the reserved space: in the middle it drew through whatever the widget was showing-->
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="Margin" Value="16 4 16 10" />
     </Style>
 
     <!--Danger: three red blinks, then it stays lit. Targets an element named Danger.
