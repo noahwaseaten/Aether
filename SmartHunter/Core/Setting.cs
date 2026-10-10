@@ -25,6 +25,15 @@ namespace SmartHunter.Core
         }
         public Command TriggerAction { get; }
 
+        // Matches the settings search. Rows are hidden in place rather than filtered out: filtering rebuilt every row
+        // on each key typed, and each rebuilt switch played its slide from off to on.
+        bool m_IsShown = true;
+        public bool IsShown
+        {
+            get { return m_IsShown; }
+            set { SetProperty(ref m_IsShown, value); }
+        }
+
         bool m_Value;
         public bool Value
         {

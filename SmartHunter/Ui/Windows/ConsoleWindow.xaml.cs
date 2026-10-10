@@ -39,14 +39,7 @@ namespace SmartHunter.Ui.Windows
 
         void ResetLayout_Click(object sender, RoutedEventArgs e) => OverlayViewModel.Instance.ResetLayout();
 
-        // Matches a setting's name, its explanation or its section; empty shows everything
-        void SettingsSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
-        {
-            string query = SettingsSearch.Text.Trim();
-            bool Has(string text) => text != null && text.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
-            System.Windows.Data.CollectionViewSource.GetDefaultView(SettingsViewModel.Instance.Settings).Filter =
-                query.Length == 0 ? null : (Predicate<object>)(item => item is Core.Setting s && (Has(s.Name) || Has(s.Description) || Has(s.Group)));
-        }
+        void SettingsSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) => SettingsViewModel.Instance.Search(SettingsSearch.Text);
         void Close_Click(object sender, RoutedEventArgs e) => Close();
         void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
         void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;

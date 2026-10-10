@@ -43,6 +43,26 @@ namespace SmartHunter.Game.Data.ViewModels
             set { SetProperty(ref m_RestartReason, value); }
         }
 
+        // Bumped by every search, so section headings re-check whether any of their rows is still shown
+        int m_SearchVersion;
+        public int SearchVersion
+        {
+            get { return m_SearchVersion; }
+            set { SetProperty(ref m_SearchVersion, value); }
+        }
+
+        // Matches a setting's name, its explanation or its section; empty shows everything
+        public void Search(string query)
+        {
+            query = query.Trim();
+            bool Has(string text) => text != null && text.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
+            foreach (var setting in Settings)
+            {
+                setting.IsShown = query.Length == 0 || Has(setting.Name) || Has(setting.Description) || Has(setting.Group);
+            }
+            SearchVersion++;
+        }
+
         public Command RestartCommand { get; } = new Command(_ => Core.Helpers.AppUpdater.Restart());
 
         static MainConfig C => ConfigHelper.Main.Values;

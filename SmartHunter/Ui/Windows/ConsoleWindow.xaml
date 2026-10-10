@@ -8,6 +8,7 @@
         xmlns:controls="clr-namespace:SmartHunter.Ui.Controls"
         xmlns:behaviors="clr-namespace:SmartHunter.Ui.Behaviors"
         xmlns:helpers="clr-namespace:SmartHunter.Core.Helpers"
+        xmlns:converters="clr-namespace:SmartHunter.Ui.Converters"
         d:DataContext="{x:Static viewModels:ConsoleViewModel.Instance}"
         mc:Ignorable="d"
         Icon="/Ui/Aether.ico"
@@ -21,6 +22,7 @@
     </WindowChrome.WindowChrome>
 
     <Window.Resources>
+        <converters:AnyShownConverter x:Key="AnyShown" />
         <Style x:Key="Caption" TargetType="Button">
             <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
             <Setter Property="Foreground" Value="#D8D0BE" />
@@ -440,14 +442,21 @@
                                 <GroupStyle>
                                     <GroupStyle.HeaderTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Name}" Foreground="#F3EDE0" FontSize="13.5" FontWeight="SemiBold" Margin="4 26 0 10" />
+                                            <TextBlock Text="{Binding Name}" Foreground="#F3EDE0" FontSize="13.5" FontWeight="SemiBold" Margin="4 26 0 10">
+                                                <TextBlock.Visibility>
+                                                    <MultiBinding Converter="{StaticResource AnyShown}">
+                                                        <Binding Path="Items" />
+                                                        <Binding Path="SearchVersion" Source="{x:Static viewModels:SettingsViewModel.Instance}" />
+                                                    </MultiBinding>
+                                                </TextBlock.Visibility>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </GroupStyle.HeaderTemplate>
                                 </GroupStyle>
                             </ItemsControl.GroupStyle>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type core:Setting}">
-                                    <Border x:Name="Row" Margin="0 0 0 6" Padding="16 13" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
+                                    <Border x:Name="Row" Margin="0 0 0 6" Padding="16 13" CornerRadius="10" Visibility="{Binding IsShown, Converter={StaticResource A_Converter_BoolToVisibility}}" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
                                         <DockPanel>
                                             <CheckBox x:Name="Switch" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="16 0 0 0" Style="{StaticResource Switch}"
                                                       IsChecked="{Binding Value, Mode=TwoWay}" Command="{Binding TriggerAction}" />
