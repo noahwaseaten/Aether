@@ -10,23 +10,23 @@ namespace SmartHunter.Game.Config
         public string IncludePartGroupIdRegex = ".*";
         public string IncludePartSoftenGroupIdRegex = ".*";
         public string IncludeStatusEffectGroupIdRegex = ".*";
-        public bool ShowUnchangedMonsters = true;
+        public bool ShowUnchangedMonsters = false;
         public float HideMonstersAfterSeconds = 999f;
         public bool ShowParts = true;
         public bool ShowUnchangedParts = false;
         public float HidePartsAfterSeconds = 12f;
-        public bool ShowSoftenParts = true;
+        public bool ShowSoftenParts = false;
         public float HideSoftenPartsAfterSeconds = 6f;
         public bool ShowStatusEffects = true;
         public bool ShowUnchangedStatusEffects = false;
         public float HideStatusEffectsAfterSeconds = 12f;
 
         public bool ShowSize = false; // the crown already says when the size matters
-        public bool ShowCrown = true;
+        public bool ShowCrown = false;
         public bool ShowBars = true;
         public bool ShowNumbers = true;
-        public bool ShowPercents = false;
-        public bool UseAnimations = false;
+        public bool ShowPercents = true;
+        public bool UseAnimations = true;
         public bool ShowOnlySelectedMonster = true; // replaced by MonsterFilter, kept so old Config.json files still load
         // "Fighting": the map-pinned monster, else the one you last hit. "Pinned": only the map-pinned one. "All": every large monster.
         public string MonsterFilter = "Fighting";

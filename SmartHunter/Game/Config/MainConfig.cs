@@ -16,11 +16,11 @@ namespace SmartHunter.Game.Config
         public string UserDataPath = @"C:\Program Files (x86)\Steam\userdata\";
 
         public bool IgnoreHttpsErrors = true;
-        public bool ShutdownWhenProcessExits = false;
-        public bool BackupWhenProcessExits = false;
+        public bool ShutdownWhenProcessExits = true;
+        public bool BackupWhenProcessExits = true;
         public bool AutomaticallyCheckAndDownloadUpdates = true;
         public bool UseSoftwareRendering = false; // fallback for graphics drivers that draw transparent overlay windows wrong
-        public bool StartMHWWhenSmartHunterStart = false;
+        public bool StartMHWWhenSmartHunterStart = true;
 
         public OverlayConfig Overlay = new OverlayConfig();
 
