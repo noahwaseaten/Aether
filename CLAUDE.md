@@ -86,6 +86,11 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   HunterPie v2 (`HunterPie/HunterPie`, `HunterPie/Game/World/Data/AbnormalityData.xml`, hex offsets) is newer and
   has more skill timers; check it first. Player paralysis, sleep and stun aren't in either, nor in any other public
   MHW project found (Oct 2026), so Aether can't show them without new memory research.
+- Quest clock, meal timer and weapon timers (`MhwHelper.UpdateHuntInfo`) use HunterPie v2's
+  `HunterPie/Address/MonsterHunterWorld.421810.map`. Its offset lists mean the same as Aether's
+  `ReadMultiLevelPointer`: dereference, then add. Weapon timers are stored without Power Prolonger, so scale them
+  the way HunterPie's `MHWGameUtils.GetPowerProlongerMultiplier` does. Keep that widget terse: no label where a
+  colour or number already says it.
 - The quest recap is built 3 s after the quest ends (`HuntTracker`). The quest state can flip on the same tick as
   the killing blow, and building it immediately made a slain monster look "captured".
 - Discord Rich Presence images are loaded by URL from `main` on GitHub: monster portraits from `SmartHunter/Ui/Monsters/`

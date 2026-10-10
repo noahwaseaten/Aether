@@ -10,6 +10,8 @@ namespace SmartHunter.Game.Data.WidgetContexts
 
         public Sharpness Sharpness { get; } = new Sharpness();
 
+        public HuntInfo Hunt { get; } = new HuntInfo();
+
         public PlayerWidgetContext()
         {
             StatusEffects = new ObservableCollection<PlayerStatusEffect>();

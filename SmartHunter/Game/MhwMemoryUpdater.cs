@@ -212,10 +212,12 @@ namespace SmartHunter.Game
 
                     MhwHelper.UpdatePlayerWidget(Process, buffAddress, equipmentAddress, weaponAddress);
                     MhwHelper.UpdateSharpness(Process);
+                    MhwHelper.UpdateHuntInfo(Process);
                 }
                 else if (OverlayViewModel.Instance.PlayerWidget.Context.StatusEffects.Any())
                 {
                     OverlayViewModel.Instance.PlayerWidget.Context.StatusEffects.Clear();
+                    OverlayViewModel.Instance.PlayerWidget.Context.Hunt.Clear();
                 }
             }
             else
@@ -224,6 +226,7 @@ namespace SmartHunter.Game
                 OverlayViewModel.Instance.MonsterWidget.Context.HasVisibleMonsters = false;
                 OverlayViewModel.Instance.TeamWidget.Context.ClearPlayers();
                 OverlayViewModel.Instance.PlayerWidget.Context.StatusEffects.Clear();
+                OverlayViewModel.Instance.PlayerWidget.Context.Hunt.Clear();
             }
 
             HuntTracker.Update(Process);
