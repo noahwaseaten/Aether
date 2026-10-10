@@ -678,7 +678,7 @@ namespace SmartHunter.Game.Helpers
             {
                 context.Monsters.Remove(obsoleteMonster);
             }
-            context.UpdateFocus(selectedMonsterAddress);
+            context.UpdateFocus(selectedMonsterAddress, ConfigHelper.Main.Values.Overlay.MonsterWidget.FollowLockOn ? LockedOnMonster(process, updatedMonsters) : 0);
 
             if (ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer && ServerManager.Instance.IsServerOline == 1 && OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsValid && OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerOnline())
             {
@@ -846,6 +846,23 @@ namespace SmartHunter.Game.Helpers
                     }
                 }
             }
+        }
+
+        // The monster your camera is locked onto (HunterPie v2's World map, build 421810): the lock-on target's index
+        // in the game's monster list, matched against each monster's own index. Below 0: not locked on.
+        static ulong LockedOnMonster(Process process, List<Monster> monsters)
+        {
+            ulong lockOn = MemoryHelper.ReadMultiLevelPointer(false, process, 0x140000000 + 0x0500ECA0, 0x1618, 0x12608, 0x3340, 0x0, 0x48, 0x0);
+            if (lockOn < 0xFFFFFF)
+            {
+                return 0;
+            }
+            int index = MemoryHelper.Read<int>(process, lockOn + 0x950);
+            if (index < 0)
+            {
+                return 0;
+            }
+            return monsters.FirstOrDefault(m => MemoryHelper.Read<int>(process, m.Address + 0x1228C) == index)?.Address ?? 0;
         }
 
         private static ulong tmp, health_component, nameptr;

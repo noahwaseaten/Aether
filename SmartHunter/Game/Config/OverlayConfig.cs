@@ -10,7 +10,7 @@ namespace SmartHunter.Game.Config
         public float ScaleMax = 2f;
         public float ScaleStep = 0.1f;
         public bool HideWhenGameWindowIsInactive = true;
-        public bool HideWhenGameMenuIsOpen = false;   // map, item bar menus, Start menu: anything that shows the cursor
+        public bool HideWhenGameMenuIsOpen = true;    // map, item bar menus, Start menu: anything that shows the cursor
         public float UiScale = 1f;                 // multiplies every widget's own scale
         public string Shading = "Light";           // Off, Light, Normal: the dark layer behind widget text
         public bool ColorblindColors = false;      // player colours that stay apart with red-green colour blindness

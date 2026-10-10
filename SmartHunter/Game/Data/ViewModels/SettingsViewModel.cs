@@ -86,6 +86,8 @@ namespace SmartHunter.Game.Data.ViewModels
             Choice(Monster, "Which monsters", "Fighting: your map pin, else the last one you hit, plus a one-line bar for any other monster fought in the last minute (turf wars, double hunts). Pinned: only your map pin. All: every large monster, the others as one line each.",
                 new[] { ("Fighting", "Fighting"), ("Pinned", "Pinned only"), ("All", "All") },
                 () => C.Overlay.MonsterWidget.MonsterFilter, v => C.Overlay.MonsterWidget.MonsterFilter = v);
+            Toggle(Monster, "Follow lock-on", "The monster you lock onto with the camera takes focus, ahead of your map pin and the one you last hit. Pinned only mode still shows only the pin.",
+                () => C.Overlay.MonsterWidget.FollowLockOn, v => C.Overlay.MonsterWidget.FollowLockOn = v);
             Toggle(Monster, "Keep idle monsters on screen", "Off: a monster fades out a while after it last took damage. On: it stays, even at full health.",
                 () => C.Overlay.MonsterWidget.ShowUnchangedMonsters, v => C.Overlay.MonsterWidget.ShowUnchangedMonsters = v);
             Toggle(Monster, "Health bar", "The bar under the monster's name.", () => C.Overlay.MonsterWidget.ShowBars, v => C.Overlay.MonsterWidget.ShowBars = v);

@@ -171,6 +171,17 @@ namespace SmartHunter.Core
             Check(shownParts == Game.Data.WidgetContexts.MonsterWidgetContext.MaxPartRows, "client without host data still shows its estimate");
             monsters.IsEstimate = false;
 
+            // Focus: the lock-on beats the map pin
+            var pinnedOne = new Monster(0x1000000, "em001_00", 1000, 1000, 1, 1) { IsAlive = true };
+            var lockedOne = new Monster(0x2000000, "em002_00", 1000, 1000, 1, 1) { IsAlive = true };
+            monsters.Monsters.Add(pinnedOne);
+            monsters.Monsters.Add(lockedOne);
+            monsters.UpdateFocus(pinnedOne.Address, lockedOne.Address);
+            Check(lockedOne.IsFocused && !pinnedOne.IsFocused, "the locked-on monster takes focus over the pin");
+            monsters.UpdateFocus(pinnedOne.Address);
+            Check(pinnedOne.IsFocused, "without a lock-on, the pin has focus");
+            monsters.Monsters.Clear();
+
             // Breaks: Rathian's head (first normal part) needs its pool emptied twice; legs only flinch; cut parts go once
             var rathian = new Monster(6, "em001_00", 1000, 1000, 1, 1);
             var cut = rathian.UpdateAndGetPart(0x10000001, true, 300, 300, 0);

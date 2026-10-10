@@ -31,6 +31,7 @@ namespace SmartHunter.Game.Config
         // "Fighting": the map-pinned monster, else the one you last hit. "Pinned": only the map-pinned one. "All": every large monster.
         public string MonsterFilter = "Fighting";
         public bool AlwaysShowParts = false;
+        public bool FollowLockOn = true;          // the monster you lock onto takes focus over the map pin
         public bool UseNetworkServer = true;
 
         public MonsterWidgetConfig(float x, float y) : base(x, y)
