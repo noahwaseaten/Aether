@@ -4,7 +4,7 @@ An overlay for Monster Hunter: World on PC (Iceborne 15.20). It shows the monste
 
 ![Monster widget](docs/monster-widget.png)
 
-It started as a fork of [SmartHunter](https://github.com/gabrielefilipp/SmartHunter) that I fixed up for me and my friends. This is my first public repo, so if something breaks, open an issue.
+It started as a fork of [SmartHunter](https://github.com/gabrielefilipp/SmartHunter) that I fixed up for me and my friends.
 
 ## Install
 
