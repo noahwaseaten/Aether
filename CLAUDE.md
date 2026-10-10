@@ -38,6 +38,11 @@ Every installed copy checks GitHub releases on startup, so **publishing a releas
 ```
 
 - Push the commits to `aether/main` **first**: `gh release create` tags the current `main`.
+- `-Notes` is required with `-Publish`. Build it in a PowerShell here-string (`@'...'@`), one `- ` line per change.
+  `build.ps1` passes the notes through `--notes-file`, because Windows PowerShell 5.1 breaks native arguments
+  that contain double quotes.
+- Bump the version and write the notes in the same session that publishes, then check with
+  `gh release view vX.Y.Z --repo noahwaseaten/Aether`.
 - Versions are semver `MAJOR.MINOR.PATCH` and the tag is `v1.2.0`. Bump PATCH for fixes, MINOR for new features or
   settings. Never reuse or lower a version; the updater only installs a version higher than the running one.
 - The release must have an asset named exactly `Aether.exe`: that's what the updater downloads. `build.ps1`

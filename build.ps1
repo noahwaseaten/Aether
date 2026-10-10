@@ -2,7 +2,8 @@
 Builds Aether, runs its self-test and packages it.
 
   .\build.ps1 -Version 1.0.1               build + dist\Aether-1.0.1.zip
-  .\build.ps1 -Version 1.0.1 -Publish      ...and publish GitHub release v1.0.1 (needs `gh auth login`)
+  .\build.ps1 -Version 1.0.1 -Publish -Notes "..."   ...and publish GitHub release v1.0.1 (needs `gh auth login`)
+                                                    Notes are shown in the app as "What's new"; push main first
 
 Every installed copy checks the latest release on startup and updates itself when its version is lower,
 so publishing is all it takes to ship an update. Bump the version every time.
@@ -50,9 +51,13 @@ Copy-Item (Join-Path $out 'Aether.exe') (Join-Path $dist 'Aether.exe') -Force
 Write-Host "Packaged $zip"
 
 if ($Publish) {
-    if (-not $Notes) { $Notes = "Aether $Version. Download Aether-$Version.zip, extract it and run ""Install Aether.cmd"". Installed copies update themselves." }
+    # The app shows these notes as "What's new", so they must say what changed
+    if (-not $Notes) { throw 'Publishing needs -Notes: what players will notice in this version' }
+    # Through a file: Windows PowerShell mangles native arguments that contain double quotes
+    $notesFile = Join-Path $dist 'notes.md'
+    [IO.File]::WriteAllText($notesFile, $Notes)
     # Aether.exe must be attached as its own asset: that's the file the in-app updater downloads
-    gh release create "v$Version" (Join-Path $dist 'Aether.exe') $zip --repo $repo --title "Aether $Version" --notes $Notes
+    gh release create "v$Version" (Join-Path $dist 'Aether.exe') $zip --repo $repo --title "Aether $Version" --notes-file $notesFile
     if ($LASTEXITCODE -ne 0) { throw 'Publishing the release failed' }
     Write-Host "Published https://github.com/$repo/releases/tag/v$Version"
 }
