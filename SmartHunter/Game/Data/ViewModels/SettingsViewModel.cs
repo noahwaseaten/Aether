@@ -196,21 +196,6 @@ namespace SmartHunter.Game.Data.ViewModels
             })) { Detail = C.UserDataPath };
             Settings.Add(saveFolder);
 
-            const string Updates = "Updates";
-            Toggle(Updates, "Update automatically", "Downloads new versions from GitHub when Aether starts and shows what changed. "
-                + "If the game isn't running yet, Aether restarts into it after a short countdown you can cancel; otherwise you choose when.",
-                () => C.AutomaticallyCheckAndDownloadUpdates, v => C.AutomaticallyCheckAndDownloadUpdates = v);
-            Setting check = null;
-            check = new Setting(Updates, "Check for updates", "Looks for a newer version on GitHub now.", "Check now", new Command(async _ =>
-            {
-                if (check.ActionLabel == "Checking…")
-                    return;
-                check.ActionLabel = "Checking…";
-                bool upToDate = await UpdateViewModel.Instance.CheckAsync(false);
-                check.ActionLabel = upToDate ? "Up to date" : "Check now";
-            })) { Detail = $"You have Aether {Core.Helpers.AppUpdater.CurrentVersion.ToString(3)}" };
-            Settings.Add(check);
-
             const string Troubleshooting = "Troubleshooting";
             Toggle(Troubleshooting, "Software rendering", "Turn on if widgets flicker, show black boxes or don't appear (some AMD and older graphics drivers). Uses a bit more CPU.",
                 () => C.UseSoftwareRendering, v => C.UseSoftwareRendering = v, true);
@@ -223,6 +208,19 @@ namespace SmartHunter.Game.Data.ViewModels
             string folder = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
             Settings.Add(new Setting(About, "Version", "What changed in each version, on GitHub.", "Release notes",
                 new Command(_ => Open(Repo + "/releases"))) { Detail = $"Aether {version} · {WindowsVersion()}" });
+            Toggle(About, "Update automatically", "Downloads new versions from GitHub when Aether starts and shows what changed. "
+                + "If the game isn't running yet, Aether restarts into it after a short countdown you can cancel; otherwise you choose when.",
+                () => C.AutomaticallyCheckAndDownloadUpdates, v => C.AutomaticallyCheckAndDownloadUpdates = v);
+            Setting check = null;
+            check = new Setting(About, "Check for updates", "Looks for a newer version on GitHub now.", "Check now", new Command(async _ =>
+            {
+                if (check.ActionLabel == "Checking…")
+                    return;
+                check.ActionLabel = "Checking…";
+                bool upToDate = await UpdateViewModel.Instance.CheckAsync(false);
+                check.ActionLabel = upToDate ? "Up to date" : "Check now";
+            }));
+            Settings.Add(check);
             Settings.Add(new Setting(About, "Aether folder", "Settings, the log (Log.txt) and save backups live here.", "Open",
                 new Command(_ => Open(folder))) { Detail = folder });
             Settings.Add(new Setting(About, "Report a bug", "Opens a new GitHub issue with your Aether and Windows versions filled in. Attaching Log.txt from the Aether folder helps a lot.", "Report…",

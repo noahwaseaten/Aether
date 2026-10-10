@@ -402,28 +402,37 @@
                         </DockPanel>
                     </Border>
 
-                    <!--Search: with this many settings, typing a word is faster than scrolling-->
-                    <Grid DockPanel.Dock="Top" Margin="20 4 20 6">
-                        <TextBox x:Name="SettingsSearch" TextChanged="SettingsSearch_TextChanged" Padding="34 9 12 9" FontSize="13"
-                                 Background="{StaticResource Surface}" Foreground="#F3EDE0" CaretBrush="{StaticResource Accent}" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
-                            <TextBox.Template>
-                                <ControlTemplate TargetType="TextBox">
-                                    <Border x:Name="Box" CornerRadius="10" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsKeyboardFocused" Value="True">
-                                            <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Accent}" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </TextBox.Template>
-                        </TextBox>
-                        <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="13" Foreground="{StaticResource Muted}"
-                                   VerticalAlignment="Center" Margin="13 0 0 0" IsHitTestVisible="False" />
-                        <TextBlock x:Name="SearchHint" Text="Search settings" Foreground="{StaticResource Muted}" FontSize="13"
-                                   VerticalAlignment="Center" Margin="35 0 0 0" IsHitTestVisible="False" />
-                    </Grid>
+                    <!--Search: with this many settings, typing a word is faster than scrolling. The icon, placeholder and text share
+                        one grid column, so the caret starts exactly where the placeholder does.-->
+                    <TextBox x:Name="SettingsSearch" DockPanel.Dock="Top" Margin="20 2 20 4" Height="32" FontSize="12.5" TextChanged="SettingsSearch_TextChanged"
+                             Background="{StaticResource Surface}" Foreground="#F3EDE0" CaretBrush="{StaticResource Accent}" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
+                        <TextBox.Template>
+                            <ControlTemplate TargetType="TextBox">
+                                <Border x:Name="Box" CornerRadius="8" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                                    <Grid Margin="10 0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12" Foreground="{StaticResource Muted}"
+                                                   VerticalAlignment="Center" Margin="0 1 8 0" />
+                                        <!--2 px in: the text box starts its text (and caret) 2 px into its area-->
+                                        <TextBlock x:Name="Hint" Grid.Column="1" Text="Search settings" Foreground="{StaticResource Muted}" VerticalAlignment="Center"
+                                                   Margin="2 0 0 0" IsHitTestVisible="False" Visibility="Collapsed" />
+                                        <ScrollViewer x:Name="PART_ContentHost" Grid.Column="1" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="Text" Value="">
+                                        <Setter TargetName="Hint" Property="Visibility" Value="Visible" />
+                                    </Trigger>
+                                    <Trigger Property="IsKeyboardFocused" Value="True">
+                                        <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Accent}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </TextBox.Template>
+                    </TextBox>
 
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20 0 14 24">
                         <ItemsControl ItemsSource="{Binding Settings}" Margin="0 0 6 0">

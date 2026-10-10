@@ -144,18 +144,9 @@ namespace SmartHunter.Core.Windows
                 Child = row,
             };
 
-            var hint = new TextBlock
-            {
-                Text = "Drag to move  ·  Drag the corner or scroll to resize  ·  Double-click resets the size  ·  Hold Shift to place freely  ·  Esc when done",
-                Foreground = Muted,
-                FontSize = 12,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 10, 0, 0),
-            };
 
             var stack = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center };
             stack.Children.Add(card);
-            stack.Children.Add(hint);
             TextOptions.SetTextFormattingMode(stack, TextFormattingMode.Display);
             return stack;
         }

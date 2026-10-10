@@ -43,7 +43,6 @@ namespace SmartHunter.Ui.Windows
         void SettingsSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             string query = SettingsSearch.Text.Trim();
-            SearchHint.Visibility = query.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
             bool Has(string text) => text != null && text.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
             System.Windows.Data.CollectionViewSource.GetDefaultView(SettingsViewModel.Instance.Settings).Filter =
                 query.Length == 0 ? null : (Predicate<object>)(item => item is Core.Setting s && (Has(s.Name) || Has(s.Description) || Has(s.Group)));

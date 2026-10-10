@@ -57,27 +57,11 @@ namespace SmartHunter.Core
 
         private void ToggleWidgetWindow(WidgetWindow widgetWindow)
         {
-            /*
-            widgetWindow.Owner = m_MainWindow;
             if (widgetWindow.Visibility != Visibility.Visible)
             {
-                widgetWindow.Opacity = 1.0f;
+                // No owner, not even for a moment: giving it the Aether window as owner brought that window to the
+                // front every time a widget was shown, e.g. from the layout editor's toolbar
                 widgetWindow.Show();
-
-                WindowHelper.SetTopMostTransparent(widgetWindow);
-            }
-            else
-            {
-                widgetWindow.Opacity = 0.0f;
-                widgetWindow.Hide();
-            }
-            */
-            
-            if (widgetWindow.Visibility != Visibility.Visible)
-            {
-                widgetWindow.Owner = m_MainWindow;
-                widgetWindow.Show();
-                widgetWindow.Owner = null;
 
                 if (IsEditing)
                     WindowHelper.SetTopMostSelectable(widgetWindow);
