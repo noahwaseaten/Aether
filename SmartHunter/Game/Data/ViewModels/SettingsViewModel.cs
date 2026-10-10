@@ -121,7 +121,7 @@ namespace SmartHunter.Game.Data.ViewModels
 
             const string Overlay = "Look and behavior";
             Choice(Overlay, "Overlay size", "Scales every widget. Scroll over a widget while editing the layout to size it on its own.",
-                new[] { ("0.9", "90%"), ("1", "100%"), ("1.15", "115%"), ("1.3", "130%") },
+                Config.OverlayConfig.UiScales.Select(s => (s.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture), $"{s * 100:0}%")).ToArray(),
                 () => C.Overlay.UiScale.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture),
                 v => C.Overlay.UiScale = float.Parse(v, System.Globalization.CultureInfo.InvariantCulture));
             Choice(Overlay, "Background shading", "The soft dark layer behind widget text. Normal keeps text readable over bright skies and snow.",

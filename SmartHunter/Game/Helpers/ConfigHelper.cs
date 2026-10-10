@@ -24,7 +24,13 @@ namespace SmartHunter.Game.Helpers
             {
                 if (s_Main == null)
                 {
+                    bool isFirstRun = !File.Exists(FileContainer.GetFullPathFileName(s_MainFileName));
                     s_Main = new ConfigContainer<MainConfig>(s_MainFileName);
+                    if (isFirstRun)
+                    {
+                        s_Main.Values.Overlay = OverlayConfig.ForScreen();
+                        s_Main.Save();
+                    }
                     s_Main.Changed += Main_Loaded;
                 }
 

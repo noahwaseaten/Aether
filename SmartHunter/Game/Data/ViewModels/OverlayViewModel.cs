@@ -84,12 +84,11 @@ namespace SmartHunter.Game.Data.ViewModels
             }
         }
 
-        // Default spots laid out for 1920x1080 and scaled to this screen, so nothing overlaps or lands off screen
+        // Default spots scaled to this screen, so nothing overlaps or lands off screen
         public void ResetLayout()
         {
-            var defaults = new Config.OverlayConfig();
-            double sx = System.Windows.SystemParameters.PrimaryScreenWidth / 1920, sy = System.Windows.SystemParameters.PrimaryScreenHeight / 1080;
-            void Reset(Core.Data.Widget widget, Core.Config.WidgetConfig config) => widget.ResetPlacement((float)(config.X * sx), (float)(config.Y * sy));
+            var defaults = Config.OverlayConfig.ForScreen();
+            void Reset(Core.Data.Widget widget, Core.Config.WidgetConfig config) => widget.ResetPlacement(config.X, config.Y);
 
             Reset(TeamWidget, defaults.TeamWidget);
             Reset(MonsterWidget, defaults.MonsterWidget);
