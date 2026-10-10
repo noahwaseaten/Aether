@@ -38,6 +38,10 @@ namespace SmartHunter.Game.Data
 
         public bool IsPlayerInExpedition = false;
 
+        // Damage comes from the numbers popping up on screen (every monster, shared through party sync) instead of
+        // the game's own counter, which only counts quest targets and doesn't exist on expeditions
+        public bool UsesOnScreenDamage => IsPlayerInExpedition || SmartHunter.Game.Helpers.ConfigHelper.Main.Values.Overlay.TeamWidget.CountAllMonsters;
+
         string m_SessionHostPlayerName = "";
         public string SessionHostPlayerName
         {

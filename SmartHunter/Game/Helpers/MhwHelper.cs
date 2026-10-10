@@ -555,6 +555,7 @@ namespace SmartHunter.Game.Helpers
                                         if (p.Any())
                                         {
                                             p.First().Damage = damageData[id];
+                                            p.First().HasSyncedDamage = true;
                                         }
                                     }
                                 }

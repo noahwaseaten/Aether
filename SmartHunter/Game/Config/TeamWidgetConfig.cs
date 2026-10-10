@@ -9,6 +9,7 @@ namespace SmartHunter.Game.Config
         public bool ShowNumbers = true;
         public bool ShowPercents = true;
         public bool ShowChart = false;
+        public bool CountAllMonsters = false;
 
         public TeamWidgetConfig(float x, float y) : base(x, y)
         {

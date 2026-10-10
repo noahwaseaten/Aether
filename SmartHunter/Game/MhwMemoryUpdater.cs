@@ -186,7 +186,7 @@ namespace SmartHunter.Game
                     MhwHelper.UpdateTeamWidget(Process, playerDamageCollectionAddress, playerNamesAddress);
                     MhwHelper.UpdatePartyDetails(Process);
 
-                    if (m_DamageOnScreenPattern.MatchedAddresses.Any() && OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerInExpedition)
+                    if (m_DamageOnScreenPattern.MatchedAddresses.Any() && OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.UsesOnScreenDamage)
                     {
                         ulong damageOnScreenRootPtr = MemoryHelper.LoadEffectiveAddressRelative(Process, m_DamageOnScreenPattern.MatchedAddresses.First());
                         ulong damageOnScreePtr = MemoryHelper.ReadMultiLevelPointer(traceUniquePointers, Process, damageOnScreenRootPtr, 0x580, 0x58, 0xC0, 0x518, 0x0);

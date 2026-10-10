@@ -136,6 +136,8 @@ namespace SmartHunter.Game.Data.WidgetContexts
             return monster;
         }
 
+        const double EngagedSeconds = 60;
+
         // Focus: the map-pinned monster, else whoever lost HP most recently, else the only one alive
         public void UpdateFocus(ulong selectedAddress)
         {
@@ -149,7 +151,9 @@ namespace SmartHunter.Game.Data.WidgetContexts
             foreach (var monster in Monsters)
             {
                 monster.IsFocused = monster == focus;
-                monster.IsSuppressed = filter != "All" && monster != focus;
+                // Fighting also keeps any other monster that lost HP recently as a compact line (turf wars, double hunts)
+                bool engaged = monster.LastDamagedTime.HasValue && (DateTimeOffset.UtcNow - monster.LastDamagedTime.Value).TotalSeconds < EngagedSeconds;
+                monster.IsSuppressed = filter == "Pinned" ? monster != focus : filter == "Fighting" && monster != focus && !engaged;
             }
             foreach (var monster in Monsters)
             {

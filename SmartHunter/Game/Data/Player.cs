@@ -21,6 +21,10 @@ namespace SmartHunter.Game.Data
             set { SetProperty(ref m_Name, value); }
         }
 
+        // The game's own counter (quest targets only), and whether party sync sent this hunter's all-monster total
+        public int GameDamage;
+        public bool HasSyncedDamage;
+
         int m_Damage;
         public int Damage
         {

@@ -88,10 +88,23 @@ namespace SmartHunter.Game.Data.WidgetContexts
                 player.Name = LocalizationHelper.GetString(LocalizationHelper.UnknownPlayerStringId);
             }
 
-            if (!OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerInExpedition)
+            var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
+            if (!game.UsesOnScreenDamage)
             {
                 player.Damage = damage;
             }
+            else if (damage < player.GameDamage)
+            {
+                // The game's counter went back down: a new quest started, so the running total starts over
+                player.Damage = 0;
+                player.HasSyncedDamage = false;
+            }
+            else if (player.Name != game.CurrentPlayerName && !player.HasSyncedDamage && !game.IsPlayerInExpedition)
+            {
+                // A teammate without Aether and party sync: quest-target damage is the best we have
+                player.Damage = damage;
+            }
+            player.GameDamage = damage;
 
             return player;
         }

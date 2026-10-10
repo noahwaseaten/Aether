@@ -116,7 +116,7 @@ namespace SmartHunter.Game.Data.WidgetContexts
                             lastNetworkOperationTime = DateTime.Now.Second;
                         });
                     }
-                    else if (CurrentGame.helloDone && (!CurrentGame.checkDone || (CurrentGame.IsPlayerInExpedition && !CurrentGame.playersCheckDone)) && networkOperationDone && !(CurrentGame.IsCurrentPlayerLobbyHost() && CurrentGame.IsPlayerAlone()) && DateTime.Now.Second - (lastNetworkOperationTime > DateTime.Now.Second ? lastNetworkOperationTime - 60 : lastNetworkOperationTime) >= 5)
+                    else if (CurrentGame.helloDone && (!CurrentGame.checkDone || (CurrentGame.UsesOnScreenDamage && !CurrentGame.playersCheckDone)) && networkOperationDone && !(CurrentGame.IsCurrentPlayerLobbyHost() && CurrentGame.IsPlayerAlone()) && DateTime.Now.Second - (lastNetworkOperationTime > DateTime.Now.Second ? lastNetworkOperationTime - 60 : lastNetworkOperationTime) >= 5)
                     {
                         networkOperationDone = false;
                         ServerManager.Instance.RequestCommadWithHandler(ServerManager.Command.CHECK, CurrentGame.key, null, CurrentGame.IsCurrentPlayerLobbyHost(), 0, null, (result, ping) =>

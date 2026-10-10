@@ -82,7 +82,7 @@ namespace SmartHunter.Game.Data.ViewModels
         {
             const string Monster = "Monster widget";
             Toggle(Monster, "Show widget", "Health, parts and status of large monsters.", () => C.Overlay.MonsterWidget.IsVisible, v => C.Overlay.MonsterWidget.IsVisible = v);
-            Choice(Monster, "Which monsters", "Fighting: your map pin, else the last one you hit. Pinned: only your map pin. All: every large monster, the others as one line each.",
+            Choice(Monster, "Which monsters", "Fighting: your map pin, else the last one you hit, plus a one-line bar for any other monster fought in the last minute (turf wars, double hunts). Pinned: only your map pin. All: every large monster, the others as one line each.",
                 new[] { ("Fighting", "Fighting"), ("Pinned", "Pinned only"), ("All", "All") },
                 () => C.Overlay.MonsterWidget.MonsterFilter, v => C.Overlay.MonsterWidget.MonsterFilter = v);
             Toggle(Monster, "Keep idle monsters on screen", "Off: a monster fades out a while after it last took damage. On: it stays, even at full health.",
@@ -102,7 +102,11 @@ namespace SmartHunter.Game.Data.ViewModels
             const string Team = "Team damage widget";
             Toggle(Team, "Show widget", "Damage dealt by each hunter in the party.", () => C.Overlay.TeamWidget.IsVisible, v => C.Overlay.TeamWidget.IsVisible = v);
             Toggle(Team, "Hide when solo", "Only show the widget when someone else is in your quest.", () => C.Overlay.TeamWidget.DontShowIfAlone, v => C.Overlay.TeamWidget.DontShowIfAlone = v);
-            Toggle(Team, "Bars", "A bar for each hunter's share of the damage.", () => C.Overlay.TeamWidget.ShowBars, v => C.Overlay.TeamWidget.ShowBars = v);
+            Choice(Team, "Count damage to", "Quest targets: the game's own counter. Exact for every hunter, but ignores other large monsters (turf wars) and small monsters. "
+                + "Every monster: adds up the damage numbers on your screen, like on expeditions. Needs damage numbers on in the game's options, and a teammate only counts fully if they also run Aether with this on and party sync; otherwise they show quest-target damage.",
+                new[] { ("Targets", "Quest targets"), ("All", "Every monster") },
+                () => C.Overlay.TeamWidget.CountAllMonsters ? "All" : "Targets", v => C.Overlay.TeamWidget.CountAllMonsters = v == "All");
+            Toggle(Team, "Bars","A bar for each hunter's share of the damage.", () => C.Overlay.TeamWidget.ShowBars, v => C.Overlay.TeamWidget.ShowBars = v);
             Toggle(Team, "Damage numbers", "Each hunter's total damage.", () => C.Overlay.TeamWidget.ShowNumbers, v => C.Overlay.TeamWidget.ShowNumbers = v);
             Toggle(Team, "Damage chart", "Damage over time, above the list.", () => C.Overlay.TeamWidget.ShowChart, v => C.Overlay.TeamWidget.ShowChart = v);
 
