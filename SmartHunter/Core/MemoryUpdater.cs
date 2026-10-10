@@ -185,10 +185,15 @@ namespace SmartHunter.Core
                 new StateMachine<State>.Transition[]
                 {
                     new StateMachine<State>.Transition(
+                        State.WaitingForProcess,
+                        () => Process.HasExited,
+                        () => Initialize(true)),
+                    new StateMachine<State>.Transition(
                         State.FastPatternScanning,
-                        () => true,
+                        IsProcessReady,
                         () =>
                         {
+                            m_FastMemoryScans.Clear();
                             foreach (var pattern in Patterns)
                             {
                                 if (pattern.Config.LastResultAddress.Length > 0)
@@ -207,6 +212,10 @@ namespace SmartHunter.Core
                 null,
                 new StateMachine<State>.Transition[]
                 {
+                    new StateMachine<State>.Transition(
+                        State.WaitingForProcess,
+                        () => Process.HasExited,
+                        () => Initialize(true)),
                     new StateMachine<State>.Transition(
                         State.PatternScanning,
                         () =>
@@ -260,8 +269,9 @@ namespace SmartHunter.Core
                             }
                             ConfigHelper.Memory.Save(false);
                             m_MemoryScans.AddRange(m_FastMemoryScans.Where(f => f.Results.Where(r => r.Matches.Any()).Any()));
-                            var orderedMatches = m_MemoryScans.Select(memoryScan => memoryScan.Results.Where(result => result.Matches.Any()).First().Matches.First()).OrderBy(match => match);
-                            Log.WriteLine($"Match Range: {orderedMatches.First():X} - {orderedMatches.Last():X}");
+                            var orderedMatches = m_MemoryScans.SelectMany(memoryScan => memoryScan.Results.SelectMany(result => result.Matches)).OrderBy(match => match).ToList();
+                            if (orderedMatches.Any())
+                                Log.WriteLine($"Match Range: {orderedMatches.First():X} - {orderedMatches.Last():X}");
                         }),
                     new StateMachine<State>.Transition(
                         State.PatternScanFailed,
@@ -278,7 +288,8 @@ namespace SmartHunter.Core
                         },
                         () =>
                         {
-                            Log.WriteLine($"All pattern failed... Aborting!");
+                            Log.WriteLine("Couldn't find the game data. Retrying in 30 seconds; if this keeps happening, the game may have updated and Aether needs an update too.");
+                            m_ScanFailedTime = DateTime.Now;
                         }),
                     new StateMachine<State>.Transition(
                         State.WaitingForProcess,
@@ -290,6 +301,20 @@ namespace SmartHunter.Core
                         {
                             Initialize(true);
                         })
+                }));
+
+            m_StateMachine.Add(State.PatternScanFailed, new StateMachine<State>.StateData(
+                null,
+                new StateMachine<State>.Transition[]
+                {
+                    new StateMachine<State>.Transition(
+                        State.WaitingForProcess,
+                        () => Process.HasExited,
+                        () => Initialize(true)),
+                    new StateMachine<State>.Transition(
+                        State.ProcessFound,
+                        () => (DateTime.Now - m_ScanFailedTime).TotalSeconds > 30,
+                        ResetScans)
                 }));
 
             m_StateMachine.Add(State.Working, new StateMachine<State>.StateData(
@@ -319,20 +344,45 @@ namespace SmartHunter.Core
                 }));
         }
 
-        private void Initialize(bool processExited = false)
-        {
-            Process = null;
+        DateTime m_ScanFailedTime;
 
-            if (m_MemoryScans != null)
+        void ResetScans()
+        {
+            foreach (var memoryScan in (m_MemoryScans ?? new List<ThreadedMemoryScan>()).Concat(m_FastMemoryScans ?? new List<ThreadedMemoryScan>()))
             {
-                foreach (var memoryScan in m_MemoryScans)
-                {
-                    memoryScan.TryCancel();
-                }
+                memoryScan.TryCancel();
             }
 
             m_FastMemoryScans = new List<ThreadedMemoryScan>();
             m_MemoryScans = new List<ThreadedMemoryScan>();
+
+            // Addresses from a previous game session would be read as if they were still valid
+            foreach (var pattern in Patterns)
+            {
+                pattern.MatchedAddresses.Clear();
+            }
+        }
+
+        // A just-launched game isn't readable yet: its module list is still loading (ReadProcessMemory
+        // fails partway) and the exe is still unpacking, so scanning now finds nothing. Wait for its window.
+        bool IsProcessReady()
+        {
+            try
+            {
+                Process.Refresh();
+                return Process.MainWindowHandle != IntPtr.Zero && Process.MainModule.ModuleMemorySize > 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void Initialize(bool processExited = false)
+        {
+            Process = null;
+
+            ResetScans();
 
             OverlayViewModel.Instance.IsGameActive = false;
             if (processExited && BackupWhenProcessExits)

@@ -61,12 +61,15 @@ namespace SmartHunter.Core
                     {
                         if (transition.Condition())
                         {
+                            // Run Begin before committing: if it throws, stay put and retry next tick
+                            // instead of entering a state whose setup never happened
+                            transition.Begin?.Invoke();
+
                             m_Stopwatch.Stop();
                             Log.WriteLine($"State Machine: {State.ToString()} ({m_Stopwatch.ElapsedMilliseconds} ms) > {transition.State.ToString()}");
                             m_Stopwatch.Restart();
 
                             State = transition.State;
-                            transition.Begin?.Invoke();
                             hasTransitioned = true;
 
                             break;

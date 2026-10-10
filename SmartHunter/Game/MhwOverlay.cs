@@ -133,13 +133,21 @@ namespace SmartHunter.Game
             if (mplayer.Count >= index)
                 CopyToClipboard(mplayer[index - 1].ToString());
             else
-                CopyToClipboard(String.Format("Player Not Found (Index: {0})", index));
+                Log.WriteLine($"No player {index} in this hunt; clipboard left as it was");
         }
 
         private void CopyToClipboard(String str)
         {
-            Clipboard.SetText(str);
-            Log.WriteLine("Copy to clipboard > " + str);
+            // Another app holding the clipboard open makes SetText throw (CLIPBRD_E_CANT_OPEN)
+            try
+            {
+                Clipboard.SetDataObject(str, true);
+                Log.WriteLine("Copied to clipboard: " + str);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine("Couldn't copy to the clipboard, another app is using it: " + ex.Message);
+            }
         }
     }
 }

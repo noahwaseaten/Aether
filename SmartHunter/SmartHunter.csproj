@@ -12,6 +12,7 @@
         <RootNamespace>SmartHunter</RootNamespace>
         <AssemblyTitle>Aether</AssemblyTitle>
         <Product>Aether</Product>
+        <ApplicationIcon>Ui\Aether.ico</ApplicationIcon>
         <!-- Release tags (v1.2.3) are compared against this; build.ps1 passes -p:Version=... -->
         <Version>1.0.0</Version>
         <OutputPath>bin\$(Configuration)</OutputPath>
@@ -52,5 +53,6 @@
         <Resource Include="Ui\Fonts\Roboto-Bold.ttf" />
         <Resource Include="Ui\Monsters\*.png" />
         <Resource Include="Ui\Fonts\Roboto-Medium.ttf" />
+        <Resource Include="Ui\Aether.ico" />
     </ItemGroup>
 </Project>

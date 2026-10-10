@@ -8,6 +8,7 @@
         xmlns:controls="clr-namespace:SmartHunter.Ui.Controls"
         d:DataContext="{x:Static viewModels:ConsoleViewModel.Instance}"
         mc:Ignorable="d"
+        Icon="/Ui/Aether.ico"
         Title="Aether" Height="700" Width="560" MinWidth="460" MinHeight="420"
         Background="#111214" Foreground="#F3EDE0" WindowStyle="SingleBorderWindow" ResizeMode="CanResize"
         FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="13"
