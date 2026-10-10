@@ -9,6 +9,9 @@ namespace SmartHunter.Game.Config
         public float ScaleMin = 0.5f;
         public float ScaleMax = 2f;
         public float ScaleStep = 0.1f;
+        // Off: nothing is drawn, but the game is still read and shared with the party (each widget's own switch also
+        // decides what's read, so those stay as they are)
+        public bool ShowWidgets = true;
         public bool HideWhenGameWindowIsInactive = true;
         public bool HideWhenGameMenuIsOpen = true;    // map, item bar menus, Start menu: anything that shows the cursor
         public float UiScale = 1f;                 // multiplies every widget's own scale

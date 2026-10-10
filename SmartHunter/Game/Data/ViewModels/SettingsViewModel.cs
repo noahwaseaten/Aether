@@ -164,6 +164,9 @@ namespace SmartHunter.Game.Data.ViewModels
                 () => C.Overlay.RecapWidget.IsVisible, v => C.Overlay.RecapWidget.IsVisible = v);
 
             const string Overlay = "Look and behavior";
+            Toggle(Overlay, "Show widgets", "Off: nothing is drawn on screen, but Aether still reads the game and shares damage, parts and ailments with your party. "
+                + "For friends who only want to help with party sync. Turn it back on any time, everything is where you left it.",
+                () => C.Overlay.ShowWidgets, v => C.Overlay.ShowWidgets = v);
             Choice(Overlay, "Overlay size", "Scales every widget. Scroll over a widget while editing the layout to size it on its own.",
                 Config.OverlayConfig.UiScales.Select(s => (s.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture), $"{s * 100:0}%")).ToArray(),
                 () => C.Overlay.UiScale.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture),

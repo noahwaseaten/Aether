@@ -79,8 +79,8 @@ namespace SmartHunter.Game.Data.ViewModels
         {
             get
             {
-                // While editing the game isn't focused, and the hide key may be on, but you still need to see what you move
-                return CanManipulateWindows || (IsGameActive && !HideWidgetsRequested);
+                // While editing the game isn't focused, and the hide key or "Show widgets" may be off, but you still need to see what you move
+                return CanManipulateWindows || (ConfigHelper.Main.Values.Overlay.ShowWidgets && IsGameActive && !HideWidgetsRequested);
             }
         }
 
@@ -126,6 +126,7 @@ namespace SmartHunter.Game.Data.ViewModels
             var overlay = ConfigHelper.Main.Values.Overlay;
             UiScale = Math.Max(0.5, Math.Min(2, overlay.UiScale));
             ShadeOpacity = overlay.Shading == "Off" ? 0 : overlay.Shading == "Light" ? 0.55 : 1;
+            NotifyPropertyChanged(nameof(IsVisible));
 
             var app = System.Windows.Application.Current;
             if (app == null) return;

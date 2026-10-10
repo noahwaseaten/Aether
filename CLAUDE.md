@@ -130,6 +130,9 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   editor ignores focus moving to Aether's own windows: a click on a widget used to close the editor.
 - Overlay text has no eyebrows (small bold capitals): labels are sentence case in `T_Label`. Keep it that way.
 - Shortcuts are rebound in Settings > Keyboard (`KeyBinder`): the next key from the global hook is taken, Esc cancels.
+- Each widget's "Show widget" switch also decides whether its data is read (`MhwMemoryUpdater.UpdateMemory`), and
+  party sync sends what was read. "Show widgets" (`Overlay.ShowWidgets`) only stops drawing, so a friend can share
+  data with no overlay. Don't gate reading on it.
 - Widget placement is saved on every drag and resize (`WidgetWindow.PlacementChanged`), not only when edit mode ends.
 - Routine sync calls (pull, push, damage) aren't logged one by one: they filled the log and pushed out what mattered.
   Past sessions' logs are kept in `Logs\`.

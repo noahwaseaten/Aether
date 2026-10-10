@@ -137,7 +137,8 @@ the SmartHunter sync server. It's on by default and only sends a hashed lobby ID
 | Not the host | ⚠️ Your game's estimate, Aether tells you | ✅ Quest targets for all, every monster for Aether users | Aether users only, others show `—` |
 | Only you, solo | ✅ Exact (you're the host) | ✅ | ✅ |
 
-The more of your party runs Aether, the more you see.
+The more of your party runs Aether, the more you see. Friends who don't want an overlay can still help: with
+**Show widgets** off (Settings > Look and behavior), Aether draws nothing but keeps reading and sharing.
 
 ## FAQ
 
