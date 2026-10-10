@@ -72,11 +72,19 @@ namespace SmartHunter.Game.Data.WidgetContexts
                 return null;
             }
 
+            string unknownName = LocalizationHelper.GetString(LocalizationHelper.UnknownPlayerStringId);
             if (player == null)
             {
-                player = new Player() { Index = index, Name = LocalizationHelper.GetString(LocalizationHelper.UnknownPlayerStringId) };
+                player = new Player() { Index = index, Name = unknownName };
                 Players.Add(player);
                 SyncShownPlayers();
+            }
+            else if (!String.IsNullOrEmpty(name) && player.Name != name && player.Name != unknownName)
+            {
+                // Another hunter took this slot without it reading empty first: don't hand them the last one's damage
+                player.Damage = 0;
+                player.GameDamage = 0;
+                player.HasSyncedDamage = false;
             }
 
             if (!String.IsNullOrEmpty(name))
@@ -89,6 +97,7 @@ namespace SmartHunter.Game.Data.WidgetContexts
             }
 
             var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
+            bool isMe = player.Name == game.CurrentPlayerName;
             if (!game.UsesOnScreenDamage)
             {
                 player.Damage = damage;
@@ -99,12 +108,18 @@ namespace SmartHunter.Game.Data.WidgetContexts
                 player.Damage = 0;
                 player.HasSyncedDamage = false;
             }
-            else if (player.Name != game.CurrentPlayerName && !player.HasSyncedDamage && !game.IsPlayerInExpedition)
+            else if (!isMe && !game.IsPlayerInExpedition && damage > player.Damage)
             {
-                // A teammate without Aether and party sync: quest-target damage is the best we have
+                // A teammate without Aether: quest-target damage is the best we have. With Aether, their all-monster
+                // total can't be below it either; when it is, their Aether stopped sending (closed, or sync off).
                 player.Damage = damage;
             }
             player.GameDamage = damage;
+
+            // Until your own name is read, nobody can be told apart from you
+            bool missing = game.UsesOnScreenDamage && !isMe && !player.HasSyncedDamage && game.CurrentPlayerName.Length > 0;
+            player.IsDamageUnknown = missing && game.IsPlayerInExpedition;
+            player.IsDamagePartial = missing && !game.IsPlayerInExpedition;
 
             return player;
         }
@@ -141,20 +156,13 @@ namespace SmartHunter.Game.Data.WidgetContexts
             NormalizeDamagePoints();
             PlayersDamageUpdated?.Invoke(this, EventArgs.Empty);
 
-            var highestDamagePlayers = Players.OrderByDescending(player => player.Damage).Take(1);
-            if (highestDamagePlayers.Any())
+            // Hunters with no number get no share: counting them as 0 would inflate everyone else's
+            int totalDamage = Math.Max(1, Players.Where(p => !p.IsDamageUnknown).Sum(p => p.Damage));
+            int highestDamage = Math.Max(1, Players.Max(p => p.Damage));
+            foreach (var player in Players)
             {
-                int totalDamage = Players.Sum(player => player.Damage);
-
-                var highestDamagePlayer = highestDamagePlayers.First();
-                highestDamagePlayer.DamageFraction = (float)highestDamagePlayer.Damage / (float)totalDamage;
-                highestDamagePlayer.BarFraction = 1;
-                //Log.WriteLine(String.Format("{0} {1} {2}", highestDamagePlayer.Damage.ToString(), highestDamagePlayer.DamageFraction.ToString(), highestDamagePlayer.BarFraction.ToString()));
-                foreach (var otherPlayer in Players.Except(highestDamagePlayers))
-                {
-                    otherPlayer.DamageFraction = (float)otherPlayer.Damage / (float)totalDamage;
-                    otherPlayer.BarFraction = (float)otherPlayer.Damage / (float)highestDamagePlayer.Damage;
-                }
+                player.DamageFraction = player.IsDamageUnknown ? 0 : (float)player.Damage / totalDamage;
+                player.BarFraction = player.IsDamageUnknown ? 0 : (float)player.Damage / highestDamage;
             }
         }
 

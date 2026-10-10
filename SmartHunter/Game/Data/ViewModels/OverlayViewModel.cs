@@ -158,6 +158,7 @@ namespace SmartHunter.Game.Data.ViewModels
             TeamWidget.Context.UpdateAndGetPlayer(1, "Kabuto", 2182).WeaponIcon = "ICON_LONGSWORD";
             TeamWidget.Context.UpdateAndGetPlayer(2, "mike the father", 569).WeaponIcon = "ICON_BOW";
             TeamWidget.Context.UpdateAndGetPlayer(1, "Kabuto", 2182).UsesAether = true;
+            TeamWidget.Context.Players[2].IsDamagePartial = true; // no Aether: quest targets only
             DebugWidget.Context.CurrentGame.CurrentPlayerName = "Lythia";
             TeamWidget.Context.UpdateFractions();
 

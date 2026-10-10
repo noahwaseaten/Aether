@@ -846,6 +846,17 @@
             <DataTrigger Binding="{Binding Damage}" Value="0">
                 <Setter TargetName="Root" Property="Opacity" Value="0.6" />
             </DataTrigger>
+            <!--No Aether on an expedition: no number exists for them, so don't show a misleading 0-->
+            <DataTrigger Binding="{Binding IsDamageUnknown}" Value="True">
+                <Setter TargetName="Root" Property="Opacity" Value="0.6" />
+                <Setter TargetName="DamageBlock" Property="Text" Value="—" />
+                <Setter TargetName="Bar" Property="Visibility" Value="Hidden" />
+                <Setter TargetName="Root" Property="ToolTip" Value="Damage unknown: they need Aether with party sync on" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsDamagePartial}" Value="True">
+                <Setter TargetName="DamageBlock" Property="Text" Value="{Binding Damage, StringFormat=~{0:N0}}" />
+                <Setter TargetName="Root" Property="ToolTip" Value="Quest targets only: they need Aether with party sync on for the rest" />
+            </DataTrigger>
             <DataTrigger Binding="{Binding DataContext.ShowBars, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="False">
                 <Setter TargetName="Bar" Property="Visibility" Value="Collapsed" />
             </DataTrigger>

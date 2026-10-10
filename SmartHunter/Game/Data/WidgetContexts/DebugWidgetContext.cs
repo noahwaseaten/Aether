@@ -26,6 +26,10 @@ namespace SmartHunter.Game.Data.WidgetContexts
             CurrentGame.LobbyHostPlayerName = lobbyHostName;
             CurrentGame.IsPlayerInExpedition = isExpedition;
             CurrentGame.IsValid = true;
+            if (ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer)
+            {
+                ServerManager.Instance.RetryIfDown();
+            }
             if (ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer && ServerManager.Instance.IsServerOline == 1)
             {
                 // No name yet = the game is still starting, and its session ids are placeholders every copy shares:

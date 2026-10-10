@@ -616,8 +616,12 @@ namespace SmartHunter.Game.Helpers
                                         var p = OverlayViewModel.Instance.TeamWidget.Context.Players.Where(p => p.Name.Equals(id));
                                         if (p.Any())
                                         {
-                                            p.First().Damage = damageData[id];
+                                            // The server keeps a hunter's last total after their Aether stops; the game's
+                                            // own (quest target) counter still moves, and the all-monster total is never below it
+                                            p.First().Damage = Math.Max(damageData[id], p.First().GameDamage);
                                             p.First().HasSyncedDamage = true;
+                                            p.First().IsDamageUnknown = false;
+                                            p.First().IsDamagePartial = false;
                                             p.First().UsesAether = true;
                                         }
                                     }
@@ -970,6 +974,12 @@ namespace SmartHunter.Game.Helpers
                 bool hostDataArriving = (DateTime.Now - lastPulledMonsterData).TotalSeconds < 60;
                 if (sync && hostDataArriving)
                 {
+                    // Their data reaching us means the host runs Aether too; outside expeditions nothing else tells us
+                    var leader = OverlayViewModel.Instance.TeamWidget.Context.Players.FirstOrDefault(p => p.Name == game.PartyLeaderName);
+                    if (leader != null)
+                    {
+                        leader.UsesAether = true;
+                    }
                     kind = "synced";
                     text = $"Getting parts and ailments from {host}'s game.";
                     s_SyncedKey = game.key;

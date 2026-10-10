@@ -74,48 +74,7 @@ namespace SmartHunter.Core
                     new StateMachine<State>.Transition(
                         State.ServerChecking,
                         () => ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer,
-                        () =>
-                        {
-                            Log.WriteLine("Checking the sync server...");
-                            ServerManager.Instance.RequestCommadWithHandler(ServerManager.Command.ALIVE, null, null, false, 0, null, (result, ping) =>
-                            {
-                                if (result != null)
-                                {
-                                    if (result["status"].ToString().Equals("ok"))
-                                    {
-                                        Log.WriteLine($"Sync server is up ({ping} ms)");
-                                        ServerManager.Instance.IsServerOline = 1;
-                                    }
-                                    else
-                                    {
-                                        if (result["result"].ToString().Equals("v"))
-                                        {
-                                            Log.WriteLine("The sync server no longer accepts this version. Party sync is off until Aether updates.");
-                                        }
-                                        else if (result["result"].ToString().Equals("dev"))
-                                        {
-                                            Log.WriteLine("The sync server is down for maintenance. Party sync is off for now.");
-                                        }
-                                        else
-                                        {
-                                            Problems.Report("sync", "The party sync server returned an error, so party sync is off. Restart Aether to try again; everything else works without it.");
-                                        }
-                                        ServerManager.Instance.IsServerOline = -1;
-                                    }
-                                }
-                                else
-                                {
-                                    Problems.Report("sync", "Couldn't reach the party sync server, so party sync is off. Restart Aether to try again; everything else works without it.");
-                                    ServerManager.Instance.IsServerOline = -1;
-                                }
-                                ServerManager.Instance.ResetStats();
-                            }, (error) =>
-                            {
-                                Problems.Report("sync", "Couldn't reach the party sync server, so party sync is off. Restart Aether to try again; everything else works without it.");
-                                ServerManager.Instance.IsServerOline = -1;
-                                ServerManager.Instance.ResetStats();
-                            });
-                        })
+                        () => ServerManager.Instance.CheckAlive())
                 }));
 
             m_StateMachine.Add(State.ServerChecking, new StateMachine<State>.StateData(

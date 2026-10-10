@@ -41,6 +41,22 @@ namespace SmartHunter.Game.Data
         public int GameDamage;
         public bool HasSyncedDamage;
 
+        // No number at all: on expeditions only this hunter's own Aether knows their damage
+        bool m_IsDamageUnknown;
+        public bool IsDamageUnknown
+        {
+            get { return m_IsDamageUnknown; }
+            set { SetProperty(ref m_IsDamageUnknown, value); }
+        }
+
+        // Quest targets only: counting every monster, but this hunter's Aether isn't sending their full total
+        bool m_IsDamagePartial;
+        public bool IsDamagePartial
+        {
+            get { return m_IsDamagePartial; }
+            set { SetProperty(ref m_IsDamagePartial, value); }
+        }
+
         int m_Damage;
         public int Damage
         {

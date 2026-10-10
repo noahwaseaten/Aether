@@ -197,6 +197,25 @@ namespace SmartHunter.Core
             }
             var c2 = team.UpdateAndGetPlayer(2, "C", 300);
             Check(team.Players.Count == 2 && c2.Index == 2 && c2.Name == "C", "leaver removes only their own slot");
+            var d = team.UpdateAndGetPlayer(2, "D", 0);
+            Check(d.Name == "D" && d.Damage == 0, "a new hunter in a slot doesn't inherit the last one's damage");
+            team.ClearPlayers();
+
+            // Expedition: a teammate without Aether has no number, and doesn't count toward anyone's share
+            var current = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
+            current.CurrentPlayerName = "Me";
+            current.IsPlayerInExpedition = true;
+            var me = team.UpdateAndGetPlayer(0, "Me", 0);
+            var noAether = team.UpdateAndGetPlayer(1, "Other", 0);
+            me.Damage = 500;
+            team.UpdateFractions();
+            Check(!me.IsDamageUnknown && noAether.IsDamageUnknown && me.DamageFraction == 1, "expedition: no-Aether teammate is unknown and has no share");
+            current.IsPlayerInExpedition = false;
+            team.UpdateAndGetPlayer(1, "Other", 300);
+            Check(noAether.IsDamagePartial == current.UsesOnScreenDamage && !noAether.IsDamageUnknown, "quest: no-Aether teammate falls back to the game's counter");
+            team.ClearPlayers();
+            current.CurrentPlayerName = "";
+            Check(team.UpdateAndGetPlayer(0, "X", 100).Damage == 100, "before your name is read, hunters still get the game's damage");
             team.ClearPlayers();
 
             string report = failures.Count == 0 ? "All checks passed" : "FAILED:\r\n" + string.Join("\r\n", failures);

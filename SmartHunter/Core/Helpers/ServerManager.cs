@@ -163,6 +163,56 @@ namespace SmartHunter.Core.Helpers
             }
         }
 
+        DateTime m_NextAliveCheck = DateTime.MinValue;
+        bool m_VersionRejected;
+
+        // Asks the server if it's up: at startup, then once a minute while it isn't. A server or connection that was
+        // down when Aether started used to leave party sync off until a restart, and turning sync on needed one too.
+        public void CheckAlive()
+        {
+            m_NextAliveCheck = DateTime.Now.AddSeconds(60);
+            Log.WriteLine("Checking the sync server...");
+            RequestCommadWithHandler(Command.ALIVE, null, null, false, 0, null, (result, ping) =>
+            {
+                if (result != null && result["status"]?.ToString() == "ok")
+                {
+                    Log.WriteLine($"Sync server is up ({ping} ms)");
+                    IsServerOline = 1;
+                }
+                else
+                {
+                    string reason = result?["result"]?.ToString();
+                    if (reason == "v")
+                    {
+                        Log.WriteLine("The sync server no longer accepts this version. Party sync is off until Aether updates.");
+                    }
+                    else if (reason == "dev")
+                    {
+                        Log.WriteLine("The sync server is down for maintenance. Party sync is off for now.");
+                    }
+                    else
+                    {
+                        Problems.Report("sync", "Couldn't reach the party sync server, so party sync is off for now. Aether tries again every minute; everything else works without it.");
+                    }
+                    IsServerOline = -1;
+                }
+                ResetStats();
+            }, (error) =>
+            {
+                Problems.Report("sync", "Couldn't reach the party sync server, so party sync is off for now. Aether tries again every minute; everything else works without it.");
+                IsServerOline = -1;
+                ResetStats();
+            });
+        }
+
+        public void RetryIfDown()
+        {
+            if (IsServerOline != 1 && !m_VersionRejected && DateTime.Now >= m_NextAliveCheck)
+            {
+                CheckAlive();
+            }
+        }
+
         public async void RequestCommadWithHandler(Command cmd, string key, string player, bool isHost, int damage, string data, Action<JObject, long> callback = null, Action<Exception> onError = null)
         {
             try
@@ -226,6 +276,7 @@ namespace SmartHunter.Core.Helpers
                     string status = json["status"]?.ToString(), result = json["result"]?.ToString();
                     if (status == "error" && result == "v")
                     {
+                        m_VersionRejected = true;
                         Problems.Report("sync", "The party sync server no longer accepts this version of Aether. Party sync is off until Aether updates.");
                     }
                     else if (status == "error" && result == "dev")

@@ -138,7 +138,7 @@ namespace SmartHunter.Game.Data.ViewModels
             const string Party = "Party sync";
             Toggle(Party, "Share data with your party", "Only the host's game has exact part HP and ailment buildup, and the game doesn't track damage on expeditions. "
                 + "With this on, everyone running Aether shares those numbers through the SmartHunter sync server (hashed lobby ID, hunter names, damage, monster data).",
-                () => C.Overlay.MonsterWidget.UseNetworkServer, v => C.Overlay.MonsterWidget.UseNetworkServer = v, true);
+                () => C.Overlay.MonsterWidget.UseNetworkServer, v => C.Overlay.MonsterWidget.UseNetworkServer = v);
 
             const string Game = "Game";
             Toggle(Game, "Start the game with Aether", "Opens Monster Hunter: World through Steam when Aether starts, unless it's already running. If an update is downloading, the game starts once it's done.",
