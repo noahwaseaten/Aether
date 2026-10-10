@@ -135,6 +135,8 @@ namespace SmartHunter.Game.Data.ViewModels
                 () => C.Overlay.HideKeyToggles ? "Toggle" : "Hold", v => C.Overlay.HideKeyToggles = v == "Toggle");
             Toggle(Overlay, "Hide when the game isn't focused", "Widgets disappear while you're alt-tabbed, so they don't cover other windows.",
                 () => C.Overlay.HideWhenGameWindowIsInactive, v => C.Overlay.HideWhenGameWindowIsInactive = v);
+            Toggle(Overlay, "Hide while a game menu is open", "Widgets disappear while the map or a menu is open, so they don't cover it.",
+                () => C.Overlay.HideWhenGameMenuIsOpen, v => C.Overlay.HideWhenGameMenuIsOpen = v);
 
             const string Party = "Party sync";
             Toggle(Party, "Share data with your party", "Only the host's game has exact part HP and ailment buildup, and the game doesn't track damage on expeditions. "

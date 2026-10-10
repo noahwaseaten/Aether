@@ -236,16 +236,16 @@ namespace SmartHunter.Game
         void UpdateVisibility()
         {
             // Show or hide the overlay depending on whether the game process is active
-            var foregroundWindowHandle = WindowsApi.GetForegroundWindow();
-            if (ConfigHelper.Main.Values.Overlay.HideWhenGameWindowIsInactive && OverlayViewModel.Instance.IsVisible && foregroundWindowHandle != Process.MainWindowHandle)
-            {
-                OverlayViewModel.Instance.IsGameActive = false;
-            }
-            else if (!OverlayViewModel.Instance.IsVisible &&
-                (!ConfigHelper.Main.Values.Overlay.HideWhenGameWindowIsInactive || foregroundWindowHandle == Process.MainWindowHandle))
-            {
-                OverlayViewModel.Instance.IsGameActive = true;
-            }
+            var overlay = ConfigHelper.Main.Values.Overlay;
+            bool focused = !overlay.HideWhenGameWindowIsInactive || WindowsApi.GetForegroundWindow() == Process.MainWindowHandle;
+            OverlayViewModel.Instance.IsGameActive = focused && !(overlay.HideWhenGameMenuIsOpen && IsGameMenuOpen());
+        }
+
+        // The game shows the cursor while the map or a menu is open (HunterPie v2's World map, build 421810)
+        bool IsGameMenuOpen()
+        {
+            ulong hud = MemoryHelper.ReadMultiLevelPointer(false, Process, 0x140000000 + 0x051C4640, 0x13FD0, 0xB734);
+            return hud > 0xFFFF && MemoryHelper.Read<int>(Process, hud) == 1;
         }
     }
 }
