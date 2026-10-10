@@ -144,6 +144,16 @@ namespace SmartHunter.Game.Config
 
             new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_PROTECTIVE_POLISH", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(475)),
             new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_AFFINITY_SLIDING", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(476)),
+            // Skill timers from HunterPie v2's World AbnormalityData (Skills group), same base block as the debuffs
+            new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_ELEMENT_ACCELERATION", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(460)),
+            new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_LATENT_POWER", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(462)),
+            new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_ADRENALINE_RUSH", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(469)),
+            new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_FORTIFY", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(473)),
+            new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_FROSTCRAFT", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(482)),
+            new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_OFFENSIVE_GUARD", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(487)),
+            new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_COALESCENCE", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(488)),
+            new StatusEffectConfig("Buff", "LOC_STATUS_EFFECT_COOL_CAT", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(498)),
+            new StatusEffectConfig("Debuff", "LOC_STATUS_EFFECT_SNOWMAN_HEAD", (uint)StatusEffectConfig.MemorySource.Base, indexToHexStrNoOffset(450)),
 
             new StatusEffectConfig("Equipment", "LOC_EQUIPMENT_MANTLE_GHILLIE", (uint)StatusEffectConfig.MemorySource.Equipment, indexToHexStrMantles(0)),
             new StatusEffectConfig("Equipment", "LOC_EQUIPMENT_MANTLE_TEMPORAL", (uint)StatusEffectConfig.MemorySource.Equipment, indexToHexStrMantles(1)),

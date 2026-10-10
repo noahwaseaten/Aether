@@ -83,7 +83,9 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
 - Player buffs and debuffs (`PlayerDataConfig.cs`) mirror HunterPie-legacy's
   `HunterPie/HunterPie.Resources/Data/AbnormalityData.xml`: offset = index × 4. Check its `HasConditions`,
   `ConditionOffset` and `IsPercentageBuff` flags when adding one. Blastscourge ignored them and showed "1 s" forever.
-  Player paralysis, sleep and stun aren't readable timers there, so Aether can't show them.
+  HunterPie v2 (`HunterPie/HunterPie`, `HunterPie/Game/World/Data/AbnormalityData.xml`, hex offsets) is newer and
+  has more skill timers; check it first. Player paralysis, sleep and stun aren't in either, nor in any other public
+  MHW project found (Oct 2026), so Aether can't show them without new memory research.
 - The quest recap is built 3 s after the quest ends (`HuntTracker`). The quest state can flip on the same tick as
   the killing blow, and building it immediately made a slain monster look "captured".
 - Discord Rich Presence images are loaded by URL from `main` on GitHub: monster portraits from `SmartHunter/Ui/Monsters/`

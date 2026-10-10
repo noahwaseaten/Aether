@@ -354,6 +354,15 @@ namespace SmartHunter.Config
 
             { "LOC_STATUS_EFFECT_PROTECTIVE_POLISH", "Protective Polish" },
             { "LOC_STATUS_EFFECT_AFFINITY_SLIDING", "Affinity Sliding" },
+            { "LOC_STATUS_EFFECT_ELEMENT_ACCELERATION", "Element Acceleration" },
+            { "LOC_STATUS_EFFECT_LATENT_POWER", "Latent Power" },
+            { "LOC_STATUS_EFFECT_ADRENALINE_RUSH", "Adrenaline Rush" },
+            { "LOC_STATUS_EFFECT_FORTIFY", "Fortify" },
+            { "LOC_STATUS_EFFECT_FROSTCRAFT", "Frostcraft" },
+            { "LOC_STATUS_EFFECT_OFFENSIVE_GUARD", "Offensive Guard" },
+            { "LOC_STATUS_EFFECT_COALESCENCE", "Coalescence" },
+            { "LOC_STATUS_EFFECT_COOL_CAT", "Cool Cat" },
+            { "LOC_STATUS_EFFECT_SNOWMAN_HEAD", "Snowman Head" },
 
             // Equipment
             { "LOC_EQUIPMENT_MANTLE_GHILLIE", "Ghillie Mantle" },

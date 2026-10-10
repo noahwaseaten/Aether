@@ -68,6 +68,11 @@ namespace SmartHunter.Core
             // Blastscourge is a flagged meter, not a timer (the "1 s forever" bug)
             var blastscourge = new PlayerDataConfig().StatusEffects.First(s => s.NameStringId == "LOC_STATUS_EFFECT_BLASTSCOURGE");
             Check(blastscourge.TimerOffset == null && blastscourge.Conditions.Single().ByteNonZero, "Blastscourge shows only while its flag is set");
+            // Two statuses on one timer only work when a condition tells them apart (Might seed vs pill)
+            var sharedTimers = new PlayerDataConfig().StatusEffects
+                .Where(s => s.TimerOffset != null && (s.Conditions == null || s.Conditions.Length == 0))
+                .GroupBy(s => s.Source + ":" + s.TimerOffset).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+            Check(!sharedTimers.Any(), "no two unconditioned statuses read the same timer " + string.Join(", ", sharedTimers));
 
             // Rage: the stored value is time left, so a calm monster reads exactly max
             int rage = Array.FindIndex(ConfigHelper.MonsterData.Values.StatusEffects, s => s.GroupId == "Rage");
