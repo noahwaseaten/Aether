@@ -33,6 +33,10 @@ anything that writes to it.
 
 Every installed copy checks GitHub releases on startup, so **publishing a release is shipping to every user**.
 
+**Every change players would notice gets a release.** Once it's tested and pushed to `main`, publish it in the same
+session without waiting to be asked: PATCH for fixes and polish, MINOR for features. Don't leave work on `main`
+unreleased. Internal-only changes (docs, build scripts) don't need one.
+
 ```powershell
 .\build.ps1 -Version 1.2.0 -Publish -Notes "What players will notice, in plain sentences."
 ```
