@@ -815,7 +815,12 @@
                 <Ellipse x:Name="Dot" Width="7" Height="7" Visibility="Collapsed" />
             </Grid>
 
-            <TextBlock x:Name="NameBlock" Grid.Column="1" Text="{Binding Name}" Style="{StaticResource T_Body}" MaxWidth="140" HorizontalAlignment="Left" />
+            <!--The Aether badge: party sync heard from this teammate's Aether-->
+            <StackPanel x:Name="NameRow" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                <TextBlock x:Name="NameBlock" Text="{Binding Name}" Style="{StaticResource T_Body}" MaxWidth="140" />
+                <Image Source="pack://application:,,,/Ui/Aether.ico" Width="12" Height="12" Margin="5 0 0 0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"
+                       ToolTip="Also runs Aether" Visibility="{Binding UsesAether, Converter={StaticResource A_Converter_BoolToVisibility}}" />
+            </StackPanel>
             <TextBlock x:Name="DamageBlock" Grid.Column="2" Style="{StaticResource T_Value}" FontSize="15" MinWidth="64" Margin="14 0 0 0" Text="{Binding Damage, StringFormat={}{0:N0}}" />
 
             <Grid x:Name="Bar" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Height="3" Margin="0 4 0 0">
@@ -848,7 +853,7 @@
                 <Setter TargetName="DamageBlock" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
             <DataTrigger Binding="{Binding DataContext.IsSolo, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="True">
-                <Setter TargetName="NameBlock" Property="Visibility" Value="Collapsed" />
+                <Setter TargetName="NameRow" Property="Visibility" Value="Collapsed" />
                 <Setter TargetName="DamageBlock" Property="Visibility" Value="Collapsed" />
                 <Setter TargetName="Bar" Property="Visibility" Value="Collapsed" />
                 <Setter TargetName="Solo" Property="Visibility" Value="Visible" />

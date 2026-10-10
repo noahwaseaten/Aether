@@ -18,7 +18,23 @@ namespace SmartHunter.Game.Data
         public string Name
         {
             get { return m_Name; }
-            set { SetProperty(ref m_Name, value); }
+            set
+            {
+                // Someone else took this slot: the badge was for the hunter who left
+                if (m_Name != value)
+                {
+                    UsesAether = false;
+                }
+                SetProperty(ref m_Name, value);
+            }
+        }
+
+        // Party sync heard from this hunter's Aether. Stays on between quests, unlike HasSyncedDamage.
+        bool m_UsesAether;
+        public bool UsesAether
+        {
+            get { return m_UsesAether; }
+            set { SetProperty(ref m_UsesAether, value); }
         }
 
         // The game's own counter (quest targets only), and whether party sync sent this hunter's all-monster total

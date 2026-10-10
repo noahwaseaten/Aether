@@ -157,6 +157,7 @@ namespace SmartHunter.Game.Data.ViewModels
             TeamWidget.Context.UpdateAndGetPlayer(0, "Lythia", 3244).WeaponIcon = "ICON_SWITCHAXE";
             TeamWidget.Context.UpdateAndGetPlayer(1, "Kabuto", 2182).WeaponIcon = "ICON_LONGSWORD";
             TeamWidget.Context.UpdateAndGetPlayer(2, "mike the father", 569).WeaponIcon = "ICON_BOW";
+            TeamWidget.Context.UpdateAndGetPlayer(1, "Kabuto", 2182).UsesAether = true;
             DebugWidget.Context.CurrentGame.CurrentPlayerName = "Lythia";
             TeamWidget.Context.UpdateFractions();
 

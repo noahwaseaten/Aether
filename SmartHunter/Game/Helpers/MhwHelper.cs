@@ -594,6 +594,7 @@ namespace SmartHunter.Game.Helpers
                                         {
                                             p.First().Damage = damageData[id];
                                             p.First().HasSyncedDamage = true;
+                                            p.First().UsesAether = true;
                                         }
                                     }
                                 }

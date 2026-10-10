@@ -56,6 +56,25 @@ namespace SmartHunter.Core
             greenCapped.Update(new[] { 50, 100, 150, 200, 250, 0, 0 }, 140, 250);
             Check(greenCapped.NeedsSharpening, "dropping to yellow on that weapon still asks to sharpen");
 
+            // An unupgraded weapon that tops out at yellow, first read at the start of a quest, before any whetstone
+            var yellowCapped = new Sharpness();
+            yellowCapped.Update(new[] { 60, 110, 150, 200, 250, 0, 0 }, 150, 250);
+            Check(yellowCapped.LevelName == "Yellow" && !yellowCapped.NeedsSharpening, "a yellow-capped weapon at full yellow doesn't ask to sharpen");
+            yellowCapped.Update(new[] { 60, 110, 150, 200, 250, 0, 0 }, 120, 250);
+            Check(yellowCapped.LevelName == "Yellow" && !yellowCapped.NeedsSharpening && yellowCapped.IsLow, "worn down within yellow it warns low, not sharpen");
+            yellowCapped.Update(new[] { 60, 110, 150, 200, 250, 0, 0 }, 100, 250);
+            Check(yellowCapped.NeedsSharpening, "dropping to orange on that weapon asks to sharpen");
+            yellowCapped.Update(new[] { 60, 110, 150, 200, 250, 0, 0 }, 900, 250);
+            yellowCapped.Update(new[] { 60, 110, 150, 200, 250, 0, 0 }, 150, 250);
+            Check(!yellowCapped.NeedsSharpening, "a garbage read above the game's cap doesn't raise the cap");
+
+            // Dulled at the first read (Aether started mid-quest): no warning yet, and the next whetstone fixes the cap
+            var midQuest = new Sharpness();
+            midQuest.Update(new[] { 50, 100, 150, 200, 250, 0, 0 }, 140, 250);
+            midQuest.Update(new[] { 50, 100, 150, 200, 250, 0, 0 }, 200, 250);
+            midQuest.Update(new[] { 50, 100, 150, 200, 250, 0, 0 }, 140, 250);
+            Check(midQuest.NeedsSharpening, "after a whetstone, the real cap is known");
+
             // Discord weapon icons: every weapon maps to a PNG committed under assets/discord/weapons
             foreach (WeaponType weapon in Enum.GetValues(typeof(WeaponType)))
             {
