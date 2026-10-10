@@ -64,8 +64,8 @@ if ($Publish) {
 
 **Which file should I download?**
 
-- **Aether.exe**: the easy way. Run it and Aether installs itself, adds a Start Menu shortcut (search "Aether") and shows up in Settings > Apps, where you can uninstall it. Your settings live in ``%LocalAppData%\Aether``.
-- **Aether-$Version-portable.zip**: if you'd rather keep it in a folder. Extract it anywhere and run ``Aether.exe`` from there. Nothing is installed and everything stays in that folder; delete the folder to remove it.
+- **Aether.exe**: recommended. Run it and it installs itself. Find it in the Start Menu; uninstall it from Settings > Apps.
+- **Aether-$Version-portable.zip**: no install. Unzip anywhere and run ``Aether.exe``. Delete the folder to remove it.
 
 Both update themselves.
 "@
