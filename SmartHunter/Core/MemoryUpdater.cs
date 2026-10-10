@@ -394,36 +394,79 @@ namespace SmartHunter.Core
             ResetScans();
 
             OverlayViewModel.Instance.IsGameActive = false;
-            if (processExited && BackupWhenProcessExits)
+            if (!processExited || !(BackupWhenProcessExits || ShutdownWhenProcessExits))
             {
-                try
-                {
-                    string zipPath = @"UserDataBackup\";
-                    string fileName = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".zip";
-                    string filepath = Path.Combine(zipPath, fileName);
-                    if (!Directory.Exists(zipPath))
-                        Directory.CreateDirectory(zipPath);
-                    if (File.Exists(filepath))
-                        File.Delete(filepath);
-                    if (Directory.Exists(UserDataPath))
-                    {
-                        ZipFile.CreateFromDirectory(UserDataPath, filepath);
-                        Log.WriteLine("MonsterHunterWorld process exits. Start backup 'UserData'.");
-                    }
-                    else
-                    {
-                        Log.WriteLine("Backup fail 'UserData' path not exist.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.WriteException(ex);
-                }
+                return;
             }
-            if (processExited && ShutdownWhenProcessExits)
+
+            // The backup runs off the UI thread: zipping on it froze Aether ("Not responding") until it finished
+            bool backup = BackupWhenProcessExits, shutdown = ShutdownWhenProcessExits;
+            string userDataPath = UserDataPath;
+            Log.WriteLine("The game closed" + (backup ? ", backing up its saves" : "") + (shutdown ? ", then closing Aether" : ""));
+            var dispatcher = Application.Current.Dispatcher;
+            System.Threading.Tasks.Task.Run(() =>
             {
-                Log.WriteLine("Process exited. Shutting down");
-                Application.Current.Shutdown();
+                if (backup)
+                {
+                    BackupSaves(userDataPath);
+                }
+                if (shutdown)
+                {
+                    dispatcher.BeginInvoke(new Action(() => Application.Current.Shutdown()));
+                }
+            });
+        }
+
+        const string SteamAppId = "582010";
+        const int BackupsKept = 30;
+
+        // Zips only MHW's saves (userdata\<account>\582010), not every Steam game's data: the whole userdata folder
+        // can be hundreds of MB. Keeps the newest backups next to Aether.
+        internal static string BackupSaves(string userDataPath)
+        {
+            try
+            {
+                string root = (userDataPath ?? "").TrimEnd('\\', '/');
+                var folders = new List<string>();
+                if (Path.GetFileName(root) == SteamAppId && Directory.Exists(root))
+                {
+                    folders.Add(root);
+                    root = Path.GetDirectoryName(root);
+                }
+                else if (Directory.Exists(root))
+                {
+                    folders.AddRange(Directory.GetDirectories(root).Select(account => Path.Combine(account, SteamAppId)).Where(Directory.Exists));
+                    if (Directory.Exists(Path.Combine(root, SteamAppId)))
+                        folders.Add(Path.Combine(root, SteamAppId));
+                }
+                if (!folders.Any())
+                {
+                    Log.WriteLine($"No Monster Hunter: World saves in {userDataPath}; check the Steam save folder in Settings");
+                    return null;
+                }
+
+                string backupFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UserDataBackup");
+                Directory.CreateDirectory(backupFolder);
+                string zipFile = Path.Combine(backupFolder, DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".zip");
+                using (var zip = ZipFile.Open(zipFile, ZipArchiveMode.Create))
+                {
+                    foreach (string file in folders.SelectMany(folder => Directory.GetFiles(folder, "*", SearchOption.AllDirectories)))
+                    {
+                        zip.CreateEntryFromFile(file, file.Substring(root.Length).TrimStart('\\', '/'));
+                    }
+                }
+                Log.WriteLine($"Saves backed up to UserDataBackup\\{Path.GetFileName(zipFile)}");
+
+                foreach (var old in new DirectoryInfo(backupFolder).GetFiles("*.zip").OrderByDescending(f => f.CreationTimeUtc).Skip(BackupsKept))
+                {
+                    old.Delete();
+                }
+                return zipFile;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine($"Couldn't back up the saves: {ex.Message}");
+                return null;
             }
         }
 

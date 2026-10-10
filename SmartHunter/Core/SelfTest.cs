@@ -65,6 +65,17 @@ namespace SmartHunter.Core
             }
             Check(MhwHelper.WeaponIconName(WeaponType.LONG_SWORD) == "longsword", "long sword maps to longsword.png");
 
+            // Save backup: only MHW's folder (582010) of each Steam account goes in the zip, not other games' data
+            string fakeUserData = Path.Combine(Path.GetTempPath(), "aether-selftest-userdata-" + Guid.NewGuid());
+            Directory.CreateDirectory(Path.Combine(fakeUserData, "111", "582010", "remote"));
+            Directory.CreateDirectory(Path.Combine(fakeUserData, "111", "730"));
+            File.WriteAllText(Path.Combine(fakeUserData, "111", "582010", "remote", "SAVEDATA1000"), "save");
+            File.WriteAllText(Path.Combine(fakeUserData, "111", "730", "other-game.bin"), "not mhw");
+            string backupZip = MemoryUpdater.BackupSaves(fakeUserData + "\\");
+            var backedUp = backupZip == null ? new List<string>() : System.IO.Compression.ZipFile.OpenRead(backupZip).Entries.Select(e => e.FullName.Replace('\\', '/')).ToList();
+            Check(backedUp.SequenceEqual(new[] { "111/582010/remote/SAVEDATA1000" }), "save backup holds only MHW's saves: " + string.Join(", ", backedUp));
+            Directory.Delete(fakeUserData, true);
+
             // Hunt extras: m:ss, and the quest limit rounded up to the game's known limits
             Check(HuntInfo.Format(65.2f) == "1:06" && HuntInfo.Format(0.5f) == "0:01" && HuntInfo.Format(-1) == null, "timers format as m:ss");
             Check(HuntInfo.QuestLimitSeconds(179990) == 3000 && HuntInfo.QuestLimitSeconds(54000) == 900, "quest limits round up to 50 and 15 minutes");

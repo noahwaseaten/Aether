@@ -146,7 +146,7 @@ namespace SmartHunter.Game.Data.ViewModels
             Toggle(Game, "Close with the game", "Aether quits when you close Monster Hunter: World.", () => C.ShutdownWhenProcessExits, v => C.ShutdownWhenProcessExits = v);
             Toggle(Game, "Discord Rich Presence", "Shows what you're doing on your Discord profile: your area, the monster you're fighting and its health, and how the quest ended.",
                 () => C.DiscordPresence.Enabled, v => C.DiscordPresence.Enabled = v);
-            Toggle(Game, "Back up saves when the game closes", "Zips your Steam save folder into UserDataBackup next to Aether, in case a save gets corrupted.",
+            Toggle(Game, "Back up saves when the game closes", "Zips your Monster Hunter: World saves into UserDataBackup next to Aether, in case a save gets corrupted. Keeps the newest 30.",
                 () => C.BackupWhenProcessExits, v => C.BackupWhenProcessExits = v);
             Setting saveFolder = null;
             saveFolder = new Setting(Game, "Steam save folder", "Where Steam keeps your saves. The backup copies this folder.", "Change…", new Command(_ =>
