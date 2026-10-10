@@ -201,6 +201,8 @@ namespace SmartHunter.Core
                         IsProcessReady,
                         () =>
                         {
+                            // The title carries the game build, e.g. "MONSTER HUNTER: WORLD(421810)"
+                            Log.WriteLine($"Game window: {Process.MainWindowTitle}");
                             m_FastMemoryScans.Clear();
                             foreach (var pattern in Patterns)
                             {
@@ -534,23 +536,24 @@ namespace SmartHunter.Core
 
         private bool CheckProcess()
         {
-            var processes = Process.GetProcesses();
-            foreach (var p in processes)
+            // Look the game up by name (as HunterPie does) instead of opening every process on the PC 20 times a second
+            foreach (var p in Process.GetProcessesByName(ProcessName))
             {
                 try
                 {
-                    if (p != null && p.ProcessName.Equals(ProcessName) && !p.HasExited)
+                    if (Process == null && !p.HasExited)
                     {
                         Process = p;
-                        return true;
+                        continue;
                     }
                 }
                 catch
                 {
                     // nothing here
                 }
+                p.Dispose();
             }
-            return false;
+            return Process != null;
         }
     }
 }
