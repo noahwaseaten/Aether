@@ -67,7 +67,7 @@ namespace SmartHunter.Game
         {
             get
             {
-                return ConfigHelper.Main.Values.ShutdownWhenProcessExits;
+                return ConfigHelper.Main.Values.ShutdownWhenProcessExits || App.OpenedForGame;
             }
         }
 

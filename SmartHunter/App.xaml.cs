@@ -17,12 +17,17 @@ namespace SmartHunter
     public partial class App : Application
     {
         MhwOverlay m_Overlay;
+        bool m_Started;
         FileContainer m_SkinFile;
 
         string m_LastSkinFileName;
 
         // Two copies would draw every widget twice and double the sync traffic
         static System.Threading.Mutex s_SingleInstance;
+        public const string SingleInstanceName = "Aether-MHW-Overlay";
+
+        // Started by "Open with the game": closes with the game, then waits for the next one
+        public static bool OpenedForGame { get; private set; }
 
         public static void ReleaseSingleInstance()
         {
@@ -56,7 +61,17 @@ namespace SmartHunter
                 Environment.Exit(SelfTest.Run());
             }
 
-            var mutex = new System.Threading.Mutex(false, "Aether-MHW-Overlay");
+            if (Array.IndexOf(e.Args, "--wait") >= 0)
+            {
+                if (!AutoStart.WaitForGame(Array.IndexOf(e.Args, "--skip-running") >= 0))
+                {
+                    Shutdown();
+                    return;
+                }
+                OpenedForGame = true;
+            }
+
+            var mutex = new System.Threading.Mutex(false, SingleInstanceName);
             bool owned;
             try { owned = mutex.WaitOne(TimeSpan.FromSeconds(5)); } // a restarting copy may still be closing
             catch (System.Threading.AbandonedMutexException) { owned = true; }
@@ -67,6 +82,7 @@ namespace SmartHunter
                 return;
             }
             s_SingleInstance = mutex;
+            m_Started = true;
 
             // Initialize the console view model first thing so we can see any problems that may occur
             var consoleViewModel = ConsoleViewModel.Instance;
@@ -102,7 +118,16 @@ namespace SmartHunter
 
         protected override void OnExit(ExitEventArgs e)
         {
+            if (!m_Started)
+            {
+                base.OnExit(e); // a waiter that stopped, or a second copy: nothing was logged, so don't log the end
+                return;
+            }
             Log.WriteLine("Ended");
+            if (OpenedForGame && AutoStart.IsEnabled)
+            {
+                AutoStart.StartWaiter();
+            }
             base.OnExit(e);
         }
 

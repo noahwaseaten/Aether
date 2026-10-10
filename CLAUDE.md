@@ -105,6 +105,18 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
 - Party sync uses one shared `HttpClient` with a short timeout (`ServerManager`). A client per request plus the 100 s
   default timeout let one stuck reply stall sync for over a minute.
 - Before the game has your player name, its session ids are placeholders every copy shares. Don't sync until the name is read.
+- The game fills the quest party list about a second after the lobby id appears; until then you look alone, which
+  means host. Aether waits 3 s in a lobby before its HELLO (`DebugWidgetContext.LobbySettleSeconds`): a HELLO sent
+  sooner claimed host for a lobby whose real host didn't run Aether. Loading screens blank the lobby id briefly, so
+  DONE waits 5 s; leaving and rejoining made the host's DONE delete everyone's shared data.
+- On expeditions the game keeps no per-hunter damage. HunterPie v2 gets it by patching the game's CRC check and
+  injecting a DLL that hooks `FUN_DEAL_DAMAGE`, which writes to game memory, so it's off limits here. Teammates without
+  Aether show "—" there (`Player.IsDamageUnknown`), and "~" when only their quest-target damage is known
+  (`IsDamagePartial`). The sync server keeps a hunter's last total after their Aether stops; their game counter
+  still moves, so Aether shows whichever is higher.
+- "Open with the game" (`Core/Helpers/AutoStart.cs`) is an HKCU Run entry that starts `Aether.exe --wait`: no window,
+  checks for the game every 3 s, then starts normally and closes with the game. Each game start counts once, so closing
+  Aether mid-hunt doesn't reopen it. Testing it with "Start the game with Aether" on (the default) launches the game.
 - Widget placement is saved on every drag and resize (`WidgetWindow.PlacementChanged`), not only when edit mode ends.
 - Routine sync calls (pull, push, damage) aren't logged one by one: they filled the log and pushed out what mattered.
   Past sessions' logs are kept in `Logs\`.

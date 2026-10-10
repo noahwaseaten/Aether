@@ -1,4 +1,5 @@
 using System;
+using SmartHunter.Core.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
@@ -143,6 +144,9 @@ namespace SmartHunter.Game.Data.ViewModels
             const string Game = "Game";
             Toggle(Game, "Start the game with Aether", "Opens Monster Hunter: World through Steam when Aether starts, unless it's already running. If an update is downloading, the game starts once it's done.",
                 () => C.StartMHWWhenSmartHunterStart, v => C.StartMHWWhenSmartHunterStart = v, true);
+            Toggle(Game, "Open with the game", "Aether waits in the background after you sign in to Windows, with no window, and opens when Monster Hunter: World starts. "
+                + "It closes with the game and waits for the next start. Close it during a hunt and it stays closed until the game restarts.",
+                () => AutoStart.IsEnabled, v => AutoStart.Set(v));
             Toggle(Game, "Close with the game", "Aether quits when you close Monster Hunter: World.", () => C.ShutdownWhenProcessExits, v => C.ShutdownWhenProcessExits = v);
             Toggle(Game, "Discord Rich Presence", "Shows what you're doing on your Discord profile: your area, the monster you're fighting and its health, and how the quest ended.",
                 () => C.DiscordPresence.Enabled, v => C.DiscordPresence.Enabled = v);

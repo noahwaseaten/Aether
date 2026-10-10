@@ -15,6 +15,14 @@ namespace SmartHunter.Game.Data.WidgetContexts
         private bool networkOperationDone = true;
         private int lastNetworkOperationTime = 0;
         private string OutdatedLobbyID = "";
+        // The game lists the party a moment after the lobby id appears; until then everyone looks alone, i.e. the host.
+        // A HELLO sent then claimed host for a lobby whose real host doesn't run Aether.
+        const double LobbySettleSeconds = 3;
+        // Loading screens blank the lobby id for a moment. Leaving the server lobby then (and rejoining) deleted the
+        // host's shared data for everyone.
+        const double LobbyLeaveSeconds = 5;
+        private DateTime m_InLobbySince = DateTime.MinValue;
+        private DateTime m_OutOfLobbySince = DateTime.MinValue;
         public void UpdateCurrentGame(string playerName, string weaponString, string sessionID, string sessionHostName, string lobbyID, string lobbyHostName, bool isExpedition)
         {
             bool wasHost = CurrentGame.IsCurrentPlayerLobbyHost();
@@ -36,7 +44,12 @@ namespace SmartHunter.Game.Data.WidgetContexts
                 // syncing then put unrelated players in one lobby
                 if (CurrentGame.IsPlayerOnline() && CurrentGame.IsPlayerInLobby() && CurrentGame.CurrentPlayerName.Length > 0)
                 {
-                    if (CurrentGame.IsCurrentPlayerLobbyHost() && !wasHost)
+                    m_OutOfLobbySince = DateTime.MinValue;
+                    if (m_InLobbySince == DateTime.MinValue)
+                    {
+                        m_InLobbySince = DateTime.Now;
+                    }
+                    if (CurrentGame.IsCurrentPlayerLobbyHost() && !wasHost && CurrentGame.helloDone)
                     {
                         ServerManager.Instance.RequestCommadWithHandler(ServerManager.Command.ELEVATE, CurrentGame.key, null, true, 0, null);
                     }
@@ -73,8 +86,9 @@ namespace SmartHunter.Game.Data.WidgetContexts
                         CurrentGame.helloDone = false;
                         CurrentGame.checkDone = false;
                         OutdatedLobbyID = CurrentGame.LobbyID;
+                        m_InLobbySince = DateTime.Now;
                     }
-                    if (!CurrentGame.helloDone && networkOperationDone && DateTime.Now.Second - (lastNetworkOperationTime > DateTime.Now.Second ? lastNetworkOperationTime - 60 : lastNetworkOperationTime) >= 5 && CurrentGame.key != "")
+                    if (!CurrentGame.helloDone && networkOperationDone && DateTime.Now.Second - (lastNetworkOperationTime > DateTime.Now.Second ? lastNetworkOperationTime - 60 : lastNetworkOperationTime) >= 5 && CurrentGame.key != "" && (DateTime.Now - m_InLobbySince).TotalSeconds >= LobbySettleSeconds)
                     {
                         networkOperationDone = false;
                         ServerManager.Instance.RequestCommadWithHandler(ServerManager.Command.HELLO, CurrentGame.key, null, CurrentGame.IsCurrentPlayerLobbyHost(), 0, null, (result, ping) =>
@@ -173,6 +187,15 @@ namespace SmartHunter.Game.Data.WidgetContexts
                 }
                 else
                 {
+                    m_InLobbySince = DateTime.MinValue;
+                    if (m_OutOfLobbySince == DateTime.MinValue)
+                    {
+                        m_OutOfLobbySince = DateTime.Now;
+                    }
+                    if (CurrentGame.helloDone && (DateTime.Now - m_OutOfLobbySince).TotalSeconds < LobbyLeaveSeconds)
+                    {
+                        return;
+                    }
                     if (CurrentGame.helloDone)
                     {
                         ServerManager.Instance.RequestCommadWithHandler(ServerManager.Command.DONE, CurrentGame.key, null, wasHost, 0, null, (result, ping) =>
