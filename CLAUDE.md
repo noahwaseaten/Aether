@@ -142,6 +142,11 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   shapes clip the whole shape (`behaviors:RoundClip.Radius`, -1 = pill), never round a scaled fill.
   An icon in a circle is trimmed (`ConverterParameter=Trim`) and at most 0.7 of the circle's inner width, or its corners
   poke out.
+- Game reading runs on a `DispatcherTimer` on the UI thread, below layout and render priority. Anything that keeps
+  layout busy starves it: data freezes, party sync stalls, Discord drops. Two did, in 2.6.x: a `LayoutUpdated`
+  handler that called `InvalidateVisual` (which forces another layout pass, so any sliding animation looped it), and
+  a bar animated through `Width` (a full widget-window layout every frame). Never use `LayoutUpdated` in overlay
+  controls, and animate only render properties (opacity, render transforms, clips).
 - Overlay text has no eyebrows (small bold capitals): labels are sentence case in `T_Label`. Keep it that way.
 - Shortcuts are rebound in Settings > Keyboard (`KeyBinder`): the next key from the global hook is taken, Esc cancels.
 - Each widget's "Show widget" switch also decides whether its data is read (`MhwMemoryUpdater.UpdateMemory`), and

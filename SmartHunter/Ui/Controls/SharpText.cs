@@ -61,21 +61,27 @@ namespace SmartHunter.Ui.Controls
         byte[] m_Coverage;
         int m_PixelWidth, m_PixelHeight;
         double m_Scale;
-        Vector m_Offset;
         string m_RenderedKey;
         BitmapSource m_Bitmap;
         Color m_BitmapColor;
 
-        public SharpText()
+        // No LayoutUpdated handler here. It ran for every text after every layout pass in the app, and its redraw
+        // forced another pass: while anything slid in, the overlay laid itself out nonstop and froze the UI thread
+        // (data, sync, Discord). A resize redraws through Refresh instead.
+
+        // A widget's size changed: draw its text again at the new pixel size
+        public static void Refresh(DependencyObject root)
         {
-            LayoutUpdated += (s, e) =>
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++)
             {
-                // A widget was resized or moved: render again at the new size, and line up with the screen's pixels again
-                if (m_Bitmap != null && (Math.Abs(DeviceScale() - m_Scale) > 0.001 || PixelOffset() != m_Offset))
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child is SharpText text)
                 {
-                    InvalidateVisual();
+                    text.InvalidateVisual();
                 }
-            };
+                Refresh(child);
+            }
         }
 
         DW.TextLayout CreateLayout(float maxWidth)
@@ -145,20 +151,6 @@ namespace SmartHunter.Ui.Controls
             return scale > 0.01 ? scale : 1;
         }
 
-        // How far this element sits from a whole screen pixel. After a resize it usually lands between pixels, and the
-        // bitmap copied there (nearest neighbour) dropped or doubled columns and broke the letters.
-        Vector PixelOffset()
-        {
-            var source = PresentationSource.FromVisual(this);
-            if (source?.RootVisual == null || !source.RootVisual.IsAncestorOf(this))
-            {
-                return new Vector();
-            }
-            var point = TransformToAncestor(source.RootVisual).Transform(new Point(0, 0));
-            point = source.CompositionTarget.TransformToDevice.Transform(point);
-            return new Vector(Math.Round(Math.Round(point.X) - point.X, 2), Math.Round(Math.Round(point.Y) - point.Y, 2));
-        }
-
         protected override void OnRender(DrawingContext dc)
         {
             if (string.IsNullOrEmpty(Text) || RenderSize.Width <= 0 || RenderSize.Height <= 0)
@@ -188,9 +180,8 @@ namespace SmartHunter.Ui.Controls
                 m_Bitmap = null;
             }
 
-            // Shift onto whole screen pixels, so the bitmap lands 1:1 on them
-            m_Offset = PixelOffset();
-            dc.PushTransform(new TranslateTransform(m_Offset.X / m_Scale, m_Offset.Y / m_Scale));
+            // Drawn with the default (linear) sampling: at a widget size between whole pixels that's slightly soft,
+            // where nearest neighbour dropped pixel columns and broke letters
             var rect = new Rect(0, 0, m_PixelWidth / m_Scale, m_PixelHeight / m_Scale);
             if (Foreground is SolidColorBrush solid)
             {
@@ -215,7 +206,6 @@ namespace SmartHunter.Ui.Controls
                 dc.DrawRectangle(Foreground, null, rect);
                 dc.Pop();
             }
-            dc.Pop();
         }
 
         void RenderCoverage(double scale)

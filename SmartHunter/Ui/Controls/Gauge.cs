@@ -6,8 +6,8 @@ using System.Windows.Media.Animation;
 
 namespace SmartHunter.Ui.Controls
 {
-    // A bar built like HunterPie's gauge: a dark trough, a fill inset by the border with rounded ends (it grows in width,
-    // so its corners never squash), a light line every 10%, and a 1px border on top. Over the game a translucent track
+    // A bar built like HunterPie's gauge: a dark trough, a fill inset by the border with rounded ends (clipped, so its
+    // corners never squash), a light line every 10%, and a 1px border on top. Over the game a translucent track
     // let the scene show through and the bar had no edge.
     public class Gauge : Grid
     {
@@ -36,7 +36,9 @@ namespace SmartHunter.Ui.Controls
         public bool IsSmooth { get { return (bool)GetValue(IsSmoothProperty); } set { SetValue(IsSmoothProperty, value); } }
 
         readonly Border m_Trough = new Border();
-        readonly Border m_Fill = new Border { Margin = new Thickness(1), HorizontalAlignment = HorizontalAlignment.Left, Width = 0 };
+        // Full width and clipped to the shown part: changing its Width re-laid out the whole widget window every
+        // animation frame, and in a fight the monster's bars animate almost nonstop
+        readonly Border m_Fill = new Border { Margin = new Thickness(1) };
         readonly Control m_Markers = new Control { Margin = new Thickness(1), IsHitTestVisible = false };
         readonly Border m_Edge = new Border { BorderThickness = new Thickness(1), IsHitTestVisible = false };
         double m_Target = -1;
@@ -52,6 +54,7 @@ namespace SmartHunter.Ui.Controls
             Children.Add(m_Markers);
             Children.Add(m_Edge);
             ApplyRadius();
+            LayoutFill();
             SizeChanged += (s, e) => LayoutFill();
         }
 
@@ -59,11 +62,17 @@ namespace SmartHunter.Ui.Controls
         {
             m_Trough.CornerRadius = m_Edge.CornerRadius = new CornerRadius(CornerRadius);
             m_Fill.CornerRadius = new CornerRadius(Math.Max(0, CornerRadius - 1));
+            LayoutFill();
         }
 
         void LayoutFill()
         {
-            m_Fill.Width = Math.Max(0, (ActualWidth - 2) * (double)GetValue(ShownProperty));
+            double width = Math.Max(0, (ActualWidth - 2) * (double)GetValue(ShownProperty));
+            double height = Math.Max(0, ActualHeight - 2);
+            double radius = Math.Max(0, Math.Min(CornerRadius - 1, Math.Min(width, height) / 2));
+            var clip = new RectangleGeometry(new Rect(0, 0, width, height), radius, radius);
+            clip.Freeze();
+            m_Fill.Clip = clip;
         }
 
         void AnimateTo(double to)

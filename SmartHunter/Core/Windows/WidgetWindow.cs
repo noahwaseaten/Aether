@@ -44,8 +44,18 @@ namespace SmartHunter.Core.Windows
                     Left -= e.NewSize.Width - e.PreviousSize.Width;
                 }
                 UpdateSide();
+
+                // The widget's own size or the overlay size changed: draw the text again at the new pixel size
+                double scale = Widget.Scale * SmartHunter.Game.Data.ViewModels.OverlayViewModel.Instance.UiScale;
+                if (Math.Abs(scale - m_TextScale) > 0.0001)
+                {
+                    m_TextScale = scale;
+                    SmartHunter.Ui.Controls.SharpText.Refresh(this);
+                }
             };
         }
+
+        double m_TextScale = -1;
 
         void UpdateSide()
         {
