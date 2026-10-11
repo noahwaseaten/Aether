@@ -1224,9 +1224,11 @@
             <Grid x:Name="Layer">
             <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" Opacity="{Binding ShadeOpacity, Source={x:Static viewModels:OverlayViewModel.Instance}}" OpacityMask="{StaticResource B_ScrimFeather}" />
             <StackPanel x:Name="Body" Effect="{StaticResource A_Effect_Halo}" MinWidth="200" Margin="18 14 44 14">
-                <!--Quest clock, only during a quest. The limit is on the Team widget.-->
+                <!--Quest clock, the Team widget's: shown here only while that one isn't on screen (hidden, or solo)-->
                 <StackPanel x:Name="HuntLine" Orientation="Horizontal" Margin="0 0 0 8">
+                    <Path Data="{StaticResource G_Stopwatch}" Fill="{StaticResource B_TextMuted}" Width="14" Height="15" Stretch="Uniform" VerticalAlignment="Center" Margin="0 0 6 0" />
                     <controls:SharpText Text="{Binding Hunt.Clock}" Style="{StaticResource T_Value}" MinWidth="0" />
+                    <controls:SharpText Text="{Binding Hunt.ClockLimit, StringFormat=/{0}}" Style="{StaticResource T_Muted}" VerticalAlignment="Bottom" Margin="2 0 0 0" />
                 </StackPanel>
                 <ContentControl Content="{Binding Sharpness}" />
                 <ItemsControl x:Name="Tools" ItemsSource="{Binding Tools}" Margin="0 0 0 8">
@@ -1245,6 +1247,13 @@
             <DataTrigger Binding="{Binding Hunt.Clock}" Value="{x:Null}">
                 <Setter TargetName="HuntLine" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding TeamWidget.IsVisible, Source={x:Static viewModels:OverlayViewModel.Instance}}" Value="True" />
+                    <Condition Binding="{Binding TeamWidget.Context.Fake_Players.Count, Source={x:Static viewModels:OverlayViewModel.Instance}, Converter={StaticResource A_Converter_NumberGreater}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="HuntLine" Property="Visibility" Value="Collapsed" />
+            </MultiDataTrigger>
             <DataTrigger Binding="{Binding Tools.Count}" Value="0">
                 <Setter TargetName="Tools" Property="Visibility" Value="Collapsed" />
             </DataTrigger>

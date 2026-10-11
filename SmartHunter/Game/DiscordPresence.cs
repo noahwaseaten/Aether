@@ -110,9 +110,13 @@ namespace SmartHunter.Game
         // Hub areas and living quarters: no hunting there, so field-only widgets (sharpness) stay hidden
         public static bool IsInTown(Process p)
         {
-            int zone = MemoryHelper.Read<int>(p, Chain(p, ZoneAddress, 0xAED0));
+            int zone = ZoneId(p);
             return zone == 0 || Towns.Contains(zone);
         }
+
+        // 0 while loading
+        public static int ZoneId(Process p) => MemoryHelper.Read<int>(p, Chain(p, ZoneAddress, 0xAED0));
+        public static bool IsTownZone(int zone) => Towns.Contains(zone);
 
         static ulong Chain(Process p, long address, params long[] offsets)
         {

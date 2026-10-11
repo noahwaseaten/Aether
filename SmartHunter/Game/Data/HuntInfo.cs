@@ -11,6 +11,9 @@ namespace SmartHunter.Game.Data
         // For damage per second; 0 outside a quest
         public float ElapsedSeconds { get; set; }
 
+        // When Aether saw you head out on the current expedition (expeditions have no game clock)
+        public DateTime? ExpeditionStart { get; set; }
+
         // "1/3": deaths so far and how many fail the quest
         string m_Deaths;
         public string Deaths { get { return m_Deaths; } set { SetProperty(ref m_Deaths, value); } }
@@ -27,6 +30,7 @@ namespace SmartHunter.Game.Data
             ClockLimit = null;
             Deaths = null;
             ElapsedSeconds = 0;
+            ExpeditionStart = null;
         }
 
         public static string FormatDeaths(int deaths, int maxDeaths)
@@ -42,12 +46,11 @@ namespace SmartHunter.Game.Data
             return $"{s / 60}:{s % 60:00}";
         }
 
-        // The game stores the quest limit as frames, slightly under the real value: round up to the known limits
-        static readonly uint[] QuestLimits = { 54000, 72000, 108000, 126000, 180000 }; // 15, 20, 30, 35, 50 min at 60 fps
+        // The game stores the quest limit as frames (60 a second), slightly under the real value: round up to the minute.
+        // A fixed list of 15/20/30/35/50 minutes showed any other limit (arena, special assignments) as the next one up.
         public static float QuestLimitSeconds(uint rawFrames)
         {
-            uint limit = QuestLimits.FirstOrDefault(l => l >= rawFrames);
-            return (limit == 0 ? rawFrames : limit) / 60f;
+            return (float)Math.Ceiling(rawFrames / 3600.0) * 60;
         }
     }
 }

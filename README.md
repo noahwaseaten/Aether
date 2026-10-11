@@ -77,7 +77,7 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 <img src="docs/buffs-widget.png" alt="Buffs widget" align="right" width="280"/>
 
-- Quest clock
+- Quest clock, when the team damage widget isn't showing it (hidden, or hunting solo)
 - Sharpness with hits left until the next level
 - **Mantles and boosters** with time left and a bar: gold and draining while on, grey and filling back up while they recharge
 - Buffs, debuffs and weapon timers (Charge Blade, Insect Glaive, Long Sword, Switch Axe) with time left

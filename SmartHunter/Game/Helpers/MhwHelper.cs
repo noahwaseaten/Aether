@@ -465,8 +465,6 @@ namespace SmartHunter.Game.Helpers
             sharpness.Update(thresholds, current, cap);
         }
 
-        static DateTime? s_ExpeditionStart;
-
         // Quest clock and deaths for the Buffs and Team widgets (HunterPie v2's World map, build 421810)
         public static void UpdateHuntInfo(Process process)
         {
@@ -481,24 +479,27 @@ namespace SmartHunter.Game.Helpers
             bool inQuest = quest != 0 && MemoryHelper.Read<int>(process, quest + 0x54) == 2;
             bool clockOk = inQuest && limit > 0 && left >= 0 && left <= limit;
             var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
+            // Loading screens read as zone 0: keep an expedition's clock running through them instead of restarting it
+            int zone = DiscordPresence.ZoneId(process);
+            bool onExpedition = game.IsPlayerInExpedition && (zone == 0 ? hunt.ExpeditionStart.HasValue : !DiscordPresence.IsTownZone(zone));
             if (clockOk)
             {
-                s_ExpeditionStart = null;
+                hunt.ExpeditionStart = null;
                 hunt.Clock = HuntInfo.Format(limit - left);
                 hunt.ClockLimit = HuntInfo.Format(limit);
                 hunt.ElapsedSeconds = limit - left;
             }
-            else if (game.IsPlayerInExpedition && !DiscordPresence.IsInTown(process))
+            else if (onExpedition)
             {
                 // Expeditions have no quest clock or limit: time since Aether saw you head out
-                s_ExpeditionStart = s_ExpeditionStart ?? DateTime.Now;
-                hunt.ElapsedSeconds = (float)(DateTime.Now - s_ExpeditionStart.Value).TotalSeconds;
+                hunt.ExpeditionStart = hunt.ExpeditionStart ?? DateTime.Now;
+                hunt.ElapsedSeconds = (float)(DateTime.Now - hunt.ExpeditionStart.Value).TotalSeconds;
                 hunt.Clock = HuntInfo.Format(hunt.ElapsedSeconds);
                 hunt.ClockLimit = null;
             }
             else
             {
-                s_ExpeditionStart = null;
+                hunt.ExpeditionStart = null;
                 hunt.Clock = null;
                 hunt.ClockLimit = null;
                 hunt.ElapsedSeconds = 0;

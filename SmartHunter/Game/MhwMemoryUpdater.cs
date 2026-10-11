@@ -241,6 +241,8 @@ namespace SmartHunter.Game
                 OverlayViewModel.Instance.PlayerWidget.Context.StatusEffects.Clear();
                 OverlayViewModel.Instance.PlayerWidget.Context.Tools.Clear();
                 OverlayViewModel.Instance.PlayerWidget.Context.Hunt.Clear();
+                // Back in Astera after a hunt nothing is read here, and the last hunt's sharpness stayed on screen
+                OverlayViewModel.Instance.PlayerWidget.Context.Sharpness.IsAvailable = false;
             }
 
             HuntTracker.Update(Process);
