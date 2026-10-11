@@ -33,7 +33,7 @@ namespace SmartHunter.Game
         static int s_EndState;
 
         static DateTime? s_QuestStart;
-        static int s_LastState = -1, s_Stars, s_Carts;
+        static int s_LastState = -1, s_Stars, s_Deaths;
         static float s_LastHp = -1;
         static List<RecapHunter> s_LastParty = new List<RecapHunter>();
         static readonly Dictionary<ulong, Seen> s_Monsters = new Dictionary<ulong, Seen>();
@@ -53,7 +53,7 @@ namespace SmartHunter.Game
             {
                 s_QuestStart = DateTime.Now;
                 s_Stars = MemoryHelper.Read<int>(process, quest + 0x50);
-                s_Carts = 0;
+                s_Deaths = 0;
                 s_LastHp = -1;
                 s_LastParty.Clear();
                 s_Monsters.Clear();
@@ -64,7 +64,7 @@ namespace SmartHunter.Game
             {
                 if (s_LastHp > 0 && hp <= 0 && hud != 0)
                 {
-                    s_Carts++;
+                    s_Deaths++;
                 }
                 s_LastHp = hp;
                 SnapshotParty();
@@ -183,7 +183,7 @@ namespace SmartHunter.Game
                 IsSuccess = state == 3 || state == 4,
                 Result = state == 3 || state == 4 ? "Quest complete" : state == 5 ? "Quest failed" : "Quest abandoned",
                                 Stars = s_Stars > 0 ? new string('★', Math.Min(s_Stars, 10)) : "",
-                Carts = s_Carts,
+                Deaths = s_Deaths,
             };
 
             int total = Math.Max(1, s_LastParty.Sum(h => h.Damage));
@@ -226,7 +226,7 @@ namespace SmartHunter.Game
         // Debug.UseSampleData preview
         public static HuntRecap SampleRecap()
         {
-            var recap = new HuntRecap { IsSuccess = true, Result = "Quest complete", Stars = "★★★★★★", Carts = 1, MyDamage = 18420, IsSolo = false };
+            var recap = new HuntRecap { IsSuccess = true, Result = "Quest complete", Stars = "★★★★★★", Deaths = 1, MyDamage = 18420, IsSolo = false };
             recap.Hunters.Add(new RecapHunter { Rank = 1, Name = "Lythia", WeaponIcon = "ICON_SWITCHAXE", ColorIndex = 0, Damage = 18420, Share = 0.47f, Bar = 1, IsMe = true, IsMvp = true });
             recap.Hunters.Add(new RecapHunter { Rank = 2, Name = "Kabuto", WeaponIcon = "ICON_LONGSWORD", ColorIndex = 1, Damage = 13950, Share = 0.36f, Bar = 0.76f });
             recap.Hunters.Add(new RecapHunter { Rank = 3, Name = "mike the father", WeaponIcon = "ICON_BOW", ColorIndex = 2, Damage = 6630, Share = 0.17f, Bar = 0.36f });

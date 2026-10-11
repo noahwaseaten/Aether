@@ -49,17 +49,11 @@ namespace SmartHunter.Game.Data
 
         public bool IsDebuff => GroupId == "Debuff";
 
-        // Mantle/booster recharge timers: shown as quiet "ready in" cooldowns
-        public bool IsCooldown => NameStringId.Contains("RECHARGE");
-
         // Last 10 seconds of a timed buff: the skin tints it so you can refresh in time
-        public bool IsExpiring => Time != null && !IsCooldown && !IsDebuff && Time.Current > 0 && Time.Current <= 10;
+        public bool IsExpiring => Time != null && !IsDebuff && Time.Current > 0 && Time.Current <= 10;
 
-        // Debuffs first, then active timed buffs, then permanent ones, cooldowns last
-        public int SortGroup => IsDebuff ? 0 : IsCooldown ? 3 : Time == null ? 2 : 1;
-
-        // Cooldowns read as the item ("Ghillie Mantle"), the dimmed row already says it's recharging
-        public string DisplayName => IsCooldown && Name.StartsWith("Recharge ") ? Name.Substring("Recharge ".Length) : Name;
+        // Debuffs first, then timed buffs, then permanent ones
+        public int SortGroup => IsDebuff ? 0 : Time == null ? 2 : 1;
 
         public string Name
         {

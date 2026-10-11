@@ -52,8 +52,8 @@ namespace SmartHunter.Game.Data.WidgetContexts
         public string Result { get; set; }
         public bool IsSuccess { get; set; }
         public string Stars { get; set; }
-        public int Carts { get; set; }
-        public string CartsText => Carts == 0 ? "no carts" : Carts == 1 ? "1 cart" : $"{Carts} carts";
+        public int Deaths { get; set; }
+        public string DeathsText => Deaths == 0 ? "no deaths" : Deaths == 1 ? "1 death" : $"{Deaths} deaths";
         public int MyDamage { get; set; }
         public string Headline { get; set; }
         public bool IsSolo { get; set; }

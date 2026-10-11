@@ -159,10 +159,14 @@ namespace SmartHunter.Game.Data.WidgetContexts
             // Hunters with no number get no share: counting them as 0 would inflate everyone else's
             int totalDamage = Math.Max(1, Players.Where(p => !p.IsDamageUnknown).Sum(p => p.Damage));
             int highestDamage = Math.Max(1, Players.Max(p => p.Damage));
+            float elapsed = OverlayViewModel.Instance.PlayerWidget.Context.Hunt.ElapsedSeconds;
+            var now = DateTime.Now;
             foreach (var player in Players)
             {
                 player.DamageFraction = player.IsDamageUnknown ? 0 : (float)player.Damage / totalDamage;
                 player.BarFraction = player.IsDamageUnknown ? 0 : (float)player.Damage / highestDamage;
+                player.Dps = elapsed >= 1 && !player.IsDamageUnknown ? player.Damage / elapsed : 0;
+                player.UpdateTrend(now);
             }
         }
 

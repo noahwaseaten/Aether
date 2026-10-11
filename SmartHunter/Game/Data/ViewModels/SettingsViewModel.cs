@@ -150,17 +150,18 @@ namespace SmartHunter.Game.Data.ViewModels
                 + "Every monster: adds up the damage numbers on your screen, like on expeditions. Needs damage numbers on in the game's options, and a teammate only counts fully if they also run Aether with this on and party sync; otherwise they show quest-target damage.",
                 new[] { ("Targets", "Quest targets"), ("All", "Every monster") },
                 () => C.Overlay.TeamWidget.CountAllMonsters ? "All" : "Targets", v => C.Overlay.TeamWidget.CountAllMonsters = v == "All");
-            Toggle(Team, "Bars","A bar for each hunter's share of the damage.", () => C.Overlay.TeamWidget.ShowBars, v => C.Overlay.TeamWidget.ShowBars = v);
-            Toggle(Team, "Damage numbers", "Each hunter's total damage.", () => C.Overlay.TeamWidget.ShowNumbers, v => C.Overlay.TeamWidget.ShowNumbers = v);
+            Toggle(Team, "Bars", "Each hunter's row fills with their colour as far as their damage reaches against the top hunter.", () => C.Overlay.TeamWidget.ShowBars, v => C.Overlay.TeamWidget.ShowBars = v);
+            Toggle(Team, "Damage share", "Each hunter's percentage of the party's damage, with a green or red arrow while it's rising or falling.", () => C.Overlay.TeamWidget.ShowPercents, v => C.Overlay.TeamWidget.ShowPercents = v);
+            Toggle(Team, "Damage numbers", "Each hunter's total damage, and damage per second of quest time under it.", () => C.Overlay.TeamWidget.ShowNumbers, v => C.Overlay.TeamWidget.ShowNumbers = v);
             Toggle(Team, "Damage chart", "Damage over time, above the list.", () => C.Overlay.TeamWidget.ShowChart, v => C.Overlay.TeamWidget.ShowChart = v);
 
             const string Buffs = "Buffs widget";
-            Toggle(Buffs, "Show widget", "Your buffs and debuffs with time left, plus sharpness.", () => C.Overlay.PlayerWidget.IsVisible, v => C.Overlay.PlayerWidget.IsVisible = v);
+            Toggle(Buffs, "Show widget", "Your buffs and debuffs with time left, sharpness, the quest clock, and your mantles and boosters while they're on or recharging.", () => C.Overlay.PlayerWidget.IsVisible, v => C.Overlay.PlayerWidget.IsVisible = v);
 
             const string Quest = "Quest";
             Toggle(Quest, "Call-outs", "A tag at the top of the screen when a monster can be captured, is enraged, or is exhausted.",
                 () => C.Overlay.CalloutWidget.IsVisible, v => C.Overlay.CalloutWidget.IsVisible = v);
-            Toggle(Quest, "Quest results", "When a quest ends: monsters, carts and each hunter's damage.",
+            Toggle(Quest, "Quest results", "When a quest ends: monsters, deaths and each hunter's damage.",
                 () => C.Overlay.RecapWidget.IsVisible, v => C.Overlay.RecapWidget.IsVisible = v);
 
             const string Overlay = "Look and behavior";

@@ -212,11 +212,20 @@ namespace SmartHunter.Game
 
                     MhwHelper.UpdatePlayerWidget(Process, buffAddress, equipmentAddress, weaponAddress);
                     MhwHelper.UpdateSharpness(Process);
-                    MhwHelper.UpdateHuntInfo(Process);
                 }
-                else if (OverlayViewModel.Instance.PlayerWidget.Context.StatusEffects.Any())
+                else if (OverlayViewModel.Instance.PlayerWidget.Context.StatusEffects.Any() || OverlayViewModel.Instance.PlayerWidget.Context.Tools.Any())
                 {
                     OverlayViewModel.Instance.PlayerWidget.Context.StatusEffects.Clear();
+                    OverlayViewModel.Instance.PlayerWidget.Context.Tools.Clear();
+                }
+
+                // Both the Buffs and the Team widget show the quest clock and deaths
+                if (ConfigHelper.Main.Values.Overlay.PlayerWidget.IsVisible || ConfigHelper.Main.Values.Overlay.TeamWidget.IsVisible)
+                {
+                    MhwHelper.UpdateHuntInfo(Process);
+                }
+                else
+                {
                     OverlayViewModel.Instance.PlayerWidget.Context.Hunt.Clear();
                 }
             }
@@ -226,6 +235,7 @@ namespace SmartHunter.Game
                 OverlayViewModel.Instance.MonsterWidget.Context.HasVisibleMonsters = false;
                 OverlayViewModel.Instance.TeamWidget.Context.ClearPlayers();
                 OverlayViewModel.Instance.PlayerWidget.Context.StatusEffects.Clear();
+                OverlayViewModel.Instance.PlayerWidget.Context.Tools.Clear();
                 OverlayViewModel.Instance.PlayerWidget.Context.Hunt.Clear();
             }
 

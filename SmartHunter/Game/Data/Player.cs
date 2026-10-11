@@ -92,6 +92,57 @@ namespace SmartHunter.Game.Data
 
         public DateTime LastHitTime { get; private set; }
 
+        // "MR 24", or "HR 120" before master rank; null until the party struct has it
+        string m_Rank;
+        public string Rank
+        {
+            get { return m_Rank; }
+            set { SetProperty(ref m_Rank, value); }
+        }
+
+        public static string FormatRank(int highRank, int masterRank)
+        {
+            if (masterRank > 0 && masterRank <= 999)
+                return "MR " + masterRank;
+            return highRank > 0 && highRank <= 999 ? "HR " + highRank : null;
+        }
+
+        // Damage per second of quest time; 0 outside a quest
+        float m_Dps;
+        public float Dps
+        {
+            get { return m_Dps; }
+            set { SetProperty(ref m_Dps, value); }
+        }
+
+        // Is this hunter's share of the damage rising (1), falling (-1) or steady (0) over the last few seconds
+        int m_Trend;
+        public int Trend
+        {
+            get { return m_Trend; }
+            set { SetProperty(ref m_Trend, value); }
+        }
+
+        public const double TrendSeconds = 5;
+        float m_TrendShare;
+        DateTime m_TrendSampledAt;
+
+        public void UpdateTrend(DateTime now)
+        {
+            if ((now - m_TrendSampledAt).TotalSeconds < TrendSeconds)
+                return;
+            Trend = m_TrendSampledAt == default(DateTime) ? 0 : TrendOf(m_TrendShare, DamageFraction);
+            m_TrendShare = DamageFraction;
+            m_TrendSampledAt = now;
+        }
+
+        // Half a percentage point either way is noise, not a trend
+        public static int TrendOf(float before, float now)
+        {
+            float change = now - before;
+            return change > 0.005f ? 1 : change < -0.005f ? -1 : 0;
+        }
+
         // Icon key in Ui/Resources/Icons.xaml
         string m_WeaponIcon;
         public string WeaponIcon

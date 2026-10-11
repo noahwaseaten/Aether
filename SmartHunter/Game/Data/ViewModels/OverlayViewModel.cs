@@ -159,13 +159,20 @@ namespace SmartHunter.Game.Data.ViewModels
             TeamWidget.Context.UpdateAndGetPlayer(0, "Lythia", 0);
             TeamWidget.Context.UpdateAndGetPlayer(1, "Kabuto", 0);
             TeamWidget.Context.UpdateAndGetPlayer(2, "mike the father", 0);
-            TeamWidget.Context.UpdateAndGetPlayer(0, "Lythia", 3244).WeaponIcon = "ICON_SWITCHAXE";
-            TeamWidget.Context.UpdateAndGetPlayer(1, "Kabuto", 2182).WeaponIcon = "ICON_LONGSWORD";
-            TeamWidget.Context.UpdateAndGetPlayer(2, "mike the father", 569).WeaponIcon = "ICON_BOW";
-            TeamWidget.Context.UpdateAndGetPlayer(1, "Kabuto", 2182).UsesAether = true;
+            TeamWidget.Context.UpdateAndGetPlayer(0, "Lythia", 24610).WeaponIcon = "ICON_SWITCHAXE";
+            TeamWidget.Context.UpdateAndGetPlayer(1, "Kabuto", 16350).WeaponIcon = "ICON_LONGSWORD";
+            TeamWidget.Context.UpdateAndGetPlayer(2, "mike the father", 4310).WeaponIcon = "ICON_BOW";
+            TeamWidget.Context.UpdateAndGetPlayer(1, "Kabuto", 16350).UsesAether = true;
             TeamWidget.Context.Players[2].IsDamagePartial = true; // no Aether: quest targets only
+            TeamWidget.Context.Players[0].Rank = "MR 124";
+            TeamWidget.Context.Players[1].Rank = "MR 37";
+            TeamWidget.Context.Players[2].Rank = "HR 49";
             DebugWidget.Context.CurrentGame.CurrentPlayerName = "Lythia";
+            PlayerWidget.Context.Hunt.ElapsedSeconds = 754;
+            PlayerWidget.Context.Hunt.Deaths = "1/3";
             TeamWidget.Context.UpdateFractions();
+            TeamWidget.Context.Players[0].Trend = 1;
+            TeamWidget.Context.Players[1].Trend = -1;
 
             var effects = ConfigHelper.PlayerData.Values.StatusEffects;
             void Effect(string nameId, float? seconds)
@@ -177,7 +184,20 @@ namespace SmartHunter.Game.Data.ViewModels
             Effect("LOC_STATUS_EFFECT_ATTACK_UP_L", 95);
             Effect("LOC_STATUS_EFFECT_MIGHT_SEED", 8);
             Effect("LOC_STATUS_EFFECT_DEFENSE_UP_L", 240);
-            Effect("LOC_EQUIPMENT_RECHARGE_MANTLE_GHILLIE", 64);
+            // Tools: Ghillie on, Rocksteady recharging (the first read sets each ring's length, the second moves it)
+            void Tool(string nameId, float first, float now, bool on)
+            {
+                int active = System.Array.FindIndex(effects, e => e.NameStringId == nameId);
+                int recharge = System.Array.FindIndex(effects, e => e.NameStringId == nameId.Replace("LOC_EQUIPMENT_", "LOC_EQUIPMENT_RECHARGE_"));
+                foreach (float seconds in new[] { first, now })
+                {
+                    PlayerWidget.Context.UpdateAndGetPlayerStatusEffect(active, seconds, on);
+                    PlayerWidget.Context.UpdateAndGetPlayerStatusEffect(recharge, seconds, !on);
+                    PlayerWidget.Context.SyncTools();
+                }
+            }
+            Tool("LOC_EQUIPMENT_MANTLE_GHILLIE", 180, 112, true);
+            Tool("LOC_EQUIPMENT_MANTLE_ROCKSTEADY", 360, 128, false);
 
             var rathian = MonsterWidget.Context.UpdateAndGetMonster(1, "em001_00", 21000, 21000, 1.1f, 1);
             rathian.UpdateHealth(21000, 12890);

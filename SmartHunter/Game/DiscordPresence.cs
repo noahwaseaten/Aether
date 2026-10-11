@@ -207,8 +207,8 @@ namespace SmartHunter.Game
             {
                 m_CombatAt = now;
             }
-            bool carted = !town && hud != 0 && hp <= 0 && m_LastPlayerHp > 0;
-            m_LastPlayerHp = hp > 0 ? hp : (carted ? m_LastPlayerHp : hp);
+            bool died = !town && hud != 0 && hp <= 0 && m_LastPlayerHp > 0;
+            m_LastPlayerHp = hp > 0 ? hp : (died ? m_LastPlayerHp : hp);
 
             string rank = mr > 0 ? $"MR {mr}" : $"HR {hr}";
             string stars = questStars > 0 ? $" · {questStars}★" : "";
@@ -229,7 +229,7 @@ namespace SmartHunter.Game
                     state = $"Cleared in {(int)m_ClearTime.Value.TotalMinutes}:{m_ClearTime.Value.Seconds:00} · {zoneName}";
             }
             else if (questState >= 5) details = "Quest failed";
-            else if (carted) details = "Carted";
+            else if (died) details = "Died";
             else if ((now - m_SharpenedAt).TotalSeconds < 6) details = "Sharpening";
             else if (target != null)
             {

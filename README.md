@@ -54,7 +54,7 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 - Health, enrage timer and stamina of the monster you're fighting
 - **Parts**: how close each one is to flinching or breaking, with a dot for each break
 - **Ailments**: poison, paralysis, sleep, stun and more, with buildup and how many times they've triggered
-- Weaknesses, crowns, tenderized parts and the capture threshold
+- Weaknesses, crowns, tenderized parts, and a gold marker on the health bar where the monster can be captured
 - Follows the monster you **lock onto**, or the one you pin on the map
 - Turf wars and double hunts get a compact line for the other monster
 
@@ -62,9 +62,11 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 ### Team damage
 
-<img src="docs/team-widget.png" alt="Team damage widget" align="right" width="300"/>
+<img src="docs/team-widget.png" alt="Team damage widget" align="right" width="340"/>
 
-- Damage and share for up to 4 hunters, with their weapon and a bar
+- Quest clock and party deaths (`1/3`) at the top
+- For up to 4 hunters: weapon, rank, damage, damage per second and share of the party's damage
+- A green or red arrow while a hunter's share is rising or falling; each row fills with their colour
 - Counts **every monster**, including expeditions, when your friends run Aether too
 - The Aether logo next to a name means that hunter runs Aether too. A `~` means only their quest-target damage is known, and `—` means
   the game keeps no number for them (see [Party sync][PartySync])
@@ -73,11 +75,12 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 ### Buffs and sharpness
 
-<img src="docs/buffs-widget.png" alt="Buffs widget" align="right" width="260"/>
+<img src="docs/buffs-widget.png" alt="Buffs widget" align="right" width="280"/>
 
 - Quest clock
 - Sharpness with hits left until the next level
-- Buffs, debuffs, mantles and weapon timers (Charge Blade, Insect Glaive, Long Sword, Switch Axe) with time left
+- **Mantles and boosters** as rings: gold and draining while on, grey and filling back up while they recharge
+- Buffs, debuffs and weapon timers (Charge Blade, Insect Glaive, Long Sword, Switch Axe) with time left
 
 <br clear="right"/>
 
@@ -85,7 +88,7 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 <img src="docs/hunt-recap.png" alt="Hunt recap" align="right" width="380"/>
 
-- Shows when the quest ends: result, stars, carts, and how each monster went down
+- Shows when the quest ends: result, stars, deaths, and how each monster went down
 - Who did the most damage, ranked
 
 <br clear="right"/>

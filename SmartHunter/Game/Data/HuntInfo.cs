@@ -4,9 +4,16 @@ using SmartHunter.Core.Data;
 
 namespace SmartHunter.Game.Data
 {
-    // The quest clock at the top of the Buffs widget: time elapsed and the quest's limit. Null outside a quest.
+    // The quest clock (time elapsed and the quest's limit) and the party's deaths. Null outside a quest.
     public class HuntInfo : Bindable
     {
+        // For damage per second; 0 outside a quest
+        public float ElapsedSeconds { get; set; }
+
+        // "1/3": deaths so far and how many fail the quest
+        string m_Deaths;
+        public string Deaths { get { return m_Deaths; } set { SetProperty(ref m_Deaths, value); } }
+
         string m_Clock;
         public string Clock { get { return m_Clock; } set { SetProperty(ref m_Clock, value); } }
 
@@ -17,6 +24,13 @@ namespace SmartHunter.Game.Data
         {
             Clock = null;
             ClockLimit = null;
+            Deaths = null;
+            ElapsedSeconds = 0;
+        }
+
+        public static string FormatDeaths(int deaths, int maxDeaths)
+        {
+            return maxDeaths > 0 && maxDeaths <= 9 && deaths >= 0 && deaths <= maxDeaths ? $"{deaths}/{maxDeaths}" : null;
         }
 
         public static string Format(float seconds)

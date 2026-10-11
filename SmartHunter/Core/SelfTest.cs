@@ -6,6 +6,7 @@ using SmartHunter.Core.Helpers;
 using SmartHunter.Game.Config;
 using SmartHunter.Game.Data;
 using SmartHunter.Game.Data.ViewModels;
+using SmartHunter.Game.Data.WidgetContexts;
 using SmartHunter.Game.Helpers;
 
 namespace SmartHunter.Core
@@ -28,6 +29,26 @@ namespace SmartHunter.Core
             Check(!MhwHelper.IsDeathAction("nActEm001::DieSleep"), "DieSleep is sleeping, not dead");
             Check(!MhwHelper.IsDeathAction("nActEm001::DeadlyPoison"), "Deadly is not dead");
             Check(!MhwHelper.IsDeathAction(""), "unreadable action is not dead");
+
+            // Team widget: rank, deaths and the share trend
+            Check(Player.FormatRank(999, 24) == "MR 24", "master rank shows once there is one");
+            Check(Player.FormatRank(120, 0) == "HR 120", "high rank shows before master rank");
+            Check(Player.FormatRank(0, 0) == null && Player.FormatRank(-3, 4000) == null, "unread or garbage rank shows nothing");
+            Check(HuntInfo.FormatDeaths(1, 3) == "1/3", "deaths read as 1/3");
+            Check(HuntInfo.FormatDeaths(0, 0) == null && HuntInfo.FormatDeaths(4, 3) == null, "no limit or more deaths than the limit is garbage");
+            Check(Player.TrendOf(0.40f, 0.45f) == 1 && Player.TrendOf(0.45f, 0.40f) == -1, "share rising or falling shows an arrow");
+            Check(Player.TrendOf(0.400f, 0.403f) == 0, "tiny share changes aren't a trend");
+
+            // Specialized tools: both timers of a mantle are one tile
+            Check(PlayerWidgetContext.IsTool("LOC_EQUIPMENT_RECHARGE_MANTLE_GHILLIE") && !PlayerWidgetContext.IsTool("LOC_STATUS_EFFECT_POISON"), "mantles are tools, buffs aren't");
+            Check(PlayerWidgetContext.ToolKey("LOC_EQUIPMENT_RECHARGE_MANTLE_GHILLIE") == "LOC_EQUIPMENT_MANTLE_GHILLIE", "a recharge timer belongs to its mantle");
+            var tool = new SpecializedTool("k", "Ghillie Mantle", null);
+            tool.Update(180, false);
+            tool.Update(90, false);
+            Check(tool.Ring.Fraction == 0.5f && !tool.IsRecharging, "an active tool's ring drains");
+            tool.Update(300, true);
+            tool.Update(75, true);
+            Check(tool.Ring.Fraction == 0.75f && tool.IsRecharging && tool.Seconds == 75, "a recharging tool's ring fills back up");
 
             // Update versions: tags compare against the exe's four-part version
             Check(AppUpdater.TryParseTag("v1.2.0", out var a) && a == new Version(1, 2, 0, 0), "v1.2.0 parses as 1.2.0.0");

@@ -313,6 +313,7 @@ namespace SmartHunter.Game.Helpers
 
                 OverlayViewModel.Instance.PlayerWidget.Context.UpdateAndGetPlayerStatusEffect(index, timer, allConditionsPassed);
             }
+            OverlayViewModel.Instance.PlayerWidget.Context.SyncTools();
         }
 
         public static void UpdateTeamWidget(Process process, ulong playerDamageCollectionAddress, ulong playerNameCollectionAddress)
@@ -395,7 +396,7 @@ namespace SmartHunter.Game.Helpers
             return member == 0 ? "" : MemoryHelper.ReadString(process, member + 0x49, 32);
         }
 
-        // Weapon for each quest member (party struct from HunterPie's map for build 421810)
+        // Weapon and rank for each quest member (party struct from HunterPie's map for build 421810)
         public static void UpdatePartyDetails(Process process)
         {
             ulong root = MemoryHelper.Read<ulong>(process, 0x140000000UL + 0x05013530);
@@ -414,6 +415,9 @@ namespace SmartHunter.Game.Helpers
                 string memberName = MemoryHelper.ReadString(process, member + 0x49, 32);
                 var target = players.FirstOrDefault(p => p.Name == memberName);
                 if (String.IsNullOrEmpty(memberName) || target == null) continue;
+
+                // High rank, then master rank (HunterPie v2's MHWPartyMemberLevelStructure)
+                target.Rank = Player.FormatRank(MemoryHelper.Read<short>(process, member + 0x70), MemoryHelper.Read<short>(process, member + 0x72));
 
                 int weapon = MemoryHelper.Read<byte>(process, member + 0x7C);
                 if (memberName == game.CurrentPlayerName && s_WeaponTypeIds.TryGetValue(game.EquippedWeaponType, out var mine))
@@ -464,7 +468,7 @@ namespace SmartHunter.Game.Helpers
             sharpness.Update(thresholds, current, cap);
         }
 
-        // Quest clock for the Buffs widget (HunterPie v2's World map, build 421810)
+        // Quest clock and deaths for the Buffs and Team widgets (HunterPie v2's World map, build 421810)
         public static void UpdateHuntInfo(Process process)
         {
             const ulong Base = 0x140000000;
@@ -479,6 +483,11 @@ namespace SmartHunter.Game.Helpers
             bool clockOk = inQuest && limit > 0 && left >= 0 && left <= limit;
             hunt.Clock = clockOk ? HuntInfo.Format(limit - left) : null;
             hunt.ClockLimit = clockOk ? "/ " + HuntInfo.Format(limit) : null;
+            hunt.ElapsedSeconds = clockOk ? limit - left : 0;
+
+            // Party deaths and the limit that fails the quest (HunterPie v2's MHWQuestDataStructure)
+            ulong questData = MemoryHelper.ReadMultiLevelPointer(false, process, Base + 0x0500ED30, 0x17370);
+            hunt.Deaths = inQuest ? HuntInfo.FormatDeaths(MemoryHelper.Read<int>(process, questData + 4), MemoryHelper.Read<int>(process, questData)) : null;
         }
 
         // Weapon buffs in the buff list (HunterPie v2's World weapon structures). The game stores them without Power
