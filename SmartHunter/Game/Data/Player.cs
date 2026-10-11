@@ -92,21 +92,6 @@ namespace SmartHunter.Game.Data
 
         public DateTime LastHitTime { get; private set; }
 
-        // "MR 24", or "HR 120" before master rank; null until the party struct has it
-        string m_Rank;
-        public string Rank
-        {
-            get { return m_Rank; }
-            set { SetProperty(ref m_Rank, value); }
-        }
-
-        public static string FormatRank(int highRank, int masterRank)
-        {
-            if (masterRank > 0 && masterRank <= 999)
-                return "MR " + masterRank;
-            return highRank > 0 && highRank <= 999 ? "HR " + highRank : null;
-        }
-
         // Damage per second of quest time; 0 outside a quest
         float m_Dps;
         public float Dps

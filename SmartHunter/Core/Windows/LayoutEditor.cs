@@ -147,7 +147,7 @@ namespace SmartHunter.Core.Windows
 
             var stack = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center };
             stack.Children.Add(card);
-            TextOptions.SetTextFormattingMode(stack, TextFormattingMode.Display);
+            TextOptions.SetTextFormattingMode(stack, TextFormattingMode.Ideal);
             return stack;
         }
 

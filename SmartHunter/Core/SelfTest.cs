@@ -30,10 +30,7 @@ namespace SmartHunter.Core
             Check(!MhwHelper.IsDeathAction("nActEm001::DeadlyPoison"), "Deadly is not dead");
             Check(!MhwHelper.IsDeathAction(""), "unreadable action is not dead");
 
-            // Team widget: rank, deaths and the share trend
-            Check(Player.FormatRank(999, 24) == "MR 24", "master rank shows once there is one");
-            Check(Player.FormatRank(120, 0) == "HR 120", "high rank shows before master rank");
-            Check(Player.FormatRank(0, 0) == null && Player.FormatRank(-3, 4000) == null, "unread or garbage rank shows nothing");
+            // Team widget: deaths and the share trend
             Check(HuntInfo.FormatDeaths(1, 3) == "1/3", "deaths read as 1/3");
             Check(HuntInfo.FormatDeaths(0, 0) == null && HuntInfo.FormatDeaths(4, 3) == null, "no limit or more deaths than the limit is garbage");
             Check(Player.TrendOf(0.40f, 0.45f) == 1 && Player.TrendOf(0.45f, 0.40f) == -1, "share rising or falling shows an arrow");

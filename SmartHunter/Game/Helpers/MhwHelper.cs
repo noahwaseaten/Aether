@@ -396,7 +396,7 @@ namespace SmartHunter.Game.Helpers
             return member == 0 ? "" : MemoryHelper.ReadString(process, member + 0x49, 32);
         }
 
-        // Weapon and rank for each quest member (party struct from HunterPie's map for build 421810)
+        // Weapon for each quest member (party struct from HunterPie's map for build 421810)
         public static void UpdatePartyDetails(Process process)
         {
             ulong root = MemoryHelper.Read<ulong>(process, 0x140000000UL + 0x05013530);
@@ -415,9 +415,6 @@ namespace SmartHunter.Game.Helpers
                 string memberName = MemoryHelper.ReadString(process, member + 0x49, 32);
                 var target = players.FirstOrDefault(p => p.Name == memberName);
                 if (String.IsNullOrEmpty(memberName) || target == null) continue;
-
-                // High rank, then master rank (HunterPie v2's MHWPartyMemberLevelStructure)
-                target.Rank = Player.FormatRank(MemoryHelper.Read<short>(process, member + 0x70), MemoryHelper.Read<short>(process, member + 0x72));
 
                 int weapon = MemoryHelper.Read<byte>(process, member + 0x7C);
                 if (memberName == game.CurrentPlayerName && s_WeaponTypeIds.TryGetValue(game.EquippedWeaponType, out var mine))
@@ -482,7 +479,7 @@ namespace SmartHunter.Game.Helpers
             bool inQuest = quest != 0 && MemoryHelper.Read<int>(process, quest + 0x54) == 2;
             bool clockOk = inQuest && limit > 0 && left >= 0 && left <= limit;
             hunt.Clock = clockOk ? HuntInfo.Format(limit - left) : null;
-            hunt.ClockLimit = clockOk ? HuntInfo.Format(limit) : null;
+            hunt.ClockLeft = clockOk ? HuntInfo.Format(left) : null;
             hunt.ElapsedSeconds = clockOk ? limit - left : 0;
 
             // Party deaths and the limit that fails the quest (HunterPie v2's MHWQuestDataStructure)

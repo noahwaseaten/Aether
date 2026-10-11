@@ -64,8 +64,8 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 <img src="docs/team-widget.png" alt="Team damage widget" align="right" width="340"/>
 
-- Quest clock, time limit and party deaths (`1/3`) at the top
-- For up to 4 hunters: weapon, rank, damage, damage per second and share of the party's damage
+- Quest clock with time left, and party deaths (`1/3`) at the top
+- For up to 4 hunters: weapon, damage, damage per second and share of the party's damage
 - A green or red arrow while a hunter's share is rising or falling; each row fills with their colour
 - Counts **every monster**, including expeditions, when your friends run Aether too
 - The Aether logo next to a name means that hunter runs Aether too. A `~` means only their quest-target damage is known, and `—` means
@@ -79,7 +79,7 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 - Quest clock
 - Sharpness with hits left until the next level
-- **Mantles and boosters** as rings: gold and draining while on, grey and filling back up while they recharge
+- **Mantles and boosters** with time left and a bar: gold and draining while on, grey and filling back up while they recharge
 - Buffs, debuffs and weapon timers (Charge Blade, Insect Glaive, Long Sword, Switch Axe) with time left
 
 <br clear="right"/>

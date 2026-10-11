@@ -164,9 +164,6 @@ namespace SmartHunter.Game.Data.ViewModels
             TeamWidget.Context.UpdateAndGetPlayer(2, "mike the father", 4310).WeaponIcon = "ICON_BOW";
             TeamWidget.Context.UpdateAndGetPlayer(1, "Kabuto", 16350).UsesAether = true;
             TeamWidget.Context.Players[2].IsDamagePartial = true; // no Aether: quest targets only
-            TeamWidget.Context.Players[0].Rank = "MR 124";
-            TeamWidget.Context.Players[1].Rank = "MR 37";
-            TeamWidget.Context.Players[2].Rank = "HR 49";
             DebugWidget.Context.CurrentGame.CurrentPlayerName = "Lythia";
             PlayerWidget.Context.Hunt.ElapsedSeconds = 754;
             PlayerWidget.Context.Hunt.Deaths = "1/3";
@@ -229,7 +226,7 @@ namespace SmartHunter.Game.Data.ViewModels
 
             PlayerWidget.Context.Sharpness.Update(new[] { 60, 100, 150, 200, 260, 0, 0 }, 230, 260);
             PlayerWidget.Context.Hunt.Clock = "12:34";
-            PlayerWidget.Context.Hunt.ClockLimit = "50:00";
+            PlayerWidget.Context.Hunt.ClockLeft = "37:26";
 
             CalloutWidget.Context.Callouts.Add(new MonsterCallout { Name = "Rathalos", IsCapturable = true, IsEnraged = true });
             CalloutWidget.Context.Callouts.Add(new MonsterCallout { Name = "Pukei-Pukei", IsExhausted = true });
