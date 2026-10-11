@@ -17,6 +17,10 @@ namespace SmartHunter.Ui.Controls
             new PropertyMetadata(Brushes.White, (d, e) => ((Gauge)d).m_Fill.Background = (Brush)e.NewValue));
         public static readonly DependencyProperty CornerRadiusProperty = DependencyProperty.Register(nameof(CornerRadius), typeof(double), typeof(Gauge),
             new PropertyMetadata(3.0, (d, e) => ((Gauge)d).ApplyRadius()));
+        // Milliseconds before the fill moves, and whether it animates at the monitor's refresh rate (the recap, shown
+        // once a quest) instead of the overlay's 30 fps
+        public static readonly DependencyProperty DelayProperty = DependencyProperty.Register(nameof(Delay), typeof(double), typeof(Gauge), new PropertyMetadata(0.0));
+        public static readonly DependencyProperty IsSmoothProperty = DependencyProperty.Register(nameof(IsSmooth), typeof(bool), typeof(Gauge), new PropertyMetadata(false));
         public static readonly DependencyProperty ShowMarkersProperty = DependencyProperty.Register(nameof(ShowMarkers), typeof(bool), typeof(Gauge),
             new PropertyMetadata(true, (d, e) => ((Gauge)d).m_Markers.Visibility = (bool)e.NewValue ? Visibility.Visible : Visibility.Collapsed));
 
@@ -28,6 +32,8 @@ namespace SmartHunter.Ui.Controls
         public Brush Fill { get { return (Brush)GetValue(FillProperty); } set { SetValue(FillProperty, value); } }
         public double CornerRadius { get { return (double)GetValue(CornerRadiusProperty); } set { SetValue(CornerRadiusProperty, value); } }
         public bool ShowMarkers { get { return (bool)GetValue(ShowMarkersProperty); } set { SetValue(ShowMarkersProperty, value); } }
+        public double Delay { get { return (double)GetValue(DelayProperty); } set { SetValue(DelayProperty, value); } }
+        public bool IsSmooth { get { return (bool)GetValue(IsSmoothProperty); } set { SetValue(IsSmoothProperty, value); } }
 
         readonly Border m_Trough = new Border();
         readonly Border m_Fill = new Border { Margin = new Thickness(1), HorizontalAlignment = HorizontalAlignment.Left, Width = 0 };
@@ -70,8 +76,16 @@ namespace SmartHunter.Ui.Controls
                 return;
             }
             m_Target = to;
-            BeginAnimation(ShownProperty, new DoubleAnimation(to, TimeSpan.FromMilliseconds(420)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } },
-                HandoffBehavior.SnapshotAndReplace);
+            var animation = new DoubleAnimation(to, TimeSpan.FromMilliseconds(IsSmooth ? 650 : 420))
+            {
+                BeginTime = TimeSpan.FromMilliseconds(Delay),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            };
+            if (IsSmooth)
+            {
+                Timeline.SetDesiredFrameRate(animation, SmartHunter.Core.Helpers.WindowHelper.PrimaryRefreshRate);
+            }
+            BeginAnimation(ShownProperty, animation, HandoffBehavior.SnapshotAndReplace);
         }
     }
 }

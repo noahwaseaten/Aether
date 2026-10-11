@@ -47,6 +47,7 @@ namespace SmartHunter.Game.Data.WidgetContexts
         public string Id { get; set; } // for the portrait
         public string Name { get; set; }
         public bool IsCaptured => Outcome == "Captured";
+        public bool IsSlain => Outcome == "Slain";
         public string Outcome { get; set; }
     }
 

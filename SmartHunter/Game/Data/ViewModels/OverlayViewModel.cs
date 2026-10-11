@@ -232,6 +232,20 @@ namespace SmartHunter.Game.Data.ViewModels
             CalloutWidget.Context.Callouts.Add(new MonsterCallout { Name = "Pukei-Pukei", IsExhausted = true });
             RecapWidget.Context.Recap = HuntTracker.SampleRecap();
             RecapWidget.Context.IsShowing = true;
+
+            // Replay the recap's entrance and exit: shown for 4 s, hidden for 1.2 s
+            var recapLoop = new System.Windows.Threading.DispatcherTimer { Interval = System.TimeSpan.FromSeconds(4) };
+            recapLoop.Tick += (s, e) =>
+            {
+                bool show = !RecapWidget.Context.IsShowing;
+                if (show)
+                {
+                    RecapWidget.Context.Recap = HuntTracker.SampleRecap();
+                }
+                RecapWidget.Context.IsShowing = show;
+                recapLoop.Interval = System.TimeSpan.FromSeconds(show ? 4 : 1.2);
+            };
+            recapLoop.Start();
         }
     }    
 }

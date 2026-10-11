@@ -244,7 +244,7 @@ namespace SmartHunter.Game
             recap.Hunters.Add(new RecapHunter { Rank = 3, Name = "mike the father", WeaponIcon = "ICON_BOW", ColorIndex = 2, Damage = 6630, Dps = 8.8f, Share = 0.17f, Bar = 0.36f });
             recap.Headline = "You were the top hunter";
             recap.Monsters.Add(new RecapMonster { Id = "em001_01", Name = "Rathalos", Outcome = "Captured" });
-            recap.Monsters.Add(new RecapMonster { Id = "em024_00", Name = "Pukei-Pukei", Outcome = "Slain" });
+            recap.Monsters.Add(new RecapMonster { Id = "em102_00", Name = "Pukei-Pukei", Outcome = "Slain" });
             return recap;
         }
     }

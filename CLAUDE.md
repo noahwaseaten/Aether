@@ -82,7 +82,8 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   would be read as if they were still valid.
 - `App.xaml.cs` caps every WPF animation at 30 fps to keep the in-game overlay cheap. The Aether window's
   animations opt out and run at the monitor's refresh rate (`WindowHelper.RefreshRate`). Do the same for new
-  window animations, but not for overlay widgets.
+  window animations, but not for overlay widgets. One exception: the quest recap (`RecapWidgetContext` template, its
+  `Gauge IsSmooth`) runs at the refresh rate; it plays once a quest for under a second.
 - Player buffs and debuffs (`PlayerDataConfig.cs`) mirror HunterPie-legacy's
   `HunterPie/HunterPie.Resources/Data/AbnormalityData.xml`: offset = index × 4. Check its `HasConditions`,
   `ConditionOffset` and `IsPercentageBuff` flags when adding one. Blastscourge ignored them and showed "1 s" forever.
