@@ -226,7 +226,7 @@ namespace SmartHunter.Game.Data.ViewModels
 
             PlayerWidget.Context.Sharpness.Update(new[] { 60, 100, 150, 200, 260, 0, 0 }, 230, 260);
             PlayerWidget.Context.Hunt.Clock = "12:34";
-            PlayerWidget.Context.Hunt.ClockLeft = "37:26";
+            PlayerWidget.Context.Hunt.ClockLimit = "50:00";
 
             CalloutWidget.Context.Callouts.Add(new MonsterCallout { Name = "Rathalos", IsCapturable = true, IsEnraged = true });
             CalloutWidget.Context.Callouts.Add(new MonsterCallout { Name = "Pukei-Pukei", IsExhausted = true });

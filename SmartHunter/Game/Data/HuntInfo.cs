@@ -4,7 +4,8 @@ using SmartHunter.Core.Data;
 
 namespace SmartHunter.Game.Data
 {
-    // The quest clock (time elapsed, and time left for the Team widget) and the party's deaths. Null outside a quest.
+    // The quest clock (time elapsed, and the quest's limit for the Team widget) and the party's deaths. On an expedition
+    // only the time elapsed. Null in town.
     public class HuntInfo : Bindable
     {
         // For damage per second; 0 outside a quest
@@ -17,13 +18,13 @@ namespace SmartHunter.Game.Data
         string m_Clock;
         public string Clock { get { return m_Clock; } set { SetProperty(ref m_Clock, value); } }
 
-        string m_ClockLeft;
-        public string ClockLeft { get { return m_ClockLeft; } set { SetProperty(ref m_ClockLeft, value); } }
+        string m_ClockLimit;
+        public string ClockLimit { get { return m_ClockLimit; } set { SetProperty(ref m_ClockLimit, value); } }
 
         public void Clear()
         {
             Clock = null;
-            ClockLeft = null;
+            ClockLimit = null;
             Deaths = null;
             ElapsedSeconds = 0;
         }

@@ -465,6 +465,8 @@ namespace SmartHunter.Game.Helpers
             sharpness.Update(thresholds, current, cap);
         }
 
+        static DateTime? s_ExpeditionStart;
+
         // Quest clock and deaths for the Buffs and Team widgets (HunterPie v2's World map, build 421810)
         public static void UpdateHuntInfo(Process process)
         {
@@ -478,9 +480,29 @@ namespace SmartHunter.Game.Helpers
             float limit = HuntInfo.QuestLimitSeconds(MemoryHelper.Read<uint>(process, questTimer + 0x10));
             bool inQuest = quest != 0 && MemoryHelper.Read<int>(process, quest + 0x54) == 2;
             bool clockOk = inQuest && limit > 0 && left >= 0 && left <= limit;
-            hunt.Clock = clockOk ? HuntInfo.Format(limit - left) : null;
-            hunt.ClockLeft = clockOk ? HuntInfo.Format(left) : null;
-            hunt.ElapsedSeconds = clockOk ? limit - left : 0;
+            var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
+            if (clockOk)
+            {
+                s_ExpeditionStart = null;
+                hunt.Clock = HuntInfo.Format(limit - left);
+                hunt.ClockLimit = HuntInfo.Format(limit);
+                hunt.ElapsedSeconds = limit - left;
+            }
+            else if (game.IsPlayerInExpedition && !DiscordPresence.IsInTown(process))
+            {
+                // Expeditions have no quest clock or limit: time since Aether saw you head out
+                s_ExpeditionStart = s_ExpeditionStart ?? DateTime.Now;
+                hunt.ElapsedSeconds = (float)(DateTime.Now - s_ExpeditionStart.Value).TotalSeconds;
+                hunt.Clock = HuntInfo.Format(hunt.ElapsedSeconds);
+                hunt.ClockLimit = null;
+            }
+            else
+            {
+                s_ExpeditionStart = null;
+                hunt.Clock = null;
+                hunt.ClockLimit = null;
+                hunt.ElapsedSeconds = 0;
+            }
 
             // Party deaths and the limit that fails the quest (HunterPie v2's MHWQuestDataStructure)
             ulong questData = MemoryHelper.ReadMultiLevelPointer(false, process, Base + 0x0500ED30, 0x17370);

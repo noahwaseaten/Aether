@@ -1260,7 +1260,7 @@
                     <StackPanel x:Name="Clock" Orientation="Horizontal" Visibility="Collapsed">
                         <Path Data="{StaticResource G_Stopwatch}" Fill="{StaticResource B_TextMuted}" Width="14" Height="15" Stretch="Uniform" VerticalAlignment="Center" Margin="0 0 6 0" />
                         <controls:SharpText Text="{Binding Clock}" Style="{StaticResource T_Value}" MinWidth="0" />
-                        <controls:SharpText Text="{Binding ClockLeft, StringFormat=/{0}}" Style="{StaticResource T_Muted}" VerticalAlignment="Bottom" Margin="2 0 0 0" />
+                        <controls:SharpText Text="{Binding ClockLimit, StringFormat=/{0}}" Style="{StaticResource T_Muted}" VerticalAlignment="Bottom" Margin="2 0 0 0" />
                     </StackPanel>
                     <StackPanel x:Name="Deaths" DockPanel.Dock="Right" Orientation="Horizontal" Visibility="Collapsed">
                         <Path Data="{StaticResource G_Skull}" Fill="{StaticResource B_TextMuted}" Width="14" Height="15" Stretch="Uniform" VerticalAlignment="Center" Margin="0 0 6 0" />

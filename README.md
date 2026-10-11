@@ -64,7 +64,7 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 <img src="docs/team-widget.png" alt="Team damage widget" align="right" width="340"/>
 
-- Quest clock with time left, and party deaths (`1/3`) at the top
+- Quest clock with the quest's time limit (just the time elapsed on expeditions), and party deaths (`1/3`) at the top
 - For up to 4 hunters: weapon, damage, damage per second and share of the party's damage
 - A green or red arrow while a hunter's share is rising or falling; each row fills with their colour
 - Counts **every monster**, including expeditions, when your friends run Aether too
