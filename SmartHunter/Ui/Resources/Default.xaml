@@ -323,6 +323,31 @@
         </Viewbox>
     </DataTemplate>
 
+    <!--The same ring with a hairline stroke, for an icon inside a small circle-->
+    <DataTemplate x:Key="A_DataTemplate_ThinRing" DataType="{x:Type coreData:Progress}">
+        <Viewbox>
+            <Grid Width="14" Height="14">
+                <Ellipse Width="13" Height="13" StrokeThickness="1" Stroke="{StaticResource B_Track}" />
+                <Canvas Width="0" Height="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Canvas.RenderTransform>
+                        <TranslateTransform X="-6" Y="-6" />
+                    </Canvas.RenderTransform>
+                    <Path StrokeThickness="1" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="6,0">
+                                    <ArcSegment SweepDirection="Clockwise" Size="6,6"
+                                                Point="{Binding Angle, ConverterParameter=6, Converter={StaticResource A_Converter_AngleToPoint}}"
+                                                IsLargeArc="{Binding Angle, Converter={StaticResource A_Converter_AngleToIsLargeArc}}" />
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                </Canvas>
+            </Grid>
+        </Viewbox>
+    </DataTemplate>
+
     <DataTemplate x:Key="A_Graphic_Crown">
         <Viewbox>
             <Canvas Width="512" Height="512">
@@ -762,6 +787,7 @@
         hunter's colour as far as their damage reaches against the top hunter.-->
 
     <Geometry x:Key="G_Stopwatch">M6.5,0.5 L9.5,0.5 L9.5,2 L6.5,2 Z M8,3 A6,6 0 1 1 7.99,3 Z M8,4.6 A4.4,4.4 0 1 0 8.01,4.6 Z M7.3,6 L8.7,6 L8.7,9.6 L7.3,9.6 Z</Geometry>
+    <Geometry x:Key="G_Hourglass">M3,1 L13,1 L13,2.5 L3,2.5 Z M3,13.5 L13,13.5 L13,15 L3,15 Z M4,2.5 L12,2.5 C12,5.5 9.5,6.8 8.8,8 C9.5,9.2 12,10.5 12,13.5 L4,13.5 C4,10.5 6.5,9.2 7.2,8 C6.5,6.8 4,5.5 4,2.5 Z</Geometry>
     <GeometryGroup x:Key="G_Skull" FillRule="EvenOdd">
         <PathGeometry Figures="M8,1 C4.2,1 1.6,3.6 1.6,7 C1.6,9.1 2.6,10.6 4.2,11.5 L4.2,13.8 C4.2,14.5 4.7,15 5.4,15 L10.6,15 C11.3,15 11.8,14.5 11.8,13.8 L11.8,11.5 C13.4,10.6 14.4,9.1 14.4,7 C14.4,3.6 11.8,1 8,1 Z" />
         <EllipseGeometry Center="5.5,7.6" RadiusX="1.7" RadiusY="1.8" />
@@ -1014,17 +1040,16 @@
     <!--Specialized tool (mantle, booster): icon in a ring with the time under it. Gold and draining while it's on;
         dim and filling back up while it recharges.-->
     <DataTemplate DataType="{x:Type data:SpecializedTool}">
-        <StackPanel x:Name="Root" Width="42" Margin="0 0 6 0">
+        <StackPanel x:Name="Root" Orientation="Horizontal" Margin="0 0 16 0">
             <StackPanel.RenderTransform>
                 <TranslateTransform />
             </StackPanel.RenderTransform>
-            <Grid Width="34" Height="34">
-                <Ellipse Fill="#CC101114" />
-                <ContentControl x:Name="Ring" Content="{Binding Ring}" ContentTemplate="{StaticResource A_DataTemplate_CircleProgress}" Foreground="{StaticResource B_Accent}" />
-                <Image x:Name="Icon" Source="{Binding IconKey, Converter={StaticResource A_Converter_IconKeyToImage}}" Width="18" Height="18" />
+            <Grid Width="26" Height="26">
+                <ContentControl x:Name="Ring" Content="{Binding Ring}" ContentTemplate="{StaticResource A_DataTemplate_ThinRing}" Foreground="{StaticResource B_Accent}" />
+                <Image x:Name="Icon" Source="{Binding IconKey, Converter={StaticResource A_Converter_IconKeyToImage}}" Width="16" Height="16" />
             </Grid>
-            <TextBlock x:Name="Time" Text="{Binding Seconds, Converter={StaticResource A_Converter_SecondsToClock}}" Style="{StaticResource T_Cell}" FontSize="12"
-                       Foreground="{StaticResource B_Accent}" HorizontalAlignment="Center" Margin="0 3 0 0" />
+            <TextBlock x:Name="Time" Text="{Binding Seconds, Converter={StaticResource A_Converter_SecondsToClock}}" Style="{StaticResource T_Value}" MinWidth="0"
+                       Foreground="{StaticResource B_Accent}" VerticalAlignment="Center" Margin="7 0 0 0" />
         </StackPanel>
         <DataTemplate.Triggers>
             <EventTrigger RoutedEvent="FrameworkElement.Loaded">
@@ -1167,10 +1192,9 @@
             <Grid x:Name="Layer">
             <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" Opacity="{Binding ShadeOpacity, Source={x:Static viewModels:OverlayViewModel.Instance}}" OpacityMask="{StaticResource B_ScrimFeather}" />
             <StackPanel x:Name="Body" Effect="{StaticResource A_Effect_Halo}" MinWidth="200" Margin="18 14 44 14">
-                <!--Quest clock: elapsed / limit, only during a quest-->
+                <!--Quest clock, only during a quest. The limit is on the Team widget.-->
                 <StackPanel x:Name="HuntLine" Orientation="Horizontal" Margin="0 0 0 8">
                     <TextBlock Text="{Binding Hunt.Clock}" Style="{StaticResource T_Value}" MinWidth="0" />
-                    <TextBlock Text="{Binding Hunt.ClockLimit}" Style="{StaticResource T_Muted}" Margin="5 0 0 0" VerticalAlignment="Bottom" />
                 </StackPanel>
                 <ContentControl Content="{Binding Sharpness}" />
                 <ItemsControl x:Name="Tools" ItemsSource="{Binding Tools}" Margin="0 0 0 8">
@@ -1242,6 +1266,8 @@
                     <StackPanel x:Name="Clock" Orientation="Horizontal" Visibility="Collapsed">
                         <Path Data="{StaticResource G_Stopwatch}" Fill="{StaticResource B_TextMuted}" Width="14" Height="15" Stretch="Uniform" VerticalAlignment="Center" Margin="0 0 6 0" />
                         <TextBlock Text="{Binding Clock}" Style="{StaticResource T_Value}" MinWidth="0" />
+                        <Path Data="{StaticResource G_Hourglass}" Fill="{StaticResource B_TextMuted}" Width="11" Height="15" Stretch="Uniform" VerticalAlignment="Center" Margin="16 0 6 0" />
+                        <TextBlock Text="{Binding ClockLimit}" Style="{StaticResource T_Muted}" VerticalAlignment="Center" />
                     </StackPanel>
                     <StackPanel x:Name="Deaths" DockPanel.Dock="Right" Orientation="Horizontal" Visibility="Collapsed">
                         <Path Data="{StaticResource G_Skull}" Fill="{StaticResource B_TextMuted}" Width="14" Height="15" Stretch="Uniform" VerticalAlignment="Center" Margin="0 0 6 0" />

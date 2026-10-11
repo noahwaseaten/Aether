@@ -482,7 +482,7 @@ namespace SmartHunter.Game.Helpers
             bool inQuest = quest != 0 && MemoryHelper.Read<int>(process, quest + 0x54) == 2;
             bool clockOk = inQuest && limit > 0 && left >= 0 && left <= limit;
             hunt.Clock = clockOk ? HuntInfo.Format(limit - left) : null;
-            hunt.ClockLimit = clockOk ? "/ " + HuntInfo.Format(limit) : null;
+            hunt.ClockLimit = clockOk ? HuntInfo.Format(limit) : null;
             hunt.ElapsedSeconds = clockOk ? limit - left : 0;
 
             // Party deaths and the limit that fails the quest (HunterPie v2's MHWQuestDataStructure)
