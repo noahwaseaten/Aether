@@ -37,6 +37,14 @@ namespace SmartHunter.Game.Data
             set { SetProperty(ref m_UsesAether, value); }
         }
 
+        // Leads the quest party (slot 0 of the game's party list), whether or not they run Aether
+        bool m_IsLeader;
+        public bool IsLeader
+        {
+            get { return m_IsLeader; }
+            set { SetProperty(ref m_IsLeader, value); }
+        }
+
         // The game's own counter (quest targets only), and whether party sync sent this hunter's all-monster total
         public int GameDamage;
         public bool HasSyncedDamage;

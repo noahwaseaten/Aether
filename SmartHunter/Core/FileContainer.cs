@@ -133,7 +133,9 @@ namespace SmartHunter.Core
         static readonly Lazy<string> s_DataFolder = new Lazy<string>(FindDataFolder);
         public static string GetFullPath() => s_DataFolder.Value; // with trailing slash
 
-        public static bool IsPortable => GetFullPath() == ExeFolder;
+        // The installed copy also keeps its data next to itself, but it isn't portable: it still keeps its startup entry,
+        // shortcut and Apps entry up to date. Treating it as portable left "Open with the game" pointing at a deleted exe.
+        public static bool IsPortable => GetFullPath() == ExeFolder && !IsSameFolder(ExeFolder, InstallFolder);
 
         public static string ExeFolder => AppDomain.CurrentDomain.BaseDirectory;
 

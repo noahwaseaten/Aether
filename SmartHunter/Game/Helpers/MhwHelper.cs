@@ -377,6 +377,10 @@ namespace SmartHunter.Game.Helpers
             }
             game.PartyLeaderName = leader;
             game.PartySize = size;
+            foreach (var player in OverlayViewModel.Instance.TeamWidget.Context.Players)
+            {
+                player.IsLeader = size > 1 && player.Name == leader;
+            }
 
             if (game.IsPlayerOnline() && size > 1)
             {
