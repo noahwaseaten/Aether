@@ -138,8 +138,8 @@
     <SolidColorBrush x:Key="B_Status" Color="{StaticResource A_Color_Monster_StatusEffect_Bar}" />
     <SolidColorBrush x:Key="B_StatusActive" Color="{StaticResource A_Color_Monster_StatusEffect_Active}" />
     <LinearGradientBrush x:Key="B_MonsterHealth" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#D42C2C" Offset="0" />
-        <GradientStop Color="#E63F29" Offset="1" />
+        <GradientStop Color="{StaticResource A_Color_Monster_Bar}" Offset="0" />
+        <GradientStop Color="{StaticResource A_Color_Monster_Bar_End}" Offset="1" />
     </LinearGradientBrush>
     <SolidColorBrush x:Key="B_Stamina" Color="#F6A522" />
 
@@ -649,7 +649,7 @@
                     </DockPanel>
 
                     <!--Health, with a yellow triangle where the monster can be captured-->
-                    <Grid x:Name="HealthBar" Height="8" Margin="0 4 0 0">
+                    <Grid x:Name="HealthBar" Height="10" Margin="0 4 0 0">
                         <controls:Gauge CornerRadius="3" Fill="{StaticResource B_MonsterHealth}" Fraction="{Binding Health.Fraction}" />
                         <!--Negative margins, not a taller box: the bar's row would clip anything taller than itself-->
                         <Grid x:Name="CaptureMark" Width="10" Margin="{Binding CaptureFraction, Converter={StaticResource A_Converter_FractionToOffset}, ConverterParameter=402}"
@@ -661,7 +661,7 @@
                         </Grid>
                     </Grid>
                     <!--Stamina: the same bar under health, as wide, in yellow-->
-                    <controls:Gauge x:Name="StaminaBar" Height="5" Margin="0 2 0 0" CornerRadius="2" Fill="{StaticResource B_Stamina}" Fraction="{Binding Stamina.Buildup.Fraction}"
+                    <controls:Gauge x:Name="StaminaBar" Height="6" Margin="0 3 0 0" CornerRadius="3" Fill="{StaticResource B_Stamina}" Fraction="{Binding Stamina.Buildup.Fraction}"
                                     ToolTip="Stamina: low means the monster tires soon" />
 
                     <ItemsControl ItemsSource="{Binding VisibleAilments}" ItemsPanel="{StaticResource A_Panel_Wrap}" Margin="0 4 0 0" />
