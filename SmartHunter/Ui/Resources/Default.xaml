@@ -841,7 +841,19 @@
             </StackPanel>
 
             <StackPanel x:Name="Share" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="12 0 0 0">
-                <Path x:Name="Arrow" Width="8" Height="6" Margin="0 0 5 0" VerticalAlignment="Center" Stretch="Fill" Visibility="Hidden" />
+                <!--Up and down are separate so one can fade out while the other fades in, each moving its own way-->
+                <Grid Width="8" Height="6" Margin="0 0 5 0" VerticalAlignment="Center">
+                    <Path x:Name="ArrowUp" Data="M0,6 L4,0 L8,6 Z" Fill="{StaticResource B_Up}" Stretch="Fill" Opacity="0">
+                        <Path.RenderTransform>
+                            <TranslateTransform />
+                        </Path.RenderTransform>
+                    </Path>
+                    <Path x:Name="ArrowDown" Data="M0,0 L8,0 L4,6 Z" Fill="{StaticResource B_Danger}" Stretch="Fill" Opacity="0">
+                        <Path.RenderTransform>
+                            <TranslateTransform />
+                        </Path.RenderTransform>
+                    </Path>
+                </Grid>
                 <controls:SharpText Style="{StaticResource T_Value}" MinWidth="34" FontSize="15" Text="{Binding DamageFraction, Converter={StaticResource A_Converter_FractionToPercentage}}" />
             </StackPanel>
 
@@ -873,15 +885,42 @@
                 <Setter TargetName="DpsBlock" Property="Visibility" Value="Collapsed" />
                 <Setter TargetName="SoloDps" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
+            <!--Rising: in from below, out upward. Falling: in from above, out downward.-->
             <DataTrigger Binding="{Binding Trend}" Value="1">
-                <Setter TargetName="Arrow" Property="Visibility" Value="Visible" />
-                <Setter TargetName="Arrow" Property="Data" Value="M0,6 L4,0 L8,6 Z" />
-                <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource B_Up}" />
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="ArrowUp" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.3" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="ArrowUp" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="5" To="0" Duration="0:0:0.4" EasingFunction="{StaticResource E_Out}" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="ArrowUp" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.35" EasingFunction="{StaticResource E_In}" />
+                            <DoubleAnimation Storyboard.TargetName="ArrowUp" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="-4" Duration="0:0:0.35" EasingFunction="{StaticResource E_In}" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.ExitActions>
             </DataTrigger>
             <DataTrigger Binding="{Binding Trend}" Value="-1">
-                <Setter TargetName="Arrow" Property="Visibility" Value="Visible" />
-                <Setter TargetName="Arrow" Property="Data" Value="M0,0 L8,0 L4,6 Z" />
-                <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource B_Danger}" />
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="ArrowDown" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.3" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="ArrowDown" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="-5" To="0" Duration="0:0:0.4" EasingFunction="{StaticResource E_Out}" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="ArrowDown" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.35" EasingFunction="{StaticResource E_In}" />
+                            <DoubleAnimation Storyboard.TargetName="ArrowDown" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="4" Duration="0:0:0.35" EasingFunction="{StaticResource E_In}" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.ExitActions>
             </DataTrigger>
             <!--No Aether on an expedition: no number exists for them, so don't show a misleading 0-->
             <DataTrigger Binding="{Binding IsDamageUnknown}" Value="True">

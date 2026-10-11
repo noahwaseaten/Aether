@@ -155,7 +155,11 @@ namespace SmartHunter.Game
             {
                 MhwHelper.UpdateQuestParty(Process);
 
-                if ((ConfigHelper.Main.Values.Overlay.MonsterWidget.IsVisible || ConfigHelper.Main.Values.Overlay.CalloutWidget.IsVisible || ConfigHelper.Main.Values.DiscordPresence.Enabled) && m_MonsterPattern.MatchedAddresses.Any())
+                // Party sync on: read what's shared even with its widget hidden. With the Team widget off, a hunter's
+                // damage never reached the party, so they didn't even show as running Aether.
+                bool sharing = ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer;
+
+                if ((ConfigHelper.Main.Values.Overlay.MonsterWidget.IsVisible || ConfigHelper.Main.Values.Overlay.CalloutWidget.IsVisible || ConfigHelper.Main.Values.DiscordPresence.Enabled || sharing) && m_MonsterPattern.MatchedAddresses.Any())
                 {
                     ulong monsterRootPtr = MemoryHelper.LoadEffectiveAddressRelative(Process, m_MonsterPattern.MatchedAddresses.First()); // yeah i know this is basically a static pointer
                     //ulong monsterRootPtr = MemoryHelper.LoadEffectiveAddressRelative(Process, m_MonsterPattern.MatchedAddresses.First()) - 0x36CE0; // yeah i know this is basically a static pointer
@@ -176,7 +180,7 @@ namespace SmartHunter.Game
                     OverlayViewModel.Instance.MonsterWidget.Context.HasVisibleMonsters = false;
                 }
 
-                if (ConfigHelper.Main.Values.Overlay.TeamWidget.IsVisible && m_PlayerDamagePattern.MatchedAddresses.Any() && m_PlayerNamePattern.MatchedAddresses.Any() && (!OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsValid || OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerOnline()))
+                if ((ConfigHelper.Main.Values.Overlay.TeamWidget.IsVisible || sharing) && m_PlayerDamagePattern.MatchedAddresses.Any() && m_PlayerNamePattern.MatchedAddresses.Any() && (!OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsValid || OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerOnline()))
                 {
                     ulong playerNamesPtr = MemoryHelper.LoadEffectiveAddressRelative(Process, m_PlayerNamePattern.MatchedAddresses.First());
                     ulong playerDamageRootPtr = MemoryHelper.LoadEffectiveAddressRelative(Process, m_PlayerDamagePattern.MatchedAddresses.First());

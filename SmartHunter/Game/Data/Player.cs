@@ -121,11 +121,11 @@ namespace SmartHunter.Game.Data
             m_TrendSampledAt = now;
         }
 
-        // Half a percentage point either way is noise, not a trend
+        // Under a percentage point either way is noise, not a trend: smaller steps made the arrow flicker
         public static int TrendOf(float before, float now)
         {
             float change = now - before;
-            return change > 0.005f ? 1 : change < -0.005f ? -1 : 0;
+            return change > 0.01f ? 1 : change < -0.01f ? -1 : 0;
         }
 
         // Icon key in Ui/Resources/Icons.xaml

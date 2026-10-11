@@ -145,7 +145,9 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
 - Overlay text has no eyebrows (small bold capitals): labels are sentence case in `T_Label`. Keep it that way.
 - Shortcuts are rebound in Settings > Keyboard (`KeyBinder`): the next key from the global hook is taken, Esc cancels.
 - Each widget's "Show widget" switch also decides whether its data is read (`MhwMemoryUpdater.UpdateMemory`), and
-  party sync sends what was read. "Show widgets" (`Overlay.ShowWidgets`) only stops drawing, so a friend can share
+  party sync sends what was read. Exception: with party sync on, damage and monsters are read even with their widgets
+  hidden. A hunter who hid the Team widget sent no damage, so the party didn't even see them as running Aether (the
+  badge only comes from synced data). "Show widgets" (`Overlay.ShowWidgets`) only stops drawing, so a friend can share
   data with no overlay. Don't gate reading on it.
 - `Aether.exe` is the whole app. Run from anywhere, it copies itself to `%LocalAppData%\Aether` (unless a newer copy is
   there) and starts that one with the same arguments. Data lives there too (`FileContainer.GetFullPath`). Each start

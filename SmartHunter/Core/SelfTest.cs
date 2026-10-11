@@ -34,7 +34,7 @@ namespace SmartHunter.Core
             Check(HuntInfo.FormatDeaths(1, 3) == "1/3", "deaths read as 1/3");
             Check(HuntInfo.FormatDeaths(0, 0) == null && HuntInfo.FormatDeaths(4, 3) == null, "no limit or more deaths than the limit is garbage");
             Check(Player.TrendOf(0.40f, 0.45f) == 1 && Player.TrendOf(0.45f, 0.40f) == -1, "share rising or falling shows an arrow");
-            Check(Player.TrendOf(0.400f, 0.403f) == 0, "tiny share changes aren't a trend");
+            Check(Player.TrendOf(0.400f, 0.403f) == 0 && Player.TrendOf(0.400f, 0.408f) == 0, "share changes under a point aren't a trend");
 
             // Specialized tools: both timers of a mantle are one tile
             Check(PlayerWidgetContext.IsTool("LOC_EQUIPMENT_RECHARGE_MANTLE_GHILLIE") && !PlayerWidgetContext.IsTool("LOC_STATUS_EFFECT_POISON"), "mantles are tools, buffs aren't");
