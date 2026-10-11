@@ -88,8 +88,8 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 <img src="docs/hunt-recap.png" alt="Hunt recap" align="right" width="380"/>
 
-- Shows when the quest ends: result, stars, deaths, and how each monster went down
-- Who did the most damage, ranked
+- Shows when the quest ends: result, stars, quest time, deaths, and each monster with how it went down
+- Every hunter ranked by damage, with their share and damage per second
 
 <br clear="right"/>
 

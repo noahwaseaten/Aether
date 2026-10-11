@@ -18,6 +18,7 @@ namespace SmartHunter.Game
 
         class Seen
         {
+            public string Id;
             public string Name;
             public float LastFraction = 1;
             public bool WasCapturable;
@@ -34,6 +35,9 @@ namespace SmartHunter.Game
 
         static DateTime? s_QuestStart;
         static int s_LastState = -1, s_Stars, s_Deaths;
+        // The game's quest clock and party deaths, from the last tick of the quest
+        static float s_QuestSeconds;
+        static string s_PartyDeaths;
         static float s_LastHp = -1;
         static List<RecapHunter> s_LastParty = new List<RecapHunter>();
         static readonly Dictionary<ulong, Seen> s_Monsters = new Dictionary<ulong, Seen>();
@@ -54,6 +58,8 @@ namespace SmartHunter.Game
                 s_QuestStart = DateTime.Now;
                 s_Stars = MemoryHelper.Read<int>(process, quest + 0x50);
                 s_Deaths = 0;
+                s_QuestSeconds = 0;
+                s_PartyDeaths = null;
                 s_LastHp = -1;
                 s_LastParty.Clear();
                 s_Monsters.Clear();
@@ -67,6 +73,9 @@ namespace SmartHunter.Game
                     s_Deaths++;
                 }
                 s_LastHp = hp;
+                var hunt = OverlayViewModel.Instance.PlayerWidget.Context.Hunt;
+                s_QuestSeconds = hunt.ElapsedSeconds > 0 ? hunt.ElapsedSeconds : (float)(DateTime.Now - (s_QuestStart ?? DateTime.Now)).TotalSeconds;
+                s_PartyDeaths = hunt.Deaths ?? s_PartyDeaths;
                 SnapshotParty();
                 UpdateMonsters(process, callouts);
             }
@@ -138,6 +147,7 @@ namespace SmartHunter.Game
                     seen = s_Monsters[monster.Address] = new Seen();
                 }
                 seen.Name = monster.Name;
+                seen.Id = monster.Id;
                 seen.LastFraction = fraction;
                 seen.WasCapturable |= capturable;
                 seen.Fought |= monster.LastDamagedTime.HasValue;
@@ -184,6 +194,8 @@ namespace SmartHunter.Game
                 Result = state == 3 || state == 4 ? "Quest complete" : state == 5 ? "Quest failed" : "Quest abandoned",
                                 Stars = s_Stars > 0 ? new string('★', Math.Min(s_Stars, 10)) : "",
                 Deaths = s_Deaths,
+                PartyDeaths = s_PartyDeaths,
+                Time = HuntInfo.Format(s_QuestSeconds),
             };
 
             int total = Math.Max(1, s_LastParty.Sum(h => h.Damage));
@@ -195,17 +207,17 @@ namespace SmartHunter.Game
                 h.Share = (float)h.Damage / total;
                 h.Bar = top > 0 ? (float)h.Damage / top : 0;
                 h.IsMvp = rank == 1 && s_LastParty.Count > 1;
+                h.Dps = s_QuestSeconds >= 1 ? h.Damage / s_QuestSeconds : 0;
                 recap.Hunters.Add(h);
             }
 
             var me = recap.Hunters.FirstOrDefault(h => h.IsMe) ?? (recap.Hunters.Count == 1 ? recap.Hunters[0] : null);
             recap.IsSolo = recap.Hunters.Count <= 1;
             recap.MyDamage = me?.Damage ?? 0;
+            recap.MyDps = me?.Dps ?? 0;
             if (me != null && !recap.IsSolo)
             {
-                recap.Headline = me.Rank == 1
-                    ? $"Top hunter · {me.Damage:N0} damage"
-                    : $"{Ordinal(me.Rank)} of {recap.Hunters.Count} · {me.Damage:N0} damage";
+                recap.Headline = me.Rank == 1 ? "You were the top hunter" : $"You came {Ordinal(me.Rank)} of {recap.Hunters.Count}";
             }
 
             foreach (var m in s_Monsters.Values.Where(m => !string.IsNullOrEmpty(m.Name) && (m.Fought || m.Slain || m.Captured)))
@@ -215,7 +227,7 @@ namespace SmartHunter.Game
                     : m.Slain || m.LastFraction <= 0 ? "Slain"
                     : recap.IsSuccess && m.WasCapturable ? "Captured"
                     : $"{m.LastFraction:P0} HP";
-                recap.Monsters.Add(new RecapMonster { Name = m.Name, Outcome = outcome });
+                recap.Monsters.Add(new RecapMonster { Id = m.Id, Name = m.Name, Outcome = outcome });
             }
 
             return recap;
@@ -226,13 +238,13 @@ namespace SmartHunter.Game
         // Debug.UseSampleData preview
         public static HuntRecap SampleRecap()
         {
-            var recap = new HuntRecap { IsSuccess = true, Result = "Quest complete", Stars = "★★★★★★", Deaths = 1, MyDamage = 18420, IsSolo = false };
-            recap.Hunters.Add(new RecapHunter { Rank = 1, Name = "Lythia", WeaponIcon = "ICON_SWITCHAXE", ColorIndex = 0, Damage = 18420, Share = 0.47f, Bar = 1, IsMe = true, IsMvp = true });
-            recap.Hunters.Add(new RecapHunter { Rank = 2, Name = "Kabuto", WeaponIcon = "ICON_LONGSWORD", ColorIndex = 1, Damage = 13950, Share = 0.36f, Bar = 0.76f });
-            recap.Hunters.Add(new RecapHunter { Rank = 3, Name = "mike the father", WeaponIcon = "ICON_BOW", ColorIndex = 2, Damage = 6630, Share = 0.17f, Bar = 0.36f });
-            recap.Headline = "Top hunter · 18,420 damage";
-            recap.Monsters.Add(new RecapMonster { Name = "Rathalos", Outcome = "Captured" });
-            recap.Monsters.Add(new RecapMonster { Name = "Pukei-Pukei", Outcome = "Slain" });
+            var recap = new HuntRecap { IsSuccess = true, Result = "Quest complete", Stars = "★★★★★★", Deaths = 1, PartyDeaths = "1/3", Time = "12:34", MyDamage = 18420, MyDps = 24.4f, IsSolo = false };
+            recap.Hunters.Add(new RecapHunter { Rank = 1, Name = "Lythia", WeaponIcon = "ICON_SWITCHAXE", ColorIndex = 0, Damage = 18420, Dps = 24.4f, Share = 0.47f, Bar = 1, IsMe = true, IsMvp = true });
+            recap.Hunters.Add(new RecapHunter { Rank = 2, Name = "Kabuto", WeaponIcon = "ICON_LONGSWORD", ColorIndex = 1, Damage = 13950, Dps = 18.5f, Share = 0.36f, Bar = 0.76f });
+            recap.Hunters.Add(new RecapHunter { Rank = 3, Name = "mike the father", WeaponIcon = "ICON_BOW", ColorIndex = 2, Damage = 6630, Dps = 8.8f, Share = 0.17f, Bar = 0.36f });
+            recap.Headline = "You were the top hunter";
+            recap.Monsters.Add(new RecapMonster { Id = "em001_01", Name = "Rathalos", Outcome = "Captured" });
+            recap.Monsters.Add(new RecapMonster { Id = "em024_00", Name = "Pukei-Pukei", Outcome = "Slain" });
             return recap;
         }
     }
