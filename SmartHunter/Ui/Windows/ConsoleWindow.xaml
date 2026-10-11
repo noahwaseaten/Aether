@@ -15,7 +15,7 @@
         Title="Aether" Height="760" Width="600" MinWidth="460" MinHeight="420"
         Background="#111214" Foreground="#F3EDE0" WindowStyle="SingleBorderWindow" ResizeMode="CanResize"
         FontFamily="Segoe UI" FontSize="13"
-        TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True">
+        TextOptions.TextFormattingMode="Display" UseLayoutRounding="True">
 
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="40" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False" />

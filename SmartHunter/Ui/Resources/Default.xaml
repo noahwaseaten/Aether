@@ -9,6 +9,7 @@
 
                     xmlns:converters="clr-namespace:SmartHunter.Ui.Converters"
                     xmlns:behaviors="clr-namespace:SmartHunter.Ui.Behaviors"
+                    xmlns:controls="clr-namespace:SmartHunter.Ui.Controls"
                     xmlns:coreData="clr-namespace:SmartHunter.Core.Data"
                     xmlns:data="clr-namespace:SmartHunter.Game.Data"
                     xmlns:widgetContexts="clr-namespace:SmartHunter.Game.Data.WidgetContexts"
@@ -147,48 +148,45 @@
     <!--Typography-->
     <FontFamily x:Key="Roboto">pack://application:,,,/Ui/Fonts/#Roboto</FontFamily>
 
-    <!--Static Segoe UI with Ideal layout: WPF can't use the variable Segoe UI (SemiBold came out regular), and Display
-        layout snapped every glyph to whole pixels, which read as jagged over the game. Grayscale: layered windows
-        can't do ClearType.-->
-    <Style x:Key="A_Style_TextBlock_Base" TargetType="{x:Type TextBlock}">
+    <!--Overlay text is SharpText (DirectWrite), not TextBlock: WPF's own text was soft and low in contrast over the
+        game. Static Segoe UI: the variable one doesn't load its weights everywhere.-->
+    <Style x:Key="A_Style_TextBlock_Base" TargetType="{x:Type controls:SharpText}">
         <Setter Property="FontFamily" Value="Segoe UI" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource B_Text}" />
-        <Setter Property="TextOptions.TextRenderingMode" Value="Grayscale" />
-        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
-    <Style x:Key="A_Style_TextBlock_Heading" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="A_Style_TextBlock_Heading" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="FontSize" Value="16" />
     </Style>
-    <Style x:Key="A_Style_TextBlock_Standard" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="A_Style_TextBlock_Standard" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="13" />
     </Style>
-    <Style x:Key="A_Style_TextBlock_Standard_Centered" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Standard}">
+    <Style x:Key="A_Style_TextBlock_Standard_Centered" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Standard}">
         <Setter Property="TextAlignment" Value="Center" />
     </Style>
     <!--Section labels: sentence case and calm, no small gold capitals (eyebrows). Colour carries meaning only where it's set.-->
-    <Style x:Key="T_Label" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="T_Label" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="13" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource B_TextMuted}" />
     </Style>
-    <Style x:Key="T_Body" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="T_Body" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="14" />
     </Style>
-    <Style x:Key="T_Big" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="T_Big" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="20" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     </Style>
-    <Style x:Key="T_Muted" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="T_Muted" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="13" />
         <Setter Property="Foreground" Value="{StaticResource B_TextMuted}" />
         <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     </Style>
-    <Style x:Key="T_Value" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="T_Value" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
@@ -235,7 +233,7 @@
         <Setter Property="Opacity" Value="0.55" />
         <Setter Property="Fill" Value="#33000000" />
     </Style>
-    <Style x:Key="T_EditPreview" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="T_EditPreview" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Foreground" Value="{StaticResource B_TextMuted}" />
         <Setter Property="TextWrapping" Value="Wrap" />
@@ -325,6 +323,31 @@
         </Viewbox>
     </DataTemplate>
 
+    <!--The same ring with a hairline stroke, around an icon-->
+    <DataTemplate x:Key="A_DataTemplate_ThinRing" DataType="{x:Type coreData:Progress}">
+        <Viewbox>
+            <Grid Width="14" Height="14">
+                <Ellipse Width="13" Height="13" StrokeThickness="1" Stroke="{StaticResource B_Track}" />
+                <Canvas Width="0" Height="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Canvas.RenderTransform>
+                        <TranslateTransform X="-6" Y="-6" />
+                    </Canvas.RenderTransform>
+                    <Path StrokeThickness="1" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}">
+                        <Path.Data>
+                            <PathGeometry>
+                                <PathFigure StartPoint="6,0">
+                                    <ArcSegment SweepDirection="Clockwise" Size="6,6"
+                                                Point="{Binding Angle, ConverterParameter=6, Converter={StaticResource A_Converter_AngleToPoint}}"
+                                                IsLargeArc="{Binding Angle, Converter={StaticResource A_Converter_AngleToIsLargeArc}}" />
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path.Data>
+                    </Path>
+                </Canvas>
+            </Grid>
+        </Viewbox>
+    </DataTemplate>
+
     <DataTemplate x:Key="A_Graphic_Crown">
         <Viewbox>
             <Canvas Width="512" Height="512">
@@ -339,14 +362,14 @@
     <!--Monster Widget, styled after the game's own HUD: portrait, health, an ailment strip with the game's icons,
         and compact part cells. Only what's showing is in the lists, so nothing leaves a gap.-->
 
-    <Style x:Key="T_MonsterName" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="T_MonsterName" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="22" />
         <Setter Property="FontWeight" Value="Bold" />
     </Style>
-    <Style x:Key="T_Cell" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="T_Cell" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="14" />
     </Style>
-    <Style x:Key="T_CellValue" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="T_CellValue" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="13" />
         <Setter Property="Foreground" Value="{StaticResource B_TextMuted}" />
         <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
@@ -359,7 +382,7 @@
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Visibility" Value="Collapsed" />
     </Style>
-    <Style x:Key="T_Chip" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="T_Chip" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="13" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="White" />
@@ -378,26 +401,26 @@
 
     <!--Ailment gauge: the ring fills with buildup; while active it turns gold and counts down-->
     <DataTemplate DataType="{x:Type data:MonsterStatusEffect}">
-        <StackPanel x:Name="Root" Width="60" Margin="0 8 4 0">
+        <StackPanel x:Name="Root" Width="64" Margin="0 8 2 0">
             <StackPanel.RenderTransform>
                 <TranslateTransform />
             </StackPanel.RenderTransform>
             <Grid Width="40" Height="40">
                 <Ellipse Fill="#CC101114" />
                 <ContentControl x:Name="Ring" Content="{Binding Buildup}" ContentTemplate="{StaticResource A_DataTemplate_CircleProgress}" Foreground="{StaticResource B_Status}" />
-                <Image x:Name="Icon" Source="{Binding IconKey, Converter={StaticResource A_Converter_IconKeyToImage}}" Width="21" Height="21" />
-                <TextBlock x:Name="Initials" Text="{Binding Initials}" Style="{StaticResource T_Chip}" FontSize="13" HorizontalAlignment="Center" Visibility="Collapsed" />
+                <Image x:Name="Icon" Source="{Binding IconKey, Converter={StaticResource A_Converter_IconKeyToImage}, ConverterParameter=Trim}" Width="19" Height="19" />
+                <controls:SharpText x:Name="Initials" Text="{Binding Initials}" Style="{StaticResource T_Chip}" FontSize="13" HorizontalAlignment="Center" Visibility="Collapsed" />
                 <Border x:Name="Timer" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 -7" CornerRadius="6" Padding="4 0 4 0"
                         Background="{StaticResource B_StatusActive}" Visibility="Collapsed">
-                    <TextBlock Text="{Binding Duration.Current, Converter={StaticResource A_Converter_SecondsToClock}}" Style="{StaticResource T_Chip}" FontSize="11" Foreground="#1C1400" />
+                    <controls:SharpText Text="{Binding Duration.Current, Converter={StaticResource A_Converter_SecondsToClock}}" Style="{StaticResource T_Chip}" FontSize="11" Foreground="#1C1400" />
                 </Border>
                 <Border x:Name="Count" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0 -3 -4 0" MinWidth="14" CornerRadius="7" Padding="3 0 3 0"
                         Background="#F0101114" BorderBrush="{StaticResource B_Status}" BorderThickness="1" Visibility="Collapsed">
-                    <TextBlock Text="{Binding TimesActivatedCount}" Style="{StaticResource T_Chip}" FontSize="11" HorizontalAlignment="Center" />
+                    <controls:SharpText Text="{Binding TimesActivatedCount}" Style="{StaticResource T_Chip}" FontSize="11" HorizontalAlignment="Center" />
                 </Border>
             </Grid>
-            <TextBlock x:Name="Label" Text="{Binding Name}" Style="{StaticResource T_Cell}" FontSize="12" Foreground="{StaticResource B_TextMuted}"
-                       HorizontalAlignment="Center" Margin="0 7 0 0" MaxWidth="60" />
+            <controls:SharpText x:Name="Label" Text="{Binding Name}" Style="{StaticResource T_Cell}" FontSize="12" Foreground="{StaticResource B_TextMuted}"
+                       HorizontalAlignment="Center" Margin="0 7 0 0" MaxWidth="64" />
         </StackPanel>
         <DataTemplate.Triggers>
             <EventTrigger RoutedEvent="FrameworkElement.Loaded">
@@ -431,8 +454,8 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <DockPanel>
-                <TextBlock DockPanel.Dock="Right" Style="{StaticResource T_CellValue}" Foreground="{StaticResource B_Soften}" Text="{Binding Time.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
-                <TextBlock Text="{Binding Name}" Style="{StaticResource T_Cell}" Foreground="{StaticResource B_Soften}" />
+                <controls:SharpText DockPanel.Dock="Right" Style="{StaticResource T_CellValue}" Foreground="{StaticResource B_Soften}" Text="{Binding Time.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
+                <controls:SharpText Text="{Binding Name}" Style="{StaticResource T_Cell}" Foreground="{StaticResource B_Soften}" />
             </DockPanel>
             <Grid x:Name="Bar" Grid.Row="1" Height="2" Margin="0 3 0 0">
                 <Rectangle Fill="{StaticResource B_Track}" />
@@ -486,10 +509,10 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock x:Name="Tag" Text="Broken" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Accent}" Margin="5 0 0 0" Visibility="Collapsed" />
-                    <TextBlock x:Name="Count" Style="{StaticResource T_CellValue}" Text="{Binding TimesBrokenCount, StringFormat=emptied ×{0}}" Visibility="Collapsed" />
+                    <controls:SharpText x:Name="Tag" Text="Broken" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Accent}" Margin="5 0 0 0" Visibility="Collapsed" />
+                    <controls:SharpText x:Name="Count" Style="{StaticResource T_CellValue}" Text="{Binding TimesBrokenCount, StringFormat=emptied ×{0}}" Visibility="Collapsed" />
                 </StackPanel>
-                <TextBlock x:Name="NameBlock" Text="{Binding Name}" Style="{StaticResource T_Cell}" />
+                <controls:SharpText x:Name="NameBlock" Text="{Binding Name}" Style="{StaticResource T_Cell}" />
             </DockPanel>
             <Grid x:Name="Bar" Grid.Row="1" Height="3" Margin="0 3 0 0">
                 <Rectangle Fill="{StaticResource B_Track}" />
@@ -554,22 +577,22 @@
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                             <Border x:Name="Enraged" Style="{StaticResource A_Style_Chip}" Background="{StaticResource B_Danger}">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Enraged" Style="{StaticResource T_Chip}" />
-                                    <TextBlock Style="{StaticResource T_Chip}" FontWeight="SemiBold" Margin="5 0 0 0" Text="{Binding Rage.Duration.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
+                                    <controls:SharpText Text="Enraged" Style="{StaticResource T_Chip}" />
+                                    <controls:SharpText Style="{StaticResource T_Chip}" FontWeight="SemiBold" Margin="5 0 0 0" Text="{Binding Rage.Duration.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
                                 </StackPanel>
                             </Border>
                             <Border x:Name="Exhausted" Style="{StaticResource A_Style_Chip}" Background="#4C8DFF">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Tired" Style="{StaticResource T_Chip}" />
-                                    <TextBlock Style="{StaticResource T_Chip}" FontWeight="SemiBold" Margin="5 0 0 0" Text="{Binding Fatigue.Duration.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
+                                    <controls:SharpText Text="Tired" Style="{StaticResource T_Chip}" />
+                                    <controls:SharpText Style="{StaticResource T_Chip}" FontWeight="SemiBold" Margin="5 0 0 0" Text="{Binding Fatigue.Duration.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
                                 </StackPanel>
                             </Border>
                             <Border x:Name="Estimate" Style="{StaticResource A_Style_Chip}" Background="#33FFFFFF">
-                                <TextBlock Text="Estimate" Style="{StaticResource T_Chip}" Foreground="{StaticResource B_Text}" />
+                                <controls:SharpText Text="Estimate" Style="{StaticResource T_Chip}" Foreground="{StaticResource B_Text}" />
                             </Border>
-                            <TextBlock x:Name="HealthPct" Style="{StaticResource T_Big}" FontSize="20" Margin="10 0 0 0" Text="{Binding Health.Fraction, Converter={StaticResource A_Converter_FractionToPercentage}}" />
+                            <controls:SharpText x:Name="HealthPct" Style="{StaticResource T_Big}" FontSize="20" Margin="10 0 0 0" Text="{Binding Health.Fraction, Converter={StaticResource A_Converter_FractionToPercentage}}" />
                         </StackPanel>
-                        <TextBlock Text="{Binding Name}" Style="{StaticResource T_MonsterName}" />
+                        <controls:SharpText Text="{Binding Name}" Style="{StaticResource T_MonsterName}" />
                         <ContentControl x:Name="Crown" Width="14" Height="14" Margin="7 0 0 0" VerticalAlignment="Center" ContentTemplate="{StaticResource A_Graphic_Crown}">
                             <ContentControl.Background>
                                 <SolidColorBrush Color="{StaticResource A_Color_Crown_Gold_Body}" />
@@ -578,7 +601,7 @@
                                 <SolidColorBrush Color="{StaticResource A_Color_Crown_Gold_Gem}" />
                             </ContentControl.Foreground>
                         </ContentControl>
-                        <TextBlock x:Name="Size" Style="{StaticResource T_Muted}" Margin="6 0 0 0" Text="{Binding Size, StringFormat={}{0:N0}}" />
+                        <controls:SharpText x:Name="Size" Style="{StaticResource T_Muted}" Margin="6 0 0 0" Text="{Binding Size, StringFormat={}{0:N0}}" />
                         <!--Weak to: element icons, 3 stars bright, 2 stars dimmer-->
                         <ItemsControl ItemsSource="{Binding Weaknesses}" Margin="10 0 0 0" VerticalAlignment="Center">
                             <ItemsControl.ItemsPanel>
@@ -618,16 +641,16 @@
                     </Grid>
 
                     <DockPanel Margin="0 4 0 0" LastChildFill="False">
-                        <TextBlock x:Name="HealthNum" Style="{StaticResource T_Muted}" FontSize="14">
-                            <TextBlock.Text>
+                        <controls:SharpText x:Name="HealthNum" Style="{StaticResource T_Muted}" FontSize="14">
+                            <controls:SharpText.Text>
                                 <MultiBinding StringFormat="{}{0:N0} / {1:N0}">
                                     <Binding Path="Health.Current" Mode="OneWay" />
                                     <Binding Path="Health.Max" Mode="OneWay" />
                                 </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
+                            </controls:SharpText.Text>
+                        </controls:SharpText>
                         <StackPanel x:Name="StaminaPanel" DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Stamina" Style="{StaticResource T_Label}" FontSize="12" Foreground="{StaticResource B_TextMuted}" Margin="0 0 6 0" />
+                            <controls:SharpText Text="Stamina" Style="{StaticResource T_Label}" FontSize="12" Foreground="{StaticResource B_TextMuted}" Margin="0 0 6 0" />
                             <Grid Width="72" Height="4">
                                 <Rectangle Fill="{StaticResource B_Track}" />
                                 <Rectangle Fill="{StaticResource B_Status}" behaviors:SmoothBar.Fraction="{Binding Stamina.Buildup.Fraction}" />
@@ -653,15 +676,15 @@
                        RenderOptions.BitmapScalingMode="HighQuality" />
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Name}" Style="{StaticResource T_Body}" Foreground="{StaticResource B_TextMuted}" />
-                        <TextBlock x:Name="CompactRage" Text="Enraged" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Danger}" Margin="8 0 0 0" Visibility="Collapsed" />
+                        <controls:SharpText Text="{Binding Name}" Style="{StaticResource T_Body}" Foreground="{StaticResource B_TextMuted}" />
+                        <controls:SharpText x:Name="CompactRage" Text="Enraged" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Danger}" Margin="8 0 0 0" Visibility="Collapsed" />
                     </StackPanel>
                     <Grid Height="3" Margin="0 3 0 0">
                         <Rectangle Fill="{StaticResource B_Track}" />
                         <Rectangle Fill="{StaticResource B_MonsterHealth}" Opacity="0.8" behaviors:SmoothBar.Fraction="{Binding Health.Fraction}" />
                     </Grid>
                 </StackPanel>
-                <TextBlock Grid.Column="2" Style="{StaticResource T_Muted}" FontSize="14" Margin="10 0 0 0" VerticalAlignment="Bottom"
+                <controls:SharpText Grid.Column="2" Style="{StaticResource T_Muted}" FontSize="14" Margin="10 0 0 0" VerticalAlignment="Bottom"
                            Text="{Binding Health.Fraction, Converter={StaticResource A_Converter_FractionToPercentage}}" />
             </Grid>
         </Grid>
@@ -808,26 +831,26 @@
 
             <!--The Aether badge: party sync heard from this teammate's Aether-->
             <StackPanel x:Name="NameRow" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0 7 0 7">
-                <TextBlock x:Name="NameBlock" Text="{Binding Name}" Style="{StaticResource T_Body}" MaxWidth="130" />
+                <controls:SharpText x:Name="NameBlock" Text="{Binding Name}" Style="{StaticResource T_Body}" MaxWidth="130" />
                 <Image Source="pack://application:,,,/Ui/Aether.ico" Width="12" Height="12" Margin="5 0 0 0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"
                        ToolTip="Also runs Aether" Visibility="{Binding UsesAether, Converter={StaticResource A_Converter_BoolToVisibility}}" />
             </StackPanel>
 
             <StackPanel x:Name="Share" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="12 0 0 0">
                 <Path x:Name="Arrow" Width="8" Height="6" Margin="0 0 5 0" VerticalAlignment="Center" Stretch="Fill" Visibility="Hidden" />
-                <TextBlock Style="{StaticResource T_Value}" MinWidth="34" FontSize="15" Text="{Binding DamageFraction, Converter={StaticResource A_Converter_FractionToPercentage}}" />
+                <controls:SharpText Style="{StaticResource T_Value}" MinWidth="34" FontSize="15" Text="{Binding DamageFraction, Converter={StaticResource A_Converter_FractionToPercentage}}" />
             </StackPanel>
 
             <StackPanel x:Name="Numbers" Grid.Column="3" VerticalAlignment="Center" MinWidth="64" Margin="12 0 0 0">
-                <TextBlock x:Name="DamageBlock" Style="{StaticResource T_Value}" FontSize="15" HorizontalAlignment="Right" Text="{Binding Damage, StringFormat={}{0:N0}}" />
-                <TextBlock x:Name="DpsBlock" Style="{StaticResource T_Muted}" FontSize="11" HorizontalAlignment="Right" Text="{Binding Dps, StringFormat={}{0:N0}/s}" />
+                <controls:SharpText x:Name="DamageBlock" Style="{StaticResource T_Value}" FontSize="15" HorizontalAlignment="Right" Text="{Binding Damage, StringFormat={}{0:N0}}" />
+                <controls:SharpText x:Name="DpsBlock" Style="{StaticResource T_Muted}" FontSize="11" HorizontalAlignment="Right" Text="{Binding Dps, StringFormat={}{0:N0}/s}" />
             </StackPanel>
 
             <!--Solo: the share is always 100%, so show what matters instead-->
             <StackPanel x:Name="Solo" Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
-                <TextBlock Style="{StaticResource T_Big}" Text="{Binding Damage, StringFormat={}{0:N0}}" />
-                <TextBlock Style="{StaticResource T_Muted}" Margin="5 0 0 1" VerticalAlignment="Bottom" Text="damage" />
-                <TextBlock x:Name="SoloDps" Style="{StaticResource T_Muted}" Margin="10 0 0 1" VerticalAlignment="Bottom" Text="{Binding Dps, StringFormat={}{0:N0}/s}" />
+                <controls:SharpText Style="{StaticResource T_Big}" Text="{Binding Damage, StringFormat={}{0:N0}}" />
+                <controls:SharpText Style="{StaticResource T_Muted}" Margin="5 0 0 1" VerticalAlignment="Bottom" Text="damage" />
+                <controls:SharpText x:Name="SoloDps" Style="{StaticResource T_Muted}" Margin="10 0 0 1" VerticalAlignment="Bottom" Text="{Binding Dps, StringFormat={}{0:N0}/s}" />
             </StackPanel>
         </Grid>
 
@@ -947,8 +970,8 @@
                 <Image x:Name="Icon" Source="{Binding IconKey, Converter={StaticResource A_Converter_IconKeyToImage}}" Width="22" Height="22" />
                 <ContentControl x:Name="Ring" Content="{Binding Time}" Width="12" Height="12" ContentTemplate="{StaticResource A_DataTemplate_CircleProgress}" Foreground="{StaticResource B_Text}" Visibility="Collapsed" />
             </Grid>
-            <TextBlock x:Name="NameBlock" Grid.Column="1" Text="{Binding Name}" Style="{StaticResource T_Body}" />
-            <TextBlock x:Name="Remaining" Grid.Column="2" Style="{StaticResource T_Value}" Margin="14 0 0 0" Text="{Binding Time.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
+            <controls:SharpText x:Name="NameBlock" Grid.Column="1" Text="{Binding Name}" Style="{StaticResource T_Body}" />
+            <controls:SharpText x:Name="Remaining" Grid.Column="2" Style="{StaticResource T_Value}" Margin="14 0 0 0" Text="{Binding Time.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
         </Grid>
 
         <DataTemplate.Triggers>
@@ -1006,29 +1029,28 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
-    <!--Specialized tool (mantle, booster): the buff row's icon and time, with a bar under them. Gold and draining
-        while it's on; dim and filling back up while it recharges.-->
+    <!--Specialized tool (mantle, booster): its icon in a ring, the time beside it. Gold and draining while it's on;
+        dim and filling back up while it recharges. The icon is trimmed to what's drawn, so it sits in the middle.-->
     <DataTemplate DataType="{x:Type data:SpecializedTool}">
-        <StackPanel x:Name="Root" Margin="0 0 18 0">
+        <StackPanel x:Name="Root" Orientation="Horizontal" Margin="0 0 18 0">
             <StackPanel.RenderTransform>
                 <TranslateTransform />
             </StackPanel.RenderTransform>
-            <StackPanel Orientation="Horizontal">
-                <Image x:Name="Icon" Source="{Binding IconKey, Converter={StaticResource A_Converter_IconKeyToImage}}" Width="22" Height="22" />
-                <TextBlock x:Name="Time" Text="{Binding Seconds, Converter={StaticResource A_Converter_SecondsToClock}}" Style="{StaticResource T_Value}" MinWidth="0"
-                           Foreground="{StaticResource B_Accent}" Margin="7 0 0 0" />
-            </StackPanel>
-            <Grid Height="2" Margin="0 4 0 0">
-                <Rectangle Fill="{StaticResource B_Track}" />
-                <Rectangle x:Name="Bar" Fill="{StaticResource B_Accent}" behaviors:SmoothBar.Fraction="{Binding Ring.Fraction}" />
+            <Grid Width="30" Height="30">
+                <Ellipse Margin="1" Fill="#CC101114" />
+                <ContentControl x:Name="Ring" Content="{Binding Ring}" ContentTemplate="{StaticResource A_DataTemplate_ThinRing}" Foreground="{StaticResource B_Accent}" />
+                <Image x:Name="Icon" Source="{Binding IconKey, Converter={StaticResource A_Converter_IconKeyToImage}, ConverterParameter=Trim}" Width="17" Height="17"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Grid>
+            <controls:SharpText x:Name="Time" Text="{Binding Seconds, Converter={StaticResource A_Converter_SecondsToClock}}" Style="{StaticResource T_Value}" MinWidth="0"
+                       Foreground="{StaticResource B_Accent}" Margin="7 0 0 0" />
         </StackPanel>
         <DataTemplate.Triggers>
             <EventTrigger RoutedEvent="FrameworkElement.Loaded">
                 <BeginStoryboard Storyboard="{StaticResource A_Storyboard_CellIn}" />
             </EventTrigger>
             <DataTrigger Binding="{Binding IsRecharging}" Value="True">
-                <Setter TargetName="Bar" Property="Fill" Value="{StaticResource B_TextMuted}" />
+                <Setter TargetName="Ring" Property="Foreground" Value="{StaticResource B_TextMuted}" />
                 <Setter TargetName="Icon" Property="Opacity" Value="0.5" />
                 <Setter TargetName="Time" Property="Foreground" Value="{StaticResource B_TextMuted}" />
             </DataTrigger>
@@ -1039,9 +1061,9 @@
     <DataTemplate DataType="{x:Type data:Sharpness}">
         <StackPanel x:Name="Root" Margin="0 0 0 8">
             <DockPanel LastChildFill="False">
-                <TextBlock x:Name="Label" Text="Sharpness" Style="{StaticResource T_Label}" />
-                <TextBlock DockPanel.Dock="Right" Style="{StaticResource T_Value}" MinWidth="0" Text="{Binding HitsLeft}" />
-                <TextBlock DockPanel.Dock="Right" Style="{StaticResource T_Muted}" Foreground="{Binding LevelBrush}" Margin="0 0 6 0" Text="{Binding LevelName}" />
+                <controls:SharpText x:Name="Label" Text="Sharpness" Style="{StaticResource T_Label}" />
+                <controls:SharpText DockPanel.Dock="Right" Style="{StaticResource T_Value}" MinWidth="0" Text="{Binding HitsLeft}" />
+                <controls:SharpText DockPanel.Dock="Right" Style="{StaticResource T_Muted}" Foreground="{Binding LevelBrush}" Margin="0 0 6 0" Text="{Binding LevelName}" />
             </DockPanel>
             <Grid x:Name="Bar" Width="150" Height="6" Margin="0 5 0 0" HorizontalAlignment="Left">
                 <ItemsControl ItemsSource="{Binding Segments}" Opacity="0.22">
@@ -1063,7 +1085,7 @@
                     </ItemsControl>
                 </Canvas>
             </Grid>
-            <TextBlock x:Name="Danger" Text="Sharpen" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Danger}" Margin="0 4 0 0" Visibility="Collapsed" />
+            <controls:SharpText x:Name="Danger" Text="Sharpen" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Danger}" Margin="0 4 0 0" Visibility="Collapsed" />
         </StackPanel>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding IsAvailable}" Value="False">
@@ -1105,8 +1127,8 @@
                 <Border x:Name="Notice" Width="462" HorizontalAlignment="Left" Margin="0 0 0 10" Padding="12 8 12 8" CornerRadius="6"
                         Background="#EB101114" BorderBrush="{StaticResource B_Accent}" BorderThickness="1" Visibility="Collapsed">
                     <DockPanel>
-                        <TextBlock Text="Sync" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Accent}" DockPanel.Dock="Left" VerticalAlignment="Top" Margin="0 1 10 0" />
-                        <TextBlock Text="{Binding Notice}" Style="{StaticResource T_Body}" TextWrapping="Wrap" />
+                        <controls:SharpText Text="Sync" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Accent}" DockPanel.Dock="Left" VerticalAlignment="Top" Margin="0 1 10 0" />
+                        <controls:SharpText Text="{Binding Notice}" Style="{StaticResource T_Body}" TextWrapping="Wrap" />
                     </DockPanel>
                 </Border>
                 <ItemsControl x:Name="MonstersControl" ItemsSource="{Binding Source={StaticResource CollectionViewSource}}" />
@@ -1166,7 +1188,7 @@
             <StackPanel x:Name="Body" Effect="{StaticResource A_Effect_Halo}" MinWidth="200" Margin="18 14 44 14">
                 <!--Quest clock, only during a quest. The limit is on the Team widget.-->
                 <StackPanel x:Name="HuntLine" Orientation="Horizontal" Margin="0 0 0 8">
-                    <TextBlock Text="{Binding Hunt.Clock}" Style="{StaticResource T_Value}" MinWidth="0" />
+                    <controls:SharpText Text="{Binding Hunt.Clock}" Style="{StaticResource T_Value}" MinWidth="0" />
                 </StackPanel>
                 <ContentControl Content="{Binding Sharpness}" />
                 <ItemsControl x:Name="Tools" ItemsSource="{Binding Tools}" Margin="0 0 0 8">
@@ -1234,15 +1256,15 @@
             <StackPanel x:Name="Body" Effect="{StaticResource A_Effect_Halo}" Margin="18 14 44 14">
                 <!--Quest clock and party deaths; outside a quest just the title-->
                 <DockPanel LastChildFill="False" DataContext="{Binding PlayerWidget.Context.Hunt, Source={x:Static viewModels:OverlayViewModel.Instance}}">
-                    <TextBlock x:Name="Title" Text="Damage" Style="{StaticResource T_Label}" />
+                    <controls:SharpText x:Name="Title" Text="Damage" Style="{StaticResource T_Label}" />
                     <StackPanel x:Name="Clock" Orientation="Horizontal" Visibility="Collapsed">
                         <Path Data="{StaticResource G_Stopwatch}" Fill="{StaticResource B_TextMuted}" Width="14" Height="15" Stretch="Uniform" VerticalAlignment="Center" Margin="0 0 6 0" />
-                        <TextBlock Text="{Binding Clock}" Style="{StaticResource T_Value}" MinWidth="0" />
-                        <TextBlock Text="{Binding ClockLeft, StringFormat=/{0}}" Style="{StaticResource T_Muted}" VerticalAlignment="Bottom" Margin="2 0 0 0" />
+                        <controls:SharpText Text="{Binding Clock}" Style="{StaticResource T_Value}" MinWidth="0" />
+                        <controls:SharpText Text="{Binding ClockLeft, StringFormat=/{0}}" Style="{StaticResource T_Muted}" VerticalAlignment="Bottom" Margin="2 0 0 0" />
                     </StackPanel>
                     <StackPanel x:Name="Deaths" DockPanel.Dock="Right" Orientation="Horizontal" Visibility="Collapsed">
                         <Path Data="{StaticResource G_Skull}" Fill="{StaticResource B_TextMuted}" Width="14" Height="15" Stretch="Uniform" VerticalAlignment="Center" Margin="0 0 6 0" />
-                        <TextBlock Text="{Binding Deaths}" Style="{StaticResource T_Value}" MinWidth="0" />
+                        <controls:SharpText Text="{Binding Deaths}" Style="{StaticResource T_Value}" MinWidth="0" />
                     </StackPanel>
                 </DockPanel>
                 <Rectangle Height="1" Margin="0 6 0 4" Fill="{StaticResource B_Hairline}" />
@@ -1305,7 +1327,7 @@
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Visibility" Value="Collapsed" />
     </Style>
-    <Style x:Key="T_Tag" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
+    <Style x:Key="T_Tag" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource A_Style_TextBlock_Base}">
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="Bold" />
     </Style>
@@ -1317,18 +1339,18 @@
             </Grid.RenderTransform>
             <Border Background="{StaticResource B_CalloutScrim}" Margin="-24 -12 -24 -12" />
             <StackPanel Orientation="Horizontal" Margin="12 6 12 6" Effect="{StaticResource A_Effect_Halo}">
-                <TextBlock Text="{Binding Name}" Style="{StaticResource T_Body}" FontSize="15" FontWeight="Bold" />
+                <controls:SharpText Text="{Binding Name}" Style="{StaticResource T_Body}" FontSize="15" FontWeight="Bold" />
                 <Border x:Name="Capture" Style="{StaticResource A_Style_Tag}" Background="{StaticResource B_Accent}" RenderTransformOrigin="0.5,0.5">
                     <Border.RenderTransform>
                         <ScaleTransform />
                     </Border.RenderTransform>
-                    <TextBlock Text="Capture" Style="{StaticResource T_Tag}" Foreground="#1C1400" />
+                    <controls:SharpText Text="Capture" Style="{StaticResource T_Tag}" Foreground="#1C1400" />
                 </Border>
                 <Border x:Name="Enraged" Style="{StaticResource A_Style_Tag}" Background="{StaticResource B_Danger}">
-                    <TextBlock Text="Enraged" Style="{StaticResource T_Tag}" Foreground="White" />
+                    <controls:SharpText Text="Enraged" Style="{StaticResource T_Tag}" Foreground="White" />
                 </Border>
                 <Border x:Name="Exhausted" Style="{StaticResource A_Style_Tag}" Background="#4C8DFF">
-                    <TextBlock Text="Exhausted" Style="{StaticResource T_Tag}" Foreground="White" />
+                    <controls:SharpText Text="Exhausted" Style="{StaticResource T_Tag}" Foreground="White" />
                 </Border>
             </StackPanel>
         </Grid>
@@ -1399,14 +1421,14 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="72" />
             </Grid.ColumnDefinitions>
-            <TextBlock Text="{Binding Rank}" Style="{StaticResource T_Muted}" />
+            <controls:SharpText Text="{Binding Rank}" Style="{StaticResource T_Muted}" />
             <Rectangle x:Name="Icon" Grid.Column="1" Width="20" Height="20" HorizontalAlignment="Left">
                 <Rectangle.OpacityMask>
                     <ImageBrush ImageSource="{Binding WeaponIcon, Converter={StaticResource A_Converter_IconKeyToImage}}" Stretch="Uniform" />
                 </Rectangle.OpacityMask>
             </Rectangle>
             <StackPanel Grid.Column="2" Orientation="Horizontal">
-                <TextBlock x:Name="NameBlock" Text="{Binding Name}" Style="{StaticResource T_Body}" MaxWidth="104" />
+                <controls:SharpText x:Name="NameBlock" Text="{Binding Name}" Style="{StaticResource T_Body}" MaxWidth="104" />
                 <ContentControl x:Name="Crown" Width="14" Height="14" Margin="6 0 0 1" ContentTemplate="{StaticResource A_Graphic_Crown}" Visibility="Collapsed" VerticalAlignment="Center">
                     <ContentControl.Background>
                         <SolidColorBrush Color="{StaticResource A_Color_Crown_Gold_Body}" />
@@ -1420,7 +1442,7 @@
                 <Rectangle Fill="{StaticResource B_Track}" RadiusX="2" RadiusY="2" />
                 <Rectangle x:Name="Fill" RadiusX="2" RadiusY="2" behaviors:SmoothBar.Fraction="{Binding Bar}" />
             </Grid>
-            <TextBlock Grid.Column="4" Style="{StaticResource T_Value}" Text="{Binding Damage, StringFormat={}{0:N0}}" />
+            <controls:SharpText Grid.Column="4" Style="{StaticResource T_Value}" Text="{Binding Damage, StringFormat={}{0:N0}}" />
         </Grid>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding IsMe}" Value="True">
@@ -1450,8 +1472,8 @@
 
     <DataTemplate DataType="{x:Type widgetContexts:RecapMonster}">
         <StackPanel Orientation="Horizontal" Margin="9 2 9 2">
-            <TextBlock Text="{Binding Name}" Style="{StaticResource T_Body}" />
-            <TextBlock x:Name="Outcome" Text="{Binding Outcome}" Style="{StaticResource T_Muted}" Margin="6 0 0 0" />
+            <controls:SharpText Text="{Binding Name}" Style="{StaticResource T_Body}" />
+            <controls:SharpText x:Name="Outcome" Text="{Binding Outcome}" Style="{StaticResource T_Muted}" Margin="6 0 0 0" />
         </StackPanel>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding Outcome}" Value="Captured">
@@ -1460,12 +1482,12 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
-    <Style x:Key="T_StatLabel" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource T_Label}">
+    <Style x:Key="T_StatLabel" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource T_Label}">
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
-    <Style x:Key="T_StatValue" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource T_Big}">
+    <Style x:Key="T_StatValue" TargetType="{x:Type controls:SharpText}" BasedOn="{StaticResource T_Big}">
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="Margin" Value="0 2 0 0" />
     </Style>
@@ -1484,11 +1506,11 @@
             <Rectangle Height="1" VerticalAlignment="Bottom" Fill="{StaticResource B_RecapEdge}" />
 
             <StackPanel Margin="30 22 30 18" DataContext="{Binding Recap}">
-                <TextBlock x:Name="Result" Text="{Binding Result}" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"
+                <controls:SharpText x:Name="Result" Text="{Binding Result}" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"
                            Style="{StaticResource A_Style_TextBlock_Base}" Foreground="{StaticResource B_RecapTitle}" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 6 0 0">
-                    <TextBlock Text="{Binding Stars}" Style="{StaticResource T_Muted}" Foreground="{StaticResource B_Accent}" Margin="0 0 10 0" />
-                    <TextBlock x:Name="Deaths" Style="{StaticResource T_Muted}" Text="{Binding DeathsText}" />
+                    <controls:SharpText Text="{Binding Stars}" Style="{StaticResource T_Muted}" Foreground="{StaticResource B_Accent}" Margin="0 0 10 0" />
+                    <controls:SharpText x:Name="Deaths" Style="{StaticResource T_Muted}" Text="{Binding DeathsText}" />
                 </StackPanel>
 
                 <ItemsControl ItemsSource="{Binding Monsters}" HorizontalAlignment="Center" Margin="0 10 0 0">
@@ -1502,8 +1524,8 @@
                 <!--Versus the party-->
                 <StackPanel x:Name="Party">
                     <DockPanel LastChildFill="False" Margin="0 0 0 6">
-                        <TextBlock Text="Versus party" Style="{StaticResource T_Label}" />
-                        <TextBlock DockPanel.Dock="Right" Text="{Binding Headline}" Style="{StaticResource T_Muted}" />
+                        <controls:SharpText Text="Versus party" Style="{StaticResource T_Label}" />
+                        <controls:SharpText DockPanel.Dock="Right" Text="{Binding Headline}" Style="{StaticResource T_Muted}" />
                     </DockPanel>
                     <ItemsControl ItemsSource="{Binding Hunters}" />
                 </StackPanel>
@@ -1511,12 +1533,12 @@
                 <!--Solo: three plain stats-->
                 <UniformGrid x:Name="Solo" Columns="2" Visibility="Collapsed">
                     <StackPanel>
-                        <TextBlock Text="Damage" Style="{StaticResource T_StatLabel}" />
-                        <TextBlock Text="{Binding MyDamage, StringFormat={}{0:N0}}" Style="{StaticResource T_StatValue}" />
+                        <controls:SharpText Text="Damage" Style="{StaticResource T_StatLabel}" />
+                        <controls:SharpText Text="{Binding MyDamage, StringFormat={}{0:N0}}" Style="{StaticResource T_StatValue}" />
                     </StackPanel>
                     <StackPanel>
-                        <TextBlock Text="Deaths" Style="{StaticResource T_StatLabel}" />
-                        <TextBlock Text="{Binding Deaths}" Style="{StaticResource T_StatValue}" />
+                        <controls:SharpText Text="Deaths" Style="{StaticResource T_StatLabel}" />
+                        <controls:SharpText Text="{Binding Deaths}" Style="{StaticResource T_StatValue}" />
                     </StackPanel>
                 </UniformGrid>
             </StackPanel>
@@ -1579,24 +1601,24 @@
                     <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
                 </Grid.RowDefinitions>
                 <Grid.Resources>
-                    <Style TargetType="TextBlock" BasedOn="{StaticResource A_Style_TextBlock_Standard}">
+                    <Style TargetType="controls:SharpText" BasedOn="{StaticResource A_Style_TextBlock_Standard}">
                         <Setter Property="Margin" Value="0 2 0 2" />
                     </Style>
                 </Grid.Resources>
 
-                <TextBlock Grid.Row="0" Style="{StaticResource T_Muted}" Margin="0 2 16 2" Text="Player" />
-                <TextBlock Grid.Row="1" Style="{StaticResource T_Muted}" Margin="0 2 16 2" Text="Session" />
-                <TextBlock Grid.Row="2" Style="{StaticResource T_Muted}" Margin="0 2 16 2" Text="Session host" />
-                <TextBlock Grid.Row="3" Style="{StaticResource T_Muted}" Margin="0 2 16 2" Text="Lobby" />
-                <TextBlock Grid.Row="4" Style="{StaticResource T_Muted}" Margin="0 2 16 2" Text="Lobby host" />
-                <TextBlock Grid.Row="5" Style="{StaticResource T_Muted}" Margin="0 2 16 2" Text="Weapon" />
+                <controls:SharpText Grid.Row="0" Style="{StaticResource T_Muted}" Margin="0 2 16 2" Text="Player" />
+                <controls:SharpText Grid.Row="1" Style="{StaticResource T_Muted}" Margin="0 2 16 2" Text="Session" />
+                <controls:SharpText Grid.Row="2" Style="{StaticResource T_Muted}" Margin="0 2 16 2" Text="Session host" />
+                <controls:SharpText Grid.Row="3" Style="{StaticResource T_Muted}" Margin="0 2 16 2" Text="Lobby" />
+                <controls:SharpText Grid.Row="4" Style="{StaticResource T_Muted}" Margin="0 2 16 2" Text="Lobby host" />
+                <controls:SharpText Grid.Row="5" Style="{StaticResource T_Muted}" Margin="0 2 16 2" Text="Weapon" />
 
-                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CurrentGame.CurrentPlayerName}" />
-                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CurrentGame.SessionID}" />
-                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CurrentGame.SessionHostPlayerName}" />
-                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CurrentGame.LobbyID}" />
-                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding CurrentGame.LobbyHostPlayerName}" />
-                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding CurrentGame.EquippedWeaponType, Converter={StaticResource A_Converter_WeaponTypeToName}}" />
+                <controls:SharpText Grid.Row="0" Grid.Column="1" Text="{Binding CurrentGame.CurrentPlayerName}" />
+                <controls:SharpText Grid.Row="1" Grid.Column="1" Text="{Binding CurrentGame.SessionID}" />
+                <controls:SharpText Grid.Row="2" Grid.Column="1" Text="{Binding CurrentGame.SessionHostPlayerName}" />
+                <controls:SharpText Grid.Row="3" Grid.Column="1" Text="{Binding CurrentGame.LobbyID}" />
+                <controls:SharpText Grid.Row="4" Grid.Column="1" Text="{Binding CurrentGame.LobbyHostPlayerName}" />
+                <controls:SharpText Grid.Row="5" Grid.Column="1" Text="{Binding CurrentGame.EquippedWeaponType, Converter={StaticResource A_Converter_WeaponTypeToName}}" />
             </Grid>
         </Border>
     </DataTemplate>

@@ -131,6 +131,10 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   on it, re-uploaded 8 MB a frame on the CPU and made opening and dragging lag. It's drawn once on open; the guides are
   two 1-pixel windows that move. Widget and toolbar windows refuse activation (`WindowHelper.RefuseFocus`) and the
   editor ignores focus moving to Aether's own windows: a click on a widget used to close the editor.
+- Overlay text is `controls:SharpText` (`Ui/Controls/SharpText.cs`), not `TextBlock`: it draws with DirectWrite through
+  SharpDX (managed, no native DLL to unpack) at the screen's real pixel size. WPF's own text in a transparent window was
+  soft and low in contrast. Use SharpText for new overlay text. The Aether window is an ordinary window with ClearType
+  and keeps WPF text in Display mode. Don't use "Segoe UI Variable": WPF draws its SemiBold as regular.
 - Overlay text has no eyebrows (small bold capitals): labels are sentence case in `T_Label`. Keep it that way.
 - Shortcuts are rebound in Settings > Keyboard (`KeyBinder`): the next key from the global hook is taken, Esc cancels.
 - Each widget's "Show widget" switch also decides whether its data is read (`MhwMemoryUpdater.UpdateMemory`), and

@@ -2,7 +2,7 @@ using SmartHunter.Core.Data;
 
 namespace SmartHunter.Game.Data
 {
-    // A mantle or booster in use: one tile whose bar drains while it's on and fills back up while it recharges
+    // A mantle or booster in use: one tile whose ring drains while it's on and fills back up while it recharges
     public class SpecializedTool : Bindable
     {
         // The tool's name id without "RECHARGE_", shared by its two timers
