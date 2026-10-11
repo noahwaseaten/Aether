@@ -815,15 +815,15 @@
             <Rectangle x:Name="Edge" Width="2" Margin="-6 0 0 0" HorizontalAlignment="Left" />
 
             <!--Weapon silhouette in the hunter's colour; flashes when they land a hit-->
-            <Grid Width="22" Height="22" Margin="2 0 0 0" HorizontalAlignment="Left" VerticalAlignment="Center">
-                <Ellipse x:Name="HitFlash" Width="22" Height="22" Opacity="0" RenderTransformOrigin="0.5,0.5">
+            <Grid Width="26" Height="26" Margin="1 0 0 0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Ellipse x:Name="HitFlash" Width="26" Height="26" Opacity="0" RenderTransformOrigin="0.5,0.5">
                     <Ellipse.RenderTransform>
                         <ScaleTransform />
                     </Ellipse.RenderTransform>
                 </Ellipse>
-                <Rectangle x:Name="WeaponIcon" Width="22" Height="22">
+                <Rectangle x:Name="WeaponIcon" Width="26" Height="26">
                     <Rectangle.OpacityMask>
-                        <ImageBrush ImageSource="{Binding WeaponIcon, Converter={StaticResource A_Converter_IconKeyToImage}}" Stretch="Uniform" />
+                        <ImageBrush ImageSource="{Binding WeaponIcon, Converter={StaticResource A_Converter_IconKeyToImage}, ConverterParameter=Trim}" Stretch="Uniform" />
                     </Rectangle.OpacityMask>
                 </Rectangle>
                 <Ellipse x:Name="Dot" Width="7" Height="7" Visibility="Collapsed" />
@@ -1422,9 +1422,9 @@
                 <ColumnDefinition Width="72" />
             </Grid.ColumnDefinitions>
             <controls:SharpText Text="{Binding Rank}" Style="{StaticResource T_Muted}" />
-            <Rectangle x:Name="Icon" Grid.Column="1" Width="20" Height="20" HorizontalAlignment="Left">
+            <Rectangle x:Name="Icon" Grid.Column="1" Width="22" Height="22" HorizontalAlignment="Left">
                 <Rectangle.OpacityMask>
-                    <ImageBrush ImageSource="{Binding WeaponIcon, Converter={StaticResource A_Converter_IconKeyToImage}}" Stretch="Uniform" />
+                    <ImageBrush ImageSource="{Binding WeaponIcon, Converter={StaticResource A_Converter_IconKeyToImage}, ConverterParameter=Trim}" Stretch="Uniform" />
                 </Rectangle.OpacityMask>
             </Rectangle>
             <StackPanel Grid.Column="2" Orientation="Horizontal">

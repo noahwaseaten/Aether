@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -50,6 +51,11 @@ namespace SmartHunter.Ui.Controls
         static readonly DW.Factory s_DW = new DW.Factory();
         static readonly WIC.ImagingFactory s_Wic = new WIC.ImagingFactory();
         static readonly DW.RenderingParams s_Params = new DW.RenderingParams(s_DW, 1.8f, 1f, 0f, DW.PixelGeometry.Flat, DW.RenderingMode.NaturalSymmetric);
+
+        // Renders shared by every SharpText: the same label, or a value coming back (states, names, timers per
+        // widget), is drawn once. ponytail: emptied when full, an LRU if hit rates ever matter.
+        const int CacheLimit = 512;
+        static readonly Dictionary<string, (byte[] Coverage, int Width, int Height)> s_Cache = new Dictionary<string, (byte[], int, int)>();
 
         // The last render: coverage (white text) at a pixel size, and the key it was made for
         byte[] m_Coverage;
@@ -148,10 +154,23 @@ namespace SmartHunter.Ui.Controls
             }
 
             double scale = DeviceScale();
-            string key = string.Join("|", Text, FontFamily?.Source, FontSize, FontWeight, FontStyle, TextAlignment, TextWrapping, TextTrimming, RenderSize.Width, RenderSize.Height, scale);
+            string key = string.Join("|", Text, FontFamily?.Source, FontSize, FontWeight, FontStyle, Typography.GetNumeralAlignment(this), TextAlignment, TextWrapping, TextTrimming, RenderSize.Width, RenderSize.Height, scale);
             if (key != m_RenderedKey)
             {
-                RenderCoverage(scale);
+                m_Scale = scale;
+                if (s_Cache.TryGetValue(key, out var cached))
+                {
+                    (m_Coverage, m_PixelWidth, m_PixelHeight) = cached;
+                }
+                else
+                {
+                    RenderCoverage(scale);
+                    if (s_Cache.Count >= CacheLimit)
+                    {
+                        s_Cache.Clear();
+                    }
+                    s_Cache[key] = (m_Coverage, m_PixelWidth, m_PixelHeight);
+                }
                 m_RenderedKey = key;
                 m_Bitmap = null;
             }
