@@ -47,7 +47,7 @@
             </Grid.LayoutTransform>
 
             <!--Edit mode: the room this widget takes when it's full, so it can be placed before anything is in it-->
-            <Grid Style="{StaticResource A_Style_EditPreview}" Width="480" Height="330">
+            <Grid Style="{StaticResource A_Style_EditPreview}" Width="460" Height="420">
                 <Rectangle Style="{StaticResource A_Style_EditPreviewOutline}" />
                 <controls:SharpText Style="{StaticResource T_EditPreview}" Text="Quest results, shown when a quest ends" />
             </Grid>

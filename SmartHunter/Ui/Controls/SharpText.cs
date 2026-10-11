@@ -61,18 +61,17 @@ namespace SmartHunter.Ui.Controls
         byte[] m_Coverage;
         int m_PixelWidth, m_PixelHeight;
         double m_Scale;
+        Vector m_Offset;
         string m_RenderedKey;
         BitmapSource m_Bitmap;
         Color m_BitmapColor;
 
         public SharpText()
         {
-            // Shown at exactly its pixel size; nearest neighbour keeps a half-pixel offset from blurring it
-            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             LayoutUpdated += (s, e) =>
             {
-                // A widget's scale changed: render again at the new size
-                if (m_Bitmap != null && Math.Abs(DeviceScale() - m_Scale) > 0.001)
+                // A widget was resized or moved: render again at the new size, and line up with the screen's pixels again
+                if (m_Bitmap != null && (Math.Abs(DeviceScale() - m_Scale) > 0.001 || PixelOffset() != m_Offset))
                 {
                     InvalidateVisual();
                 }
@@ -146,6 +145,20 @@ namespace SmartHunter.Ui.Controls
             return scale > 0.01 ? scale : 1;
         }
 
+        // How far this element sits from a whole screen pixel. After a resize it usually lands between pixels, and the
+        // bitmap copied there (nearest neighbour) dropped or doubled columns and broke the letters.
+        Vector PixelOffset()
+        {
+            var source = PresentationSource.FromVisual(this);
+            if (source?.RootVisual == null || !source.RootVisual.IsAncestorOf(this))
+            {
+                return new Vector();
+            }
+            var point = TransformToAncestor(source.RootVisual).Transform(new Point(0, 0));
+            point = source.CompositionTarget.TransformToDevice.Transform(point);
+            return new Vector(Math.Round(Math.Round(point.X) - point.X, 2), Math.Round(Math.Round(point.Y) - point.Y, 2));
+        }
+
         protected override void OnRender(DrawingContext dc)
         {
             if (string.IsNullOrEmpty(Text) || RenderSize.Width <= 0 || RenderSize.Height <= 0)
@@ -175,6 +188,9 @@ namespace SmartHunter.Ui.Controls
                 m_Bitmap = null;
             }
 
+            // Shift onto whole screen pixels, so the bitmap lands 1:1 on them
+            m_Offset = PixelOffset();
+            dc.PushTransform(new TranslateTransform(m_Offset.X / m_Scale, m_Offset.Y / m_Scale));
             var rect = new Rect(0, 0, m_PixelWidth / m_Scale, m_PixelHeight / m_Scale);
             if (Foreground is SolidColorBrush solid)
             {
@@ -199,6 +215,7 @@ namespace SmartHunter.Ui.Controls
                 dc.DrawRectangle(Foreground, null, rect);
                 dc.Pop();
             }
+            dc.Pop();
         }
 
         void RenderCoverage(double scale)
