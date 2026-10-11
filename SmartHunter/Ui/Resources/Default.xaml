@@ -68,7 +68,7 @@
     <Color x:Key="A_Color_Monster_Bar">#E5484D</Color>
     <Color x:Key="A_Color_Monster_Bar_End">#FF7A59</Color>
     <Color x:Key="A_Color_Monster_Part_Bar">#E5484D</Color>
-    <Color x:Key="A_Color_Monster_Part_Soften_Bar">#F5A524</Color>
+    <Color x:Key="A_Color_Monster_Part_Soften_Bar">#7EE7FC</Color>
     <Color x:Key="A_Color_Monster_StatusEffect_Bar">#2EC4B6</Color>
     <Color x:Key="A_Color_Monster_StatusEffect_Active">#F5C542</Color>
 
@@ -137,9 +137,10 @@
     <SolidColorBrush x:Key="B_Status" Color="{StaticResource A_Color_Monster_StatusEffect_Bar}" />
     <SolidColorBrush x:Key="B_StatusActive" Color="{StaticResource A_Color_Monster_StatusEffect_Active}" />
     <LinearGradientBrush x:Key="B_MonsterHealth" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="{StaticResource A_Color_Monster_Bar}" Offset="0" />
-        <GradientStop Color="{StaticResource A_Color_Monster_Bar_End}" Offset="1" />
+        <GradientStop Color="#D42C2C" Offset="0" />
+        <GradientStop Color="#E63F29" Offset="1" />
     </LinearGradientBrush>
+    <SolidColorBrush x:Key="B_Stamina" Color="#F6A522" />
 
     <!--Kept for older window markup-->
     <SolidColorBrush x:Key="A_Brush_DropShadow" Color="#88000000" />
@@ -211,8 +212,11 @@
         <Setter Property="CornerRadius" Value="3" />
     </Style>
 
-    <!--Gauge: a line every 10% over a bar's fill, so a share can be read at a glance. Put it last in the bar.-->
-    <SolidColorBrush x:Key="B_GaugeLine" Color="#8C0D1015" />
+    <!--Gauge (Ui/Controls/Gauge.cs): HunterPie's bar. A dark trough so the game doesn't show through, a border, and a
+        light line every 10% that reads on the fill and on the trough alike.-->
+    <SolidColorBrush x:Key="B_GaugeTrough" Color="#D9191C1E" />
+    <SolidColorBrush x:Key="B_GaugeBorder" Color="#FF2C3033" />
+    <SolidColorBrush x:Key="B_GaugeLine" Color="#803A3E40" />
     <ControlTemplate x:Key="A_Template_Gauge" TargetType="{x:Type Control}">
         <UniformGrid Rows="1" Columns="10" IsHitTestVisible="False">
             <Border />
@@ -474,10 +478,7 @@
                 <controls:SharpText DockPanel.Dock="Right" Style="{StaticResource T_CellValue}" Foreground="{StaticResource B_Soften}" Text="{Binding Time.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
                 <controls:SharpText Text="{Binding Name}" Style="{StaticResource T_Cell}" Foreground="{StaticResource B_Soften}" />
             </DockPanel>
-            <Grid x:Name="Bar" Grid.Row="1" Height="3" Margin="0 3 0 0" behaviors:RoundClip.Radius="-1">
-                <Rectangle Fill="{StaticResource B_Track}" />
-                <Rectangle Fill="{StaticResource B_Soften}" behaviors:SmoothBar.Fraction="{Binding Time.Fraction}" />
-            </Grid>
+            <controls:Gauge x:Name="Bar" Grid.Row="1" Height="6" Margin="0 3 0 0" CornerRadius="3" Fill="{StaticResource B_Soften}" Fraction="{Binding Time.Fraction}" />
         </Grid>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding IsVisible}" Value="True">
@@ -531,19 +532,14 @@
                 </StackPanel>
                 <controls:SharpText x:Name="NameBlock" Text="{Binding Name}" Style="{StaticResource T_Cell}" />
             </DockPanel>
-            <Grid x:Name="Bar" Grid.Row="1" Height="4" Margin="0 3 0 0" behaviors:RoundClip.Radius="-1">
-                <Rectangle Fill="{StaticResource B_Track}" />
-                <Rectangle Fill="{StaticResource B_Ghost}" Opacity="0.5" behaviors:SmoothBar.Delay="400" behaviors:SmoothBar.Fraction="{Binding Health.Fraction}" />
-                <Rectangle x:Name="Fill" Fill="{StaticResource B_Part}" behaviors:SmoothBar.Fraction="{Binding Health.Fraction}" />
-                <Control Template="{StaticResource A_Template_Gauge}" />
-            </Grid>
+            <controls:Gauge x:Name="Bar" Grid.Row="1" Height="6" Margin="0 3 0 0" CornerRadius="3" Fill="{StaticResource B_Part}" Fraction="{Binding Health.Fraction}" />
         </Grid>
         <DataTemplate.Triggers>
             <EventTrigger RoutedEvent="FrameworkElement.Loaded">
                 <BeginStoryboard Storyboard="{StaticResource A_Storyboard_CellIn}" />
             </EventTrigger>
             <DataTrigger Binding="{Binding IsRemovable}" Value="True">
-                <Setter TargetName="Fill" Property="Fill" Value="{StaticResource B_Accent}" />
+                <Setter TargetName="Bar" Property="Fill" Value="{StaticResource B_Accent}" />
                 <Setter TargetName="NameBlock" Property="Foreground" Value="{StaticResource B_Accent}" />
             </DataTrigger>
             <MultiDataTrigger>
@@ -643,40 +639,25 @@
 
                     <!--Health, with a gold triangle where the monster can be captured-->
                     <Grid x:Name="HealthBar" Height="12" Margin="0 5 0 0">
-                        <Grid behaviors:RoundClip.Radius="4">
-                            <Rectangle Fill="{StaticResource B_Track}" />
-                            <Rectangle Fill="{StaticResource B_Ghost}" behaviors:SmoothBar.Delay="450" behaviors:SmoothBar.Fraction="{Binding Health.Fraction}" />
-                            <Rectangle Fill="{StaticResource B_MonsterHealth}" behaviors:SmoothBar.Fraction="{Binding Health.Fraction}" />
-                            <Control Template="{StaticResource A_Template_Gauge}" />
-                        </Grid>
+                        <controls:Gauge CornerRadius="4" Fill="{StaticResource B_MonsterHealth}" Fraction="{Binding Health.Fraction}" />
                         <!--Negative margins, not a taller box: the bar's row would clip anything taller than itself-->
                         <Grid x:Name="CaptureMark" Width="10" Margin="{Binding CaptureFraction, Converter={StaticResource A_Converter_FractionToOffset}, ConverterParameter=402}"
                               HorizontalAlignment="Left" Visibility="Collapsed">
                             <Grid.RenderTransform>
                                 <TranslateTransform X="-5" />
                             </Grid.RenderTransform>
-                            <Path Data="M0,0 L10,0 L5,7 Z" Margin="0 -3 0 0" VerticalAlignment="Top" Fill="{StaticResource B_Accent}" Stroke="#B3000000" StrokeThickness="0.75" />
+                            <Path Data="M0,0 L10,0 L5,7 Z" Margin="0 -2 0 0" VerticalAlignment="Top" Fill="{StaticResource B_Stamina}" Stroke="#CC000000" StrokeThickness="0.75" />
                         </Grid>
                     </Grid>
+                    <!--Stamina: the same bar under health, as wide, in yellow-->
+                    <controls:Gauge x:Name="StaminaBar" Height="7" Margin="0 3 0 0" CornerRadius="3" Fill="{StaticResource B_Stamina}" Fraction="{Binding Stamina.Buildup.Fraction}"
+                                    ToolTip="Stamina: low means the monster tires soon" />
 
-                    <DockPanel Margin="0 4 0 0" LastChildFill="False">
-                        <controls:SharpText x:Name="HealthNum" Style="{StaticResource T_Muted}" FontSize="14">
-                            <controls:SharpText.Text>
-                                <MultiBinding StringFormat="{}{0:N0} / {1:N0}">
-                                    <Binding Path="Health.Current" Mode="OneWay" />
-                                    <Binding Path="Health.Max" Mode="OneWay" />
-                                </MultiBinding>
-                            </controls:SharpText.Text>
-                        </controls:SharpText>
-                        <StackPanel x:Name="StaminaPanel" DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                            <controls:SharpText Text="Stamina" Style="{StaticResource T_Label}" FontSize="12" Foreground="{StaticResource B_TextMuted}" Margin="0 0 6 0" />
-                            <Grid Width="72" Height="5" behaviors:RoundClip.Radius="-1">
-                                <Rectangle Fill="{StaticResource B_Track}" />
-                                <Rectangle Fill="{StaticResource B_Status}" behaviors:SmoothBar.Fraction="{Binding Stamina.Buildup.Fraction}" />
-                                <Control Template="{StaticResource A_Template_Gauge}" />
-                            </Grid>
-                        </StackPanel>
-                    </DockPanel>
+                    <!--Health left in the bright text, out of the full amount in the muted one-->
+                    <StackPanel x:Name="HealthNum" Orientation="Horizontal" Margin="0 5 0 0">
+                        <controls:SharpText Style="{StaticResource T_Body}" Text="{Binding Health.Current, StringFormat={}{0:N0}}" />
+                        <controls:SharpText Style="{StaticResource T_Muted}" Text="{Binding Health.Max, StringFormat={}/{0:N0}}" />
+                    </StackPanel>
 
 
                     <ItemsControl ItemsSource="{Binding VisibleAilments}" ItemsPanel="{StaticResource A_Panel_Wrap}" Margin="0 4 0 0" />
@@ -699,11 +680,7 @@
                         <controls:SharpText Text="{Binding Name}" Style="{StaticResource T_Body}" Foreground="{StaticResource B_TextMuted}" />
                         <controls:SharpText x:Name="CompactRage" Text="Enraged" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Danger}" Margin="8 0 0 0" Visibility="Collapsed" />
                     </StackPanel>
-                    <Grid Height="4" Margin="0 3 0 0" behaviors:RoundClip.Radius="-1">
-                        <Rectangle Fill="{StaticResource B_Track}" />
-                        <Rectangle Fill="{StaticResource B_MonsterHealth}" Opacity="0.8" behaviors:SmoothBar.Fraction="{Binding Health.Fraction}" />
-                        <Control Template="{StaticResource A_Template_Gauge}" />
-                    </Grid>
+                    <controls:Gauge Height="6" Margin="0 3 0 0" CornerRadius="3" Fill="{StaticResource B_MonsterHealth}" Fraction="{Binding Health.Fraction}" />
                 </StackPanel>
                 <controls:SharpText Grid.Column="2" Style="{StaticResource T_Muted}" FontSize="14" Margin="10 0 0 0" VerticalAlignment="Bottom"
                            Text="{Binding Health.Fraction, Converter={StaticResource A_Converter_FractionToPercentage}}" />
@@ -754,7 +731,7 @@
                 <Setter TargetName="CaptureMark" Property="Visibility" Value="Visible" />
             </DataTrigger>
             <DataTrigger Binding="{Binding Stamina}" Value="{x:Null}">
-                <Setter TargetName="StaminaPanel" Property="Visibility" Value="Collapsed" />
+                <Setter TargetName="StaminaBar" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
 
             <DataTrigger Binding="{Binding DataContext.ShowCrown, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="False">
@@ -765,6 +742,7 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding DataContext.ShowBars, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="False">
                 <Setter TargetName="HealthBar" Property="Visibility" Value="Collapsed" />
+                <Setter TargetName="StaminaBar" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
             <DataTrigger Binding="{Binding DataContext.ShowNumbers, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="False">
                 <Setter TargetName="HealthNum" Property="Visibility" Value="Collapsed" />
@@ -1461,10 +1439,7 @@
                     </ContentControl.Foreground>
                 </ContentControl>
             </StackPanel>
-            <Grid Grid.Column="3" Height="5" Margin="0 0 12 0" VerticalAlignment="Center" behaviors:RoundClip.Radius="-1">
-                <Rectangle Fill="{StaticResource B_Track}" />
-                <Rectangle x:Name="Fill" behaviors:SmoothBar.Fraction="{Binding Bar}" />
-            </Grid>
+            <controls:Gauge x:Name="Fill" Grid.Column="3" Height="7" Margin="0 0 12 0" VerticalAlignment="Center" CornerRadius="3" ShowMarkers="False" Fraction="{Binding Bar}" />
             <controls:SharpText Grid.Column="4" Style="{StaticResource T_Value}" Text="{Binding Damage, StringFormat={}{0:N0}}" />
         </Grid>
         <DataTemplate.Triggers>
