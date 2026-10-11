@@ -132,7 +132,7 @@ namespace SmartHunter.Game
             int zone = MemoryHelper.Read<int>(p, Chain(p, ZoneAddress, 0xAED0));
             if (zone == 0)
             {
-                return Activity("Main menu", null, null, null);
+                return Activity("Main Menu", null, null, null);
             }
 
             ulong save = Chain(p, SaveAddress, 0xA8);
