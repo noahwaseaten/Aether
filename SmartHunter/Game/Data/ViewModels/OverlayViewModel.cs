@@ -205,6 +205,7 @@ namespace SmartHunter.Game.Data.ViewModels
                 rathian.UpdateAndGetPart((ulong)(10 + i), i == 0, 900, 900, 0);
                 rathian.UpdateAndGetPart((ulong)(10 + i), i == 0, 900, i == 0 ? 0 : 880 - 100 * i, i <= 1 ? 1 : 0);
             }
+            rathian.UpdateAndGetPartSoften(90, 90, 52, 1, 0); // head wound
             var statusEffects = ConfigHelper.MonsterData.Values.StatusEffects;
             void Status(string groupId, string nameId, float buildup, float durationLeft, int times)
             {

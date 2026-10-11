@@ -34,6 +34,26 @@ namespace SmartHunter.Game.Data
             }
         }
 
+        // Localization id ("LOC_PART_HEAD"): how a wound finds its part
+        public string StringId
+        {
+            get
+            {
+                int index = m_Owner.Parts.Where(part => part.IsRemovable == IsRemovable).ToList().IndexOf(this);
+                return ConfigHelper.MonsterData.Values.Monsters.TryGetValue(m_Owner.Id ?? "", out var monsterConfig)
+                    ? monsterConfig.Parts.Where(part => part.IsRemovable == IsRemovable).ElementAtOrDefault(index)?.StringId ?? ""
+                    : "";
+            }
+        }
+
+        // Clutch claw wound on this part, shown on its card (as HunterPie does) instead of a second card with the same name
+        MonsterPartSoften m_Wound;
+        public MonsterPartSoften Wound
+        {
+            get { return m_Wound; }
+            set { SetProperty(ref m_Wound, value); }
+        }
+
         public string GroupId
         {
             get
@@ -49,7 +69,7 @@ namespace SmartHunter.Game.Data
             {
                 var config = ConfigHelper.Main.Values.Overlay.MonsterWidget;
                 return config.ShowParts && IsIncluded(GroupId)
-                    && (config.AlwaysShowParts || IsTimeVisible(config.ShowUnchangedParts, config.HidePartsAfterSeconds));
+                    && (Wound != null || config.AlwaysShowParts || IsTimeVisible(config.ShowUnchangedParts, config.HidePartsAfterSeconds));
             }
         }
 

@@ -379,6 +379,14 @@ namespace SmartHunter.Game.Data
         // A big fight can have 10+ parts and statuses moving at once. Show the ones hit most recently.
         public void RankRows()
         {
+            bool wounds = ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowSoftenParts;
+            foreach (var part in Parts)
+            {
+                string id = part.StringId;
+                part.Wound = wounds && id.Length > 0
+                    ? PartSoftens.Where(s => s.Time.Current > 0 && s.GroupId == id).OrderByDescending(s => s.Time.Current).FirstOrDefault()
+                    : null;
+            }
             Rank(Parts.Cast<TimedVisibility>().ToList(), p => ((MonsterPart)p).IsCandidate, (p, v) => ((MonsterPart)p).IsRanked = v, Data.WidgetContexts.MonsterWidgetContext.MaxPartRows);
             var ailments = StatusEffects.Where(s => s.GroupId == "StatusEffect").Cast<TimedVisibility>().ToList();
             Rank(ailments, s => ((MonsterStatusEffect)s).IsCandidate, (s, v) => ((MonsterStatusEffect)s).IsRanked = v, Data.WidgetContexts.MonsterWidgetContext.MaxStatusRows);

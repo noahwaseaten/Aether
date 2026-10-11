@@ -138,7 +138,7 @@ namespace SmartHunter.Game.Data.ViewModels
             Toggle(Monster, "Crown", "A gold, silver or mini crown icon when the monster qualifies.", () => C.Overlay.MonsterWidget.ShowCrown, v => C.Overlay.MonsterWidget.ShowCrown = v);
             Toggle(Monster, "Parts", "Breakable and severable parts, with the damage left on each.", () => C.Overlay.MonsterWidget.ShowParts, v => C.Overlay.MonsterWidget.ShowParts = v);
             Toggle(Monster, "Always show parts", "Off: a part shows for a few seconds after you hit it.", () => C.Overlay.MonsterWidget.AlwaysShowParts, v => C.Overlay.MonsterWidget.AlwaysShowParts = v);
-            Toggle(Monster, "Tenderized parts", "Time left on each clutch claw tenderize.", () => C.Overlay.MonsterWidget.ShowSoftenParts, v => C.Overlay.MonsterWidget.ShowSoftenParts = v);
+            Toggle(Monster, "Wounds", "A cyan line under a wounded part, with the time until the wound heals.", () => C.Overlay.MonsterWidget.ShowSoftenParts, v => C.Overlay.MonsterWidget.ShowSoftenParts = v);
             Toggle(Monster, "Status effects", "Poison, paralysis, sleep, rage, exhaustion and other buildup.", () => C.Overlay.MonsterWidget.ShowStatusEffects, v => C.Overlay.MonsterWidget.ShowStatusEffects = v);
             Toggle(Monster, "Always show status effects", "Off: a status shows while it's building up or active.", () => C.Overlay.MonsterWidget.ShowUnchangedStatusEffects, v => C.Overlay.MonsterWidget.ShowUnchangedStatusEffects = v);
             Toggle(Monster, "Pulse active statuses", "A status bar pulses while the ailment is in effect, so you notice the opening.", () => C.Overlay.MonsterWidget.UseAnimations, v => C.Overlay.MonsterWidget.UseAnimations = v);

@@ -55,7 +55,11 @@ namespace SmartHunter.Game.Data
         {
             get
             {
-                return IsIncluded(GroupId) && IsTimeVisible(false, ConfigHelper.Main.Values.Overlay.MonsterWidget.HideSoftenPartsAfterSeconds) && ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowSoftenParts;
+                var config = ConfigHelper.Main.Values.Overlay.MonsterWidget;
+                // A wound whose part has a card shows on that card; only wounds with no part of their own get one here
+                string groupId = GroupId;
+                return IsIncluded(groupId) && IsTimeVisible(false, config.HideSoftenPartsAfterSeconds) && config.ShowSoftenParts
+                    && !(config.ShowParts && m_Owner.Parts.Any(part => part.StringId == groupId));
             }
         }
 

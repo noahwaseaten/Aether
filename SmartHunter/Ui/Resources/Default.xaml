@@ -465,7 +465,7 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
-    <!--Tenderized part: orange cell with the time left-->
+    <!--Wound on a part with no card of its own (wounds on parts show on the part's card): cyan, with the time left-->
     <DataTemplate DataType="{x:Type data:MonsterPartSoften}">
         <Grid x:Name="Root" Width="128" Margin="0 7 6 0" Visibility="Collapsed" Opacity="0">
             <Grid.RenderTransform>
@@ -477,7 +477,7 @@
             </Grid.RowDefinitions>
             <DockPanel>
                 <controls:SharpText DockPanel.Dock="Right" Style="{StaticResource T_CellValue}" Foreground="{StaticResource B_Soften}" Text="{Binding Time.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
-                <controls:SharpText Text="{Binding Name}" Style="{StaticResource T_Cell}" Foreground="{StaticResource B_Soften}" />
+                <controls:SharpText Text="{Binding Name, StringFormat={}{0} wound}" Style="{StaticResource T_Cell}" Foreground="{StaticResource B_Soften}" />
             </DockPanel>
             <controls:Gauge x:Name="Bar" Grid.Row="1" Height="6" Margin="0 3 0 0" CornerRadius="3" Fill="{StaticResource B_Soften}" Fraction="{Binding Time.Fraction}" />
         </Grid>
@@ -530,15 +530,27 @@
                     </ItemsControl>
                     <controls:SharpText x:Name="Tag" Text="Broken" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Accent}" Margin="5 0 0 0" Visibility="Collapsed" />
                     <controls:SharpText x:Name="Count" Style="{StaticResource T_CellValue}" Text="{Binding TimesBrokenCount, StringFormat=emptied ×{0}}" Visibility="Collapsed" />
+                    <!--Wounded: time until it heals, in the wound's cyan-->
+                    <controls:SharpText x:Name="WoundTime" Style="{StaticResource T_CellValue}" Foreground="{StaticResource B_Soften}" Margin="6 0 0 0"
+                                        Text="{Binding Wound.Time.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
                 </StackPanel>
                 <controls:SharpText x:Name="NameBlock" Text="{Binding Name}" Style="{StaticResource T_Cell}" />
             </DockPanel>
-            <controls:Gauge x:Name="Bar" Grid.Row="1" Height="6" Margin="0 3 0 0" CornerRadius="3" Fill="{StaticResource B_Part}" Fraction="{Binding Health.Fraction}" />
+            <StackPanel Grid.Row="1">
+                <controls:Gauge x:Name="Bar" Height="6" Margin="0 3 0 0" CornerRadius="3" Fill="{StaticResource B_Part}" Fraction="{Binding Health.Fraction}" />
+                <!--Wound: a thin cyan line under the part's own bar, emptying as it heals-->
+                <controls:Gauge x:Name="WoundBar" Height="3" Margin="0 2 0 0" CornerRadius="1.5" ShowMarkers="False" Fill="{StaticResource B_Soften}"
+                                Fraction="{Binding Wound.Time.Fraction}" />
+            </StackPanel>
         </Grid>
         <DataTemplate.Triggers>
             <EventTrigger RoutedEvent="FrameworkElement.Loaded">
                 <BeginStoryboard Storyboard="{StaticResource A_Storyboard_CellIn}" />
             </EventTrigger>
+            <DataTrigger Binding="{Binding Wound}" Value="{x:Null}">
+                <Setter TargetName="WoundTime" Property="Visibility" Value="Collapsed" />
+                <Setter TargetName="WoundBar" Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
             <DataTrigger Binding="{Binding IsRemovable}" Value="True">
                 <Setter TargetName="Bar" Property="Fill" Value="{StaticResource B_Accent}" />
                 <Setter TargetName="NameBlock" Property="Foreground" Value="{StaticResource B_Accent}" />
@@ -566,6 +578,7 @@
                 <Setter TargetName="Tag" Property="Text" Value="Cut" />
             </MultiDataTrigger>
             <DataTrigger Binding="{Binding DataContext.ShowBars, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="False">
+                <Setter TargetName="WoundBar" Property="Visibility" Value="Collapsed" />
                 <Setter TargetName="Bar" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
         </DataTemplate.Triggers>

@@ -216,6 +216,16 @@ namespace SmartHunter.Core
             Check(leg.BreakThreshold == 0 && !leg.IsBroken, "legs only flinch, however often they're emptied");
             Check(cut.BreakThreshold == 1 && !cut.IsBroken, "cut part not cut yet");
 
+            // A head wound shows on the head's card, not on a second "Head" card
+            ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowSoftenParts = true;
+            var wound = rathian.UpdateAndGetPartSoften(0x20000001, 90, 60, 1, 0);
+            rathian.RankRows();
+            Check(head.Wound == wound && leg.Wound == null, "the wound is on the head's card");
+            Check(!wound.IsVisible, "no second card for a wound on a part that has one");
+            rathian.UpdateAndGetPartSoften(0x20000001, 90, 0, 1, 0);
+            rathian.RankRows();
+            Check(head.Wound == null, "a healed wound leaves the card");
+
             // Team damage: a hunter leaving must not shift the others into the wrong slot
             var team = OverlayViewModel.Instance.TeamWidget.Context;
             team.ClearPlayers();
