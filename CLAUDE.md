@@ -135,6 +135,10 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   SharpDX (managed, no native DLL to unpack) at the screen's real pixel size. WPF's own text in a transparent window was
   soft and low in contrast. Use SharpText for new overlay text. The Aether window is an ordinary window with ClearType
   and keeps WPF text in Display mode. Don't use "Segoe UI Variable": WPF draws its SemiBold as regular.
+- Overlay shapes: bars are rounded by clipping the whole bar (`behaviors:RoundClip.Radius`, -1 = pill), never by rounding
+  the moving fill. Monster bars carry the 10% gauge lines (`A_Template_Gauge`, last in the bar): decoration, as in HunterPie.
+  An icon in a circle is trimmed (`ConverterParameter=Trim`) and at most 0.7 of the circle's inner width, or its corners
+  poke out.
 - Overlay text has no eyebrows (small bold capitals): labels are sentence case in `T_Label`. Keep it that way.
 - Shortcuts are rebound in Settings > Keyboard (`KeyBinder`): the next key from the global hook is taken, Esc cancels.
 - Each widget's "Show widget" switch also decides whether its data is read (`MhwMemoryUpdater.UpdateMemory`), and
