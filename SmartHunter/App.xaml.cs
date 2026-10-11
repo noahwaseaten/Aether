@@ -86,6 +86,8 @@ namespace SmartHunter
                 OpenedForGame = true;
             }
 
+            OpenedForGame |= Array.IndexOf(e.Args, "--opened-for-game") >= 0;
+
             var mutex = new System.Threading.Mutex(false, SingleInstanceName);
             bool owned;
             try { owned = mutex.WaitOne(TimeSpan.FromSeconds(5)); } // a restarting copy may still be closing

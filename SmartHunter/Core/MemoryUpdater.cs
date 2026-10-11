@@ -153,7 +153,7 @@ namespace SmartHunter.Core
                 {
                     new StateMachine<State>.Transition(
                         State.WaitingForProcess,
-                        () => Process.HasExited,
+                        GameExited,
                         () => Initialize(true)),
                     new StateMachine<State>.Transition(
                         State.FastPatternScanning,
@@ -183,7 +183,7 @@ namespace SmartHunter.Core
                 {
                     new StateMachine<State>.Transition(
                         State.WaitingForProcess,
-                        () => Process.HasExited,
+                        GameExited,
                         () => Initialize(true)),
                     new StateMachine<State>.Transition(
                         State.PatternScanning,
@@ -270,7 +270,7 @@ namespace SmartHunter.Core
                         State.WaitingForProcess,
                         () =>
                         {
-                            return Process.HasExited;
+                            return GameExited();
                         },
                         () =>
                         {
@@ -284,7 +284,7 @@ namespace SmartHunter.Core
                 {
                     new StateMachine<State>.Transition(
                         State.WaitingForProcess,
-                        () => Process.HasExited,
+                        GameExited,
                         () => Initialize(true)),
                     new StateMachine<State>.Transition(
                         State.ProcessFound,
@@ -320,7 +320,7 @@ namespace SmartHunter.Core
                         State.WaitingForProcess,
                         () =>
                         {
-                            return Process.HasExited;
+                            return GameExited();
                         },
                         () =>
                         {
@@ -349,6 +349,28 @@ namespace SmartHunter.Core
             }
         }
 
+        // HasExited throws for a game started as administrator: a normal Aether can't query or read it. Without this,
+        // Aether sat in "waiting" forever and never closed with the game.
+        bool GameExited()
+        {
+            try
+            {
+                return Process.HasExited;
+            }
+            catch (Exception)
+            {
+                Problems.Report("elevated", "Monster Hunter: World is running as administrator, so Aether can't read it. Run Aether as administrator too, or stop running the game as administrator.");
+                int id = Process.Id;
+                var games = Process.GetProcessesByName(ProcessName);
+                bool running = games.Any(p => p.Id == id);
+                foreach (var game in games)
+                {
+                    game.Dispose();
+                }
+                return !running;
+            }
+        }
+
         // A just-launched game isn't readable yet: its module list is still loading (ReadProcessMemory
         // fails partway) and the exe is still unpacking, so scanning now finds nothing. Wait for its window.
         bool IsProcessReady()
@@ -367,6 +389,7 @@ namespace SmartHunter.Core
         private void Initialize(bool processExited = false)
         {
             Process = null;
+            Problems.Clear("elevated");
 
             ResetScans();
 
@@ -508,7 +531,13 @@ namespace SmartHunter.Core
                 }
                 catch
                 {
-                    // nothing here
+                    // Started as administrator: it can't be queried, but take it anyway so Aether says why it can't read
+                    // it (GameExited) and still closes with it
+                    if (Process == null)
+                    {
+                        Process = p;
+                        continue;
+                    }
                 }
                 p.Dispose();
             }

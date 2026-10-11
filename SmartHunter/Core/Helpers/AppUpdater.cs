@@ -167,7 +167,8 @@ namespace SmartHunter.Core.Helpers
         {
             Log.WriteLine("Restarting Aether");
             App.ReleaseSingleInstance();
-            Process.Start(ExePath);
+            // Opened by "Open with the game": the new copy still closes with the game and then waits for the next one
+            Process.Start(ExePath, App.OpenedForGame ? "--opened-for-game" : "");
             Environment.Exit(0);
         }
 
