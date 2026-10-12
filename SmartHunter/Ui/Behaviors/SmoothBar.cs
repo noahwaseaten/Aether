@@ -55,10 +55,10 @@ namespace SmartHunter.Ui.Behaviors
 
             // First value (e.g. a monster card appearing) fills from empty, later changes glide
             double delay = GetDelay(d);
-            var animation = new DoubleAnimation(to, TimeSpan.FromMilliseconds(delay > 0 ? 650 : 420))
+            var animation = new DoubleAnimation(to, TimeSpan.FromMilliseconds(delay > 0 ? 650 : 260))
             {
                 BeginTime = TimeSpan.FromMilliseconds(to < scale.ScaleX ? delay : 0),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+                EasingFunction = new QuinticEase { EasingMode = EasingMode.EaseOut },
             };
             scale.BeginAnimation(ScaleTransform.ScaleXProperty, animation, HandoffBehavior.SnapshotAndReplace);
         }

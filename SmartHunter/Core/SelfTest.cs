@@ -214,6 +214,8 @@ namespace SmartHunter.Core
             var headPips = head.BreakPips;
             head.TimesBrokenCount = 2;
             Check(head.IsBroken, "head emptied twice is broken");
+            // Overlay templates only fail when used (a misnamed animation target, a missing resource): build two for real
+            Check(Renders(head) && Renders(rathian), "the part and monster cards build, broken part included");
             Check(ReferenceEquals(headPips, head.BreakPips) && headPips.All(p => p), "pips fill in place, so only the new one animates");
             Check(leg.BreakThreshold == 0 && !leg.IsBroken, "legs only flinch, however often they're emptied");
             Check(cut.BreakThreshold == 1 && !cut.IsBroken, "cut part not cut yet");
@@ -267,6 +269,23 @@ namespace SmartHunter.Core
             string report = failures.Count == 0 ? "All checks passed" : "FAILED:\r\n" + string.Join("\r\n", failures);
             File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SelfTest.txt"), report);
             return failures.Count == 0 ? 0 : 1;
+        }
+
+        // Lays out data with its overlay template from Default.xaml, which runs its triggers and their animations
+        static bool Renders(object data)
+        {
+            try
+            {
+                var view = new System.Windows.Controls.ContentControl { Content = data };
+                view.Measure(new System.Windows.Size(1000, 1000));
+                view.Arrange(new System.Windows.Rect(0, 0, 1000, 1000));
+                view.UpdateLayout();
+                return System.Windows.Media.VisualTreeHelper.GetChildrenCount(view) > 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

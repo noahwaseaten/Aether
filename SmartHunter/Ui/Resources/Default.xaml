@@ -316,14 +316,6 @@
         </ObjectAnimationUsingKeyFrames>
     </Storyboard>
 
-    <Storyboard x:Key="A_Storyboard_StatusEffect_Active" RepeatBehavior="3x" AutoReverse="True">
-        <DoubleAnimation Storyboard.TargetName="ActiveDot" Storyboard.TargetProperty="Opacity" From="1" To="0.25" Duration="0:0:0.7">
-            <DoubleAnimation.EasingFunction>
-                <SineEase EasingMode="EaseInOut" />
-            </DoubleAnimation.EasingFunction>
-        </DoubleAnimation>
-    </Storyboard>
-
     <!--Graphics-->
     <DataTemplate x:Key="A_DataTemplate_CircleProgress" DataType="{x:Type coreData:Progress}">
         <Viewbox>
@@ -436,7 +428,7 @@
                 <ContentControl x:Name="Ring" Content="{Binding Buildup}" ContentTemplate="{StaticResource A_DataTemplate_CircleProgress}" Foreground="{StaticResource B_Status}" />
                 <Image x:Name="Icon" Source="{Binding IconKey, Converter={StaticResource A_Converter_IconKeyToImage}, ConverterParameter=Trim}" Width="18" Height="18" />
                 <controls:SharpText x:Name="Initials" Text="{Binding Initials}" Style="{StaticResource T_Chip}" FontSize="13" HorizontalAlignment="Center" Visibility="Collapsed" />
-                <Border x:Name="Timer" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 -7" CornerRadius="6" Padding="4 0 4 0"
+                <Border x:Name="Timer" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 -7" CornerRadius="8" Padding="5 0 5 0"
                         Background="{StaticResource B_StatusActive}" Visibility="Collapsed">
                     <controls:SharpText Text="{Binding Duration.Current, Converter={StaticResource A_Converter_SecondsToClock}}" Style="{StaticResource T_Chip}" FontSize="11" Foreground="#1C1400" />
                 </Border>
@@ -545,7 +537,9 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <controls:SharpText x:Name="Tag" Text="Broken" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Accent}" Margin="5 0 0 0" Visibility="Collapsed" />
+                    <controls:SharpText x:Name="Tag" Text="Broken" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Accent}" Margin="5 0 0 0" Visibility="Collapsed">
+                        <controls:SharpText.RenderTransform><TranslateTransform /></controls:SharpText.RenderTransform>
+                    </controls:SharpText>
                     <controls:SharpText x:Name="Unknown" Text="?" Style="{StaticResource T_CellValue}" Foreground="{StaticResource B_Accent}" Margin="4 0 0 0" Visibility="Collapsed" />
                     <!--Wounded: time until it heals, in the wound's cyan-->
                     <controls:SharpText x:Name="WoundTime" Style="{StaticResource T_CellValue}" Foreground="{StaticResource B_Soften}" Margin="6 0 0 0"
@@ -582,6 +576,14 @@
                 <Setter TargetName="Pips" Property="Visibility" Value="Collapsed" />
                 <Setter TargetName="Bar" Property="Visibility" Value="Collapsed" />
                 <Setter TargetName="NameBlock" Property="Foreground" Value="{StaticResource B_TextMuted}" />
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="Tag" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.16" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="Tag" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="3" To="0" Duration="0:0:0.2" EasingFunction="{StaticResource E_Out}" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
             </DataTrigger>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
@@ -617,12 +619,14 @@
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                             <Border x:Name="Enraged" Style="{StaticResource A_Style_Chip}" Background="{StaticResource B_Danger}">
+                                <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
                                 <StackPanel Orientation="Horizontal">
                                     <controls:SharpText Text="Enraged" Style="{StaticResource T_Chip}" />
                                     <controls:SharpText Style="{StaticResource T_Chip}" FontWeight="SemiBold" Margin="5 0 0 0" Text="{Binding Rage.Duration.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
                                 </StackPanel>
                             </Border>
                             <Border x:Name="Exhausted" Style="{StaticResource A_Style_Chip}" Background="#4C8DFF">
+                                <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
                                 <StackPanel Orientation="Horizontal">
                                     <controls:SharpText Text="Tired" Style="{StaticResource T_Chip}" />
                                     <controls:SharpText Style="{StaticResource T_Chip}" FontWeight="SemiBold" Margin="5 0 0 0" Text="{Binding Fatigue.Duration.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
@@ -753,9 +757,25 @@
             <DataTrigger Binding="{Binding IsEnraged}" Value="True">
                 <Setter TargetName="Enraged" Property="Visibility" Value="Visible" />
                 <Setter TargetName="CompactRage" Property="Visibility" Value="Visible" />
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="Enraged" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.16" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="Enraged" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="3" To="0" Duration="0:0:0.2" EasingFunction="{StaticResource E_Out}" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
             </DataTrigger>
             <DataTrigger Binding="{Binding IsExhausted}" Value="True">
                 <Setter TargetName="Exhausted" Property="Visibility" Value="Visible" />
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="Exhausted" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.16" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="Exhausted" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="3" To="0" Duration="0:0:0.2" EasingFunction="{StaticResource E_Out}" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
             </DataTrigger>
             <DataTrigger Binding="{Binding HasCaptureMark}" Value="True">
                 <Setter TargetName="CaptureMark" Property="Visibility" Value="Visible" />
@@ -919,8 +939,8 @@
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="ArrowUp" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.3" EasingFunction="{StaticResource E_Out}" />
-                            <DoubleAnimation Storyboard.TargetName="ArrowUp" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="5" To="0" Duration="0:0:0.4" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="ArrowUp" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.18" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="ArrowUp" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="4" To="0" Duration="0:0:0.22" EasingFunction="{StaticResource E_Out}" />
                         </Storyboard>
                     </BeginStoryboard>
                 </DataTrigger.EnterActions>
@@ -937,8 +957,8 @@
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="ArrowDown" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.3" EasingFunction="{StaticResource E_Out}" />
-                            <DoubleAnimation Storyboard.TargetName="ArrowDown" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="-5" To="0" Duration="0:0:0.4" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="ArrowDown" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.18" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="ArrowDown" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="-4" To="0" Duration="0:0:0.22" EasingFunction="{StaticResource E_Out}" />
                         </Storyboard>
                     </BeginStoryboard>
                 </DataTrigger.EnterActions>
@@ -1424,9 +1444,11 @@
                     <controls:SharpText Text="Capture" Style="{StaticResource T_Tag}" Foreground="#1C1400" />
                 </Border>
                 <Border x:Name="Enraged" Style="{StaticResource A_Style_Tag}" Background="{StaticResource B_Danger}">
+                    <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
                     <controls:SharpText Text="Enraged" Style="{StaticResource T_Tag}" Foreground="White" />
                 </Border>
                 <Border x:Name="Exhausted" Style="{StaticResource A_Style_Tag}" Background="#4C8DFF">
+                    <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
                     <controls:SharpText Text="Tired" Style="{StaticResource T_Tag}" Foreground="White" />
                 </Border>
             </StackPanel>
@@ -1454,9 +1476,25 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding IsEnraged}" Value="True">
                 <Setter TargetName="Enraged" Property="Visibility" Value="Visible" />
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="Enraged" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.16" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="Enraged" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="3" To="0" Duration="0:0:0.2" EasingFunction="{StaticResource E_Out}" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
             </DataTrigger>
             <DataTrigger Binding="{Binding IsExhausted}" Value="True">
                 <Setter TargetName="Exhausted" Property="Visibility" Value="Visible" />
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="Exhausted" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.16" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="Exhausted" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="3" To="0" Duration="0:0:0.2" EasingFunction="{StaticResource E_Out}" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
@@ -1788,7 +1826,7 @@
                             <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" From="0.94" To="1" Duration="0:0:0.55" EasingFunction="{StaticResource E_Settle}" />
                             <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)" From="18" To="0" Duration="0:0:0.55" EasingFunction="{StaticResource E_Settle}" />
 
-                            <DoubleAnimation Storyboard.TargetName="ResultBadge" Storyboard.TargetProperty="Opacity" From="0" To="1" BeginTime="0:0:0.1" Duration="0:0:0.2" />
+                            <DoubleAnimation Storyboard.TargetName="ResultBadge" Storyboard.TargetProperty="Opacity" From="0" To="1" BeginTime="0:0:0.1" Duration="0:0:0.2" EasingFunction="{StaticResource E_Out}" />
                             <DoubleAnimation Storyboard.TargetName="ResultBadge" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="0.5" To="1" BeginTime="0:0:0.1" Duration="0:0:0.45" EasingFunction="{StaticResource E_Pop}" />
                             <DoubleAnimation Storyboard.TargetName="ResultBadge" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="0.5" To="1" BeginTime="0:0:0.1" Duration="0:0:0.45" EasingFunction="{StaticResource E_Pop}" />
                             <DoubleAnimation Storyboard.TargetName="Heading" Storyboard.TargetProperty="Opacity" From="0" To="1" BeginTime="0:0:0.14" Duration="0:0:0.3" EasingFunction="{StaticResource E_Out}" />

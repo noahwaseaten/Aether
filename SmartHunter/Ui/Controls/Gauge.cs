@@ -85,10 +85,11 @@ namespace SmartHunter.Ui.Controls
                 return;
             }
             m_Target = to;
-            var animation = new DoubleAnimation(to, TimeSpan.FromMilliseconds(IsSmooth ? 650 : 420))
+            // Bars move on nearly every hit: a short, strong ease-out keeps them on the real value. The recap's one-off fill stays long.
+            var animation = new DoubleAnimation(to, TimeSpan.FromMilliseconds(IsSmooth ? 650 : 260))
             {
                 BeginTime = TimeSpan.FromMilliseconds(Delay),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+                EasingFunction = IsSmooth ? (IEasingFunction)new CubicEase { EasingMode = EasingMode.EaseOut } : new QuinticEase { EasingMode = EasingMode.EaseOut },
             };
             if (IsSmooth)
             {
