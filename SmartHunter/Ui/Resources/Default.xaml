@@ -276,9 +276,13 @@
         </DoubleAnimation>
     </Storyboard>
 
-    <!--Motion: short, eased, never bouncy. Targets a FrameworkElement named Root with a TranslateTransform.-->
-    <CubicEase x:Key="E_Out" EasingMode="EaseOut" />
-    <CubicEase x:Key="E_In" EasingMode="EaseIn" />
+    <!--Motion: short, eased, never bouncy. Targets a FrameworkElement named Root with a TranslateTransform.
+        One strong ease-out for entering and leaving alike: ease-in starts slow, which reads as lag. Exits are quicker than
+        entrances and leave the way they came.-->
+    <QuinticEase x:Key="E_Out" EasingMode="EaseOut" />
+    <!--Overshoot: only for rare, earned moments (the quest recap, a break pip filling)-->
+    <BackEase x:Key="E_Settle" EasingMode="EaseOut" Amplitude="0.35" />
+    <BackEase x:Key="E_Pop" EasingMode="EaseOut" Amplitude="0.7" />
 
     <Storyboard x:Key="A_Storyboard_Show">
         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.Visibility)">
@@ -289,10 +293,10 @@
     </Storyboard>
 
     <Storyboard x:Key="A_Storyboard_Hide">
-        <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.18" EasingFunction="{StaticResource E_In}" />
-        <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="-4" Duration="0:0:0.18" EasingFunction="{StaticResource E_In}" />
+        <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.14" EasingFunction="{StaticResource E_Out}" />
+        <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="4" Duration="0:0:0.14" EasingFunction="{StaticResource E_Out}" />
         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.Visibility)">
-            <DiscreteObjectKeyFrame KeyTime="0:0:0.18" Value="{x:Static Visibility.Collapsed}" />
+            <DiscreteObjectKeyFrame KeyTime="0:0:0.14" Value="{x:Static Visibility.Collapsed}" />
         </ObjectAnimationUsingKeyFrames>
     </Storyboard>
 
@@ -305,10 +309,10 @@
     </Storyboard>
 
     <Storyboard x:Key="A_Storyboard_Player_StatusEffect_Hide">
-        <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2" EasingFunction="{StaticResource E_In}" />
-        <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="-8" Duration="0:0:0.2" EasingFunction="{StaticResource E_In}" />
+        <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15" EasingFunction="{StaticResource E_Out}" />
+        <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="-8" Duration="0:0:0.15" EasingFunction="{StaticResource E_Out}" />
         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.Visibility)">
-            <DiscreteObjectKeyFrame KeyTime="0:0:0.2" Value="{x:Static Visibility.Collapsed}" />
+            <DiscreteObjectKeyFrame KeyTime="0:0:0.15" Value="{x:Static Visibility.Collapsed}" />
         </ObjectAnimationUsingKeyFrames>
     </Storyboard>
 
@@ -512,24 +516,37 @@
             </Grid.RowDefinitions>
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!--Breaks after its pool is emptied N times: one pip per time-->
+                    <!--One pip per time the bar has to be drained to break it, filled as it's drained. "?" = unknown how many.-->
                     <ItemsControl x:Name="Pips" ItemsSource="{Binding BreakPips}" VerticalAlignment="Center">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Ellipse x:Name="Pip" Width="7" Height="7" Margin="3 0 0 0" Stroke="{StaticResource B_Accent}" StrokeThickness="1.2" />
+                                <Ellipse x:Name="Pip" Width="7" Height="7" Margin="3 0 0 0" Stroke="{StaticResource B_Accent}" StrokeThickness="1.2" RenderTransformOrigin="0.5 0.5">
+                                    <Ellipse.RenderTransform>
+                                        <ScaleTransform />
+                                    </Ellipse.RenderTransform>
+                                </Ellipse>
                                 <DataTemplate.Triggers>
+                                    <!--Filling pops it once (from 0.6, never from nothing): a drain that counts toward the break is worth noticing-->
                                     <DataTrigger Binding="{Binding}" Value="True">
                                         <Setter TargetName="Pip" Property="Fill" Value="{StaticResource B_Accent}" />
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="Pip" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="0.6" To="1" Duration="0:0:0.3" EasingFunction="{StaticResource E_Settle}" />
+                                                    <DoubleAnimation Storyboard.TargetName="Pip" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="0.6" To="1" Duration="0:0:0.3" EasingFunction="{StaticResource E_Settle}" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
                                     </DataTrigger>
                                 </DataTemplate.Triggers>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <controls:SharpText x:Name="Tag" Text="Broken" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Accent}" Margin="5 0 0 0" Visibility="Collapsed" />
-                    <controls:SharpText x:Name="Count" Style="{StaticResource T_CellValue}" Text="{Binding TimesBrokenCount, StringFormat=emptied ×{0}}" Visibility="Collapsed" />
+                    <controls:SharpText x:Name="Unknown" Text="?" Style="{StaticResource T_CellValue}" Foreground="{StaticResource B_Accent}" Margin="4 0 0 0" Visibility="Collapsed" />
                     <!--Wounded: time until it heals, in the wound's cyan-->
                     <controls:SharpText x:Name="WoundTime" Style="{StaticResource T_CellValue}" Foreground="{StaticResource B_Soften}" Margin="6 0 0 0"
                                         Text="{Binding Wound.Time.Current, Converter={StaticResource A_Converter_SecondsToClock}}" />
@@ -555,13 +572,9 @@
                 <Setter TargetName="Bar" Property="Fill" Value="{StaticResource B_Accent}" />
                 <Setter TargetName="NameBlock" Property="Foreground" Value="{StaticResource B_Accent}" />
             </DataTrigger>
-            <MultiDataTrigger>
-                <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding IsThresholdUnknown}" Value="True" />
-                    <Condition Binding="{Binding TimesBrokenCount, Converter={StaticResource A_Converter_NumberGreater}}" Value="True" />
-                </MultiDataTrigger.Conditions>
-                <Setter TargetName="Count" Property="Visibility" Value="Visible" />
-            </MultiDataTrigger>
+            <DataTrigger Binding="{Binding IsThresholdUnknown}" Value="True">
+                <Setter TargetName="Unknown" Property="Visibility" Value="Visible" />
+            </DataTrigger>
             <!--Broken or cut: done, so drop the bar. The game refills the pool after a break (it only drives flinches
                 from then on), and a refilled bar read as "still has HP left". The tag says which, not colour alone.-->
             <DataTrigger Binding="{Binding IsBroken}" Value="True">
@@ -914,8 +927,8 @@
                 <DataTrigger.ExitActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="ArrowUp" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.35" EasingFunction="{StaticResource E_In}" />
-                            <DoubleAnimation Storyboard.TargetName="ArrowUp" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="-4" Duration="0:0:0.35" EasingFunction="{StaticResource E_In}" />
+                            <DoubleAnimation Storyboard.TargetName="ArrowUp" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="ArrowUp" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="-4" Duration="0:0:0.2" EasingFunction="{StaticResource E_Out}" />
                         </Storyboard>
                     </BeginStoryboard>
                 </DataTrigger.ExitActions>
@@ -932,8 +945,8 @@
                 <DataTrigger.ExitActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="ArrowDown" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.35" EasingFunction="{StaticResource E_In}" />
-                            <DoubleAnimation Storyboard.TargetName="ArrowDown" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="4" Duration="0:0:0.35" EasingFunction="{StaticResource E_In}" />
+                            <DoubleAnimation Storyboard.TargetName="ArrowDown" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="ArrowDown" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="4" Duration="0:0:0.2" EasingFunction="{StaticResource E_Out}" />
                         </Storyboard>
                     </BeginStoryboard>
                 </DataTrigger.ExitActions>
@@ -1657,8 +1670,6 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="14 10 14 12" />
     </Style>
-    <BackEase x:Key="E_Settle" EasingMode="EaseOut" Amplitude="0.35" />
-    <BackEase x:Key="E_Pop" EasingMode="EaseOut" Amplitude="0.7" />
 
     <!--The card rises into place with a slight overshoot, the badge pops, the heading and then the rest follow. Shown once
         a quest, so it animates at the monitor's refresh rate instead of the overlay's 30 fps.-->
@@ -1791,10 +1802,10 @@
                 <DataTrigger.ExitActions>
                     <BeginStoryboard>
                         <Storyboard Timeline.DesiredFrameRate="{x:Static helpers:WindowHelper.PrimaryRefreshRate}">
-                            <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.24" EasingFunction="{StaticResource E_In}" />
-                            <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" To="0.97" Duration="0:0:0.26" EasingFunction="{StaticResource E_In}" />
-                            <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" To="0.97" Duration="0:0:0.26" EasingFunction="{StaticResource E_In}" />
-                            <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)" To="12" Duration="0:0:0.26" EasingFunction="{StaticResource E_In}" />
+                            <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.24" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" To="0.97" Duration="0:0:0.26" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" To="0.97" Duration="0:0:0.26" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)" To="12" Duration="0:0:0.26" EasingFunction="{StaticResource E_Out}" />
                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="(UIElement.Visibility)">
                                 <DiscreteObjectKeyFrame KeyTime="0:0:0.26" Value="{x:Static Visibility.Collapsed}" />
                             </ObjectAnimationUsingKeyFrames>

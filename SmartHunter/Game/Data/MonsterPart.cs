@@ -137,13 +137,19 @@ namespace SmartHunter.Game.Data
         public bool CanBreak => BreakThreshold > 0;
         public bool IsThresholdUnknown => BreakThreshold < 0;
 
-        // One pip per break step, filled as the pool gets emptied (only for parts that take more than one)
+        // One pip per time the bar has to be drained to break the part, filled as it's drained. No pips = it only flinches.
+        // Unknown threshold: a filled pip per drain so far (the widget adds a "?").
+        // ponytail: capped at 3 for unknown parts, since drains after a break keep counting; widen if a part ever needs more.
         public bool[] BreakPips
         {
             get
             {
                 int threshold = BreakThreshold;
-                return !IsRemovable && threshold > 1 ? Enumerable.Range(0, threshold).Select(i => i < TimesBrokenCount).ToArray() : new bool[0];
+                if (threshold < 0)
+                {
+                    return Enumerable.Repeat(true, System.Math.Min(TimesBrokenCount, 3)).ToArray();
+                }
+                return Enumerable.Range(0, threshold).Select(i => i < TimesBrokenCount).ToArray();
             }
         }
 

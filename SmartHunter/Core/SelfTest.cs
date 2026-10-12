@@ -215,6 +215,9 @@ namespace SmartHunter.Core
             Check(head.IsBroken, "head emptied twice is broken");
             Check(leg.BreakThreshold == 0 && !leg.IsBroken, "legs only flinch, however often they're emptied");
             Check(cut.BreakThreshold == 1 && !cut.IsBroken, "cut part not cut yet");
+            Check(cut.BreakPips.Length == 1 && leg.BreakPips.Length == 0, "one pip for a part that breaks at once, none for one that only flinches");
+            var unknownPart = new Monster(7, "em999_99", 1000, 1000, 1, 1).UpdateAndGetPart(0x10000007, false, 300, 300, 5);
+            Check(unknownPart.IsThresholdUnknown && unknownPart.BreakPips.Length == 3 && unknownPart.BreakPips.All(p => p), "unknown part: a filled pip per drain, at most 3");
 
             // A head wound shows on the head's card, not on a second "Head" card
             ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowSoftenParts = true;

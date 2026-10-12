@@ -136,7 +136,7 @@ namespace SmartHunter.Game.Data.ViewModels
             Toggle(Monster, "Health percentage", "Health left as a percentage.", () => C.Overlay.MonsterWidget.ShowPercents, v => C.Overlay.MonsterWidget.ShowPercents = v);
             Toggle(Monster, "Size", "The monster's size, for crown hunting.", () => C.Overlay.MonsterWidget.ShowSize, v => C.Overlay.MonsterWidget.ShowSize = v);
             Toggle(Monster, "Crown", "A gold, silver or mini crown icon when the monster qualifies.", () => C.Overlay.MonsterWidget.ShowCrown, v => C.Overlay.MonsterWidget.ShowCrown = v);
-            Toggle(Monster, "Parts", "Breakable and severable parts, with the damage left on each.", () => C.Overlay.MonsterWidget.ShowParts, v => C.Overlay.MonsterWidget.ShowParts = v);
+            Toggle(Monster, "Parts", "Breakable and severable parts, with the damage left on each. Dots fill each time you drain a part's bar; it breaks when they're all full. ? means Aether doesn't know how many it takes.", () => C.Overlay.MonsterWidget.ShowParts, v => C.Overlay.MonsterWidget.ShowParts = v);
             Toggle(Monster, "Always show parts", "Off: a part shows for a few seconds after you hit it.", () => C.Overlay.MonsterWidget.AlwaysShowParts, v => C.Overlay.MonsterWidget.AlwaysShowParts = v);
             Toggle(Monster, "Wounds", "A cyan line under a wounded part, with the time until the wound heals.", () => C.Overlay.MonsterWidget.ShowSoftenParts, v => C.Overlay.MonsterWidget.ShowSoftenParts = v);
             Toggle(Monster, "Status effects", "Poison, paralysis, sleep, rage, exhaustion and other buildup.", () => C.Overlay.MonsterWidget.ShowStatusEffects, v => C.Overlay.MonsterWidget.ShowStatusEffects = v);

@@ -70,12 +70,12 @@ if ($Publish) {
 
 ---
 
-**Which file should I download?**
+**Download**
 
-- **Aether.exe**: recommended. Run it and it installs itself. Find it in the Start Menu; uninstall it from Settings > Apps.
-- **Aether-$Version-portable.zip**: no install. Unzip anywhere and run ``Aether.exe``. Delete the folder to remove it.
+- **Aether.exe**: run it, it installs itself. Most people want this one.
+- **Aether-$Version-portable.zip**: no install. Unzip it anywhere.
 
-Both update themselves.
+Both keep themselves up to date.
 "@
     [IO.File]::WriteAllText($notesFile, $Notes.TrimEnd() + $footer)
     # Aether.exe must be attached as its own asset: that's the file the in-app updater downloads
