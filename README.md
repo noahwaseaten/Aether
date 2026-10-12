@@ -1,27 +1,22 @@
-<img src="docs/overlay.jpg" alt="Aether running over Monster Hunter: World"/>
-
 <div align="center">
 
-[![Badge Version]][Releases]
-[![Badge Downloads]][Releases]
-[![Badge Platform]][Releases]
-[![Badge License]][License]
+</div>
 
----
+# Aether
+
 
 **[<kbd> <br> 🚀 Install <br> </kbd>][Installation]**
 **[<kbd> <br> 🕹 Features <br> </kbd>][Features]**
 **[<kbd> <br> 🤝 Party sync <br> </kbd>][PartySync]**
 **[<kbd> <br> ❓ FAQ <br> </kbd>][FAQ]**
 
----
-</div>
+[![Badge Version]][Releases]
+[![Badge Downloads]][Releases]
+[![Badge Platform]][Releases]
+[![Badge License]][License]
 
-# Aether
 
-A clean, fast overlay for **Monster Hunter: World** on PC. It shows the monster you're fighting with its parts and ailments,
-how much damage everyone in your party is doing, your buffs and sharpness, and a results card when the quest ends.
-
+A clean, fast overlay for **Monster Hunter: World** on PC. 
 Aether only **reads** the game. It never changes it, injects into it or hooks it, so it can't break your game or your save.
 
 ## Requirements
