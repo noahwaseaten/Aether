@@ -669,7 +669,7 @@
                                             Text="{Binding Health.Fraction, Converter={StaticResource A_Converter_FractionToPercentage}}" />
                         <!--Health left in the bright text, out of the full amount in the muted one-->
                         <StackPanel x:Name="HealthNum" Orientation="Horizontal" VerticalAlignment="Bottom">
-                            <controls:SharpText Style="{StaticResource T_Body}" Text="{Binding Health.Current, StringFormat={}{0:N0}}" />
+                            <controls:SharpText Style="{StaticResource T_Body}" Typography.NumeralAlignment="Tabular" Text="{Binding Health.Current, StringFormat={}{0:N0}}" />
                             <controls:SharpText Style="{StaticResource T_Muted}" Text="{Binding Health.Max, StringFormat={}/{0:N0}}" />
                         </StackPanel>
                     </DockPanel>
@@ -888,7 +888,7 @@
 
             <StackPanel x:Name="Numbers" Grid.Column="3" VerticalAlignment="Center" MinWidth="64" Margin="12 0 0 0">
                 <controls:SharpText x:Name="DamageBlock" Style="{StaticResource T_Value}" FontSize="15" HorizontalAlignment="Right" Text="{Binding Damage, StringFormat={}{0:N0}}" />
-                <controls:SharpText x:Name="DpsBlock" Style="{StaticResource T_Muted}" FontSize="11" HorizontalAlignment="Right" Text="{Binding Dps, StringFormat={}{0:N0}/s}" />
+                <controls:SharpText x:Name="DpsBlock" Style="{StaticResource T_Muted}" FontSize="12" HorizontalAlignment="Right" Text="{Binding Dps, StringFormat={}{0:N0}/s}" />
             </StackPanel>
 
             <!--Solo: the share is always 100%, so show what matters instead-->
@@ -983,9 +983,9 @@
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="HitFlash" Storyboard.TargetProperty="Opacity" From="0.55" To="0" Duration="0:0:0.45" EasingFunction="{StaticResource E_Out}" />
-                            <DoubleAnimation Storyboard.TargetName="HitFlash" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="0.5" To="1.4" Duration="0:0:0.45" EasingFunction="{StaticResource E_Out}" />
-                            <DoubleAnimation Storyboard.TargetName="HitFlash" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="0.5" To="1.4" Duration="0:0:0.45" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="HitFlash" Storyboard.TargetProperty="Opacity" From="0.35" To="0" Duration="0:0:0.3" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="HitFlash" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="0.8" To="1.3" Duration="0:0:0.3" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="HitFlash" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="0.8" To="1.3" Duration="0:0:0.3" EasingFunction="{StaticResource E_Out}" />
                         </Storyboard>
                     </BeginStoryboard>
                 </DataTrigger.EnterActions>
@@ -1067,13 +1067,14 @@
                 </DataTrigger.EnterActions>
             </DataTrigger>
 
-            <!--About to run out: amber timer that blinks so you can refresh it-->
+            <!--About to run out: the timer turns amber and blinks three times so you notice, then stays amber. Blinking until
+                it ran out kept the overlay redrawing and pulled the eye away from the fight.-->
             <DataTrigger Binding="{Binding IsExpiring}" Value="True">
                 <Setter TargetName="Remaining" Property="Foreground" Value="{StaticResource B_Warn}" />
                 <DataTrigger.EnterActions>
                     <BeginStoryboard x:Name="Expiring">
-                        <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                            <DoubleAnimation Storyboard.TargetName="Remaining" Storyboard.TargetProperty="Opacity" From="1" To="0.35" Duration="0:0:0.5" />
+                        <Storyboard RepeatBehavior="3x" AutoReverse="True">
+                            <DoubleAnimation Storyboard.TargetName="Remaining" Storyboard.TargetProperty="Opacity" From="1" To="0.35" Duration="0:0:0.4" EasingFunction="{StaticResource E_Out}" />
                         </Storyboard>
                     </BeginStoryboard>
                 </DataTrigger.EnterActions>
@@ -1426,7 +1427,7 @@
                     <controls:SharpText Text="Enraged" Style="{StaticResource T_Tag}" Foreground="White" />
                 </Border>
                 <Border x:Name="Exhausted" Style="{StaticResource A_Style_Tag}" Background="#4C8DFF">
-                    <controls:SharpText Text="Exhausted" Style="{StaticResource T_Tag}" Foreground="White" />
+                    <controls:SharpText Text="Tired" Style="{StaticResource T_Tag}" Foreground="White" />
                 </Border>
             </StackPanel>
         </Grid>

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using SmartHunter.Core.Data;
@@ -106,7 +107,7 @@ namespace SmartHunter.Game.Data
             {
                 UpdateLastChangedTime();
                 NotifyPropertyChanged(nameof(IsBroken));
-                NotifyPropertyChanged(nameof(BreakPips));
+                UpdateBreakPips();
             }
         }
 
@@ -140,16 +141,37 @@ namespace SmartHunter.Game.Data
         // One pip per time the bar has to be drained to break the part, filled as it's drained. No pips = it only flinches.
         // Unknown threshold: a filled pip per drain so far (the widget adds a "?").
         // ponytail: capped at 3 for unknown parts, since drains after a break keep counting; widen if a part ever needs more.
-        public bool[] BreakPips
+        // Updated in place, not replaced: a new list rebuilt every pip, and each filled one played its fill animation again.
+        readonly ObservableCollection<bool> m_BreakPips = new ObservableCollection<bool>();
+        public ObservableCollection<bool> BreakPips
         {
             get
             {
-                int threshold = BreakThreshold;
-                if (threshold < 0)
+                UpdateBreakPips();
+                return m_BreakPips;
+            }
+        }
+
+        void UpdateBreakPips()
+        {
+            int threshold = BreakThreshold;
+            var pips = threshold < 0
+                ? Enumerable.Repeat(true, System.Math.Min(TimesBrokenCount, 3)).ToArray()
+                : Enumerable.Range(0, threshold).Select(i => i < TimesBrokenCount).ToArray();
+            while (m_BreakPips.Count > pips.Length)
+            {
+                m_BreakPips.RemoveAt(m_BreakPips.Count - 1);
+            }
+            for (int i = 0; i < pips.Length; i++)
+            {
+                if (i == m_BreakPips.Count)
                 {
-                    return Enumerable.Repeat(true, System.Math.Min(TimesBrokenCount, 3)).ToArray();
+                    m_BreakPips.Add(pips[i]);
                 }
-                return Enumerable.Range(0, threshold).Select(i => i < TimesBrokenCount).ToArray();
+                else if (m_BreakPips[i] != pips[i])
+                {
+                    m_BreakPips[i] = pips[i];
+                }
             }
         }
 

@@ -210,14 +210,16 @@ namespace SmartHunter.Core
             rathian.UpdateAndGetPart(0x10000004, false, 300, 300, 0);
             rathian.UpdateAndGetPart(0x10000005, false, 300, 300, 0);
             var leg = rathian.UpdateAndGetPart(0x10000006, false, 300, 300, 3);
-            Check(head.BreakThreshold == 2 && !head.IsBroken && head.BreakPips.Length == 2, "head: emptied once of twice, not broken yet");
+            Check(head.BreakThreshold == 2 && !head.IsBroken && head.BreakPips.Count == 2, "head: emptied once of twice, not broken yet");
+            var headPips = head.BreakPips;
             head.TimesBrokenCount = 2;
             Check(head.IsBroken, "head emptied twice is broken");
+            Check(ReferenceEquals(headPips, head.BreakPips) && headPips.All(p => p), "pips fill in place, so only the new one animates");
             Check(leg.BreakThreshold == 0 && !leg.IsBroken, "legs only flinch, however often they're emptied");
             Check(cut.BreakThreshold == 1 && !cut.IsBroken, "cut part not cut yet");
-            Check(cut.BreakPips.Length == 1 && leg.BreakPips.Length == 0, "one pip for a part that breaks at once, none for one that only flinches");
+            Check(cut.BreakPips.Count == 1 && leg.BreakPips.Count == 0, "one pip for a part that breaks at once, none for one that only flinches");
             var unknownPart = new Monster(7, "em999_99", 1000, 1000, 1, 1).UpdateAndGetPart(0x10000007, false, 300, 300, 5);
-            Check(unknownPart.IsThresholdUnknown && unknownPart.BreakPips.Length == 3 && unknownPart.BreakPips.All(p => p), "unknown part: a filled pip per drain, at most 3");
+            Check(unknownPart.IsThresholdUnknown && unknownPart.BreakPips.Count == 3 && unknownPart.BreakPips.All(p => p), "unknown part: a filled pip per drain, at most 3");
 
             // A head wound shows on the head's card, not on a second "Head" card
             ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowSoftenParts = true;
