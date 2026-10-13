@@ -156,6 +156,13 @@
                                 </Ellipse.RenderTransform>
                             </Ellipse>
                         </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="TrackOn" Property="Opacity" Value="1" />
+                                <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right" />
+                                <Setter TargetName="Knob" Property="Margin" Value="0 0 3 0" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -518,9 +525,26 @@
                             <Grid.RenderTransform><TranslateTransform /></Grid.RenderTransform>
                             <Border CornerRadius="10" Background="{StaticResource Surface}" behaviors:RoundClip.Radius="10">
                             
-                        <ItemsControl ItemsSource="{Binding Settings}">
+                        <ItemsControl ItemsSource="{Binding Settings}" Margin="4 4 4 2">
                             <ItemsControl.GroupStyle>
                                 <GroupStyle>
+                                    <!--A bare container: the header, then the rows at the section's full width (the default one added an offset on one side)-->
+                                    <GroupStyle.ContainerStyle>
+                                        <Style TargetType="GroupItem">
+                                            <Setter Property="Margin" Value="0" />
+                                            <Setter Property="Padding" Value="0" />
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="GroupItem">
+                                                        <StackPanel>
+                                                            <ContentPresenter />
+                                                            <ItemsPresenter />
+                                                        </StackPanel>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </GroupStyle.ContainerStyle>
                                     <GroupStyle.HeaderTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Name}" Foreground="{StaticResource Accent}" FontSize="12" FontWeight="SemiBold" Margin="14 12 0 4">
@@ -538,7 +562,7 @@
                             </ItemsControl.GroupStyle>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type core:Setting}">
-                                    <Border x:Name="Row" Padding="16 11" MinHeight="48" MouseEnter="SettingRow_MouseEnter" MouseLeave="SettingRow_MouseLeave" Visibility="{Binding IsShown, Converter={StaticResource A_Converter_BoolToVisibility}}" Background="Transparent" BorderBrush="{StaticResource Stroke}" BorderThickness="0 0 0 1"
+                                    <Border x:Name="Row" Padding="14 10" MinHeight="48" CornerRadius="8" Margin="0 0 0 2" MouseEnter="SettingRow_MouseEnter" MouseLeave="SettingRow_MouseLeave" Visibility="{Binding IsShown, Converter={StaticResource A_Converter_BoolToVisibility}}" Background="Transparent"
                                             IsEnabled="{Binding IsEnabled}" ToolTipService.ShowOnDisabled="True">
                                         <DockPanel>
                                             <!--A few choices side by side: the current one is gold-->
