@@ -243,6 +243,13 @@ namespace SmartHunter.Core
             Check(headL.Wound == tzWound && headR.Wound == tzWound && tzTail.Wound == null, "a head wound is on both of Tzitzi's heads");
             Check(!tzWound.IsVisible, "no card of its own for a wound that has parts to show on");
 
+            // Wounds on parts the game names differently still find a card (Banbaro's head is its horns)
+            var banbaro = new Monster(9, "em123_00", 1000, 1000, 1, 1);
+            banbaro.UpdateAndGetPart(0x10000021, true, 300, 300, 0);
+            banbaro.UpdateAndGetPart(0x10000022, true, 300, 300, 0);
+            var horns = banbaro.UpdateAndGetPart(0x10000023, false, 300, 300, 0);
+            Check(banbaro.PartsForWound("LOC_PART_HEAD").SequenceEqual(new[] { horns }), "a head wound on Banbaro shows on the horns");
+
             // On-screen damage list: the first read after town, loading, or a moved list must not count the old entries
             bool wasTown = true; ulong lastPtr = 0;
             Check(MhwHelper.OnScreenSeed(true, ref wasTown, ref lastPtr, 0x100), "in town: only remember");

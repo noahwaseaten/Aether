@@ -388,11 +388,14 @@ namespace SmartHunter.Game.Data
             return parts;
         }
 
-        // LOC_PART_HEAD ~ LOC_PART_HEAD_LEFT, LOC_PART_ARMS ~ LOC_PART_ARM_LEFT
+        // LOC_PART_HEAD ~ LOC_PART_HEAD_LEFT, LOC_PART_ARMS ~ LOC_PART_ARM_LEFT, LOC_PART_LEGS ~ LOC_PART_LEGS_ROCK. Parts with no
+        // such sibling are the ones the game names differently: Xeno'jiiva's arms are its hands, Banbaro's head is its horns.
         static bool SameStem(string part, string group)
         {
             string stem(string id) => id.EndsWith("S") ? id.Substring(0, id.Length - 1) : id;
-            return part.StartsWith(stem(group) + "_") || group.StartsWith(stem(part) + "_");
+            return part.StartsWith(stem(group) + "_") || group.StartsWith(stem(part) + "_") || part.StartsWith(group + "_")
+                || (group.StartsWith("LOC_PART_ARM_") && part == group.Replace("ARM_", "HAND_"))
+                || (group == "LOC_PART_HEAD" && part == "LOC_PART_HORNS");
         }
 
         // A big fight can have 10+ parts and statuses moving at once. Show the ones hit most recently.
