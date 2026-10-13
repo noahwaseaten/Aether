@@ -142,7 +142,10 @@ namespace SmartHunter
                 return;
             }
             Log.WriteLine("Ended");
-            if (OpenedForGame && AutoStart.IsEnabled)
+            // Any copy re-arms the waiter, not only one the waiter opened: a copy started by hand, or after the waiter
+            // was closed, used to leave nothing waiting for the next game until the next sign-in to Windows. A waiter
+            // that's already there ends this one at once, and a game already running is left alone (--skip-running).
+            if (AutoStart.IsEnabled)
             {
                 AutoStart.StartWaiter();
             }

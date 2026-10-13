@@ -120,7 +120,9 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   still moves, so Aether shows whichever is higher.
 - "Open with the game" (`Core/Helpers/AutoStart.cs`) is an HKCU Run entry that starts `Aether.exe --wait`: no window,
   checks for the game every 3 s, then starts normally and closes with the game. Each game start counts once, so closing
-  Aether mid-hunt doesn't reopen it. Testing it with "Start the game with Aether" on launches the game.
+  Aether mid-hunt doesn't reopen it. Every copy re-arms the waiter when it exits (not only one the waiter opened), since
+  a waiter that is killed or never started leaves nothing watching until the next Windows sign-in; killing every
+  `Aether.exe` while testing kills the hidden waiter too. Testing it with "Start the game with Aether" on launches the game.
 - Layout editing (Scroll Lock, as in HunterPie, or the Edit layout button) dims the game behind `LayoutEditor` and gives
   each widget an `EditChrome`: a name tab with a hide button and a corner resize grip. The editor takes focus while open,
   because the focused game pins the cursor to the middle of the screen, and gives it back when you're done; Alt-Tab
