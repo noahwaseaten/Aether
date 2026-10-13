@@ -6,6 +6,15 @@ namespace SmartHunter.Core
     {
         public string Group { get; }
         public string Name { get; }
+        public string Key => Group + "/" + Name;
+
+        // Shows a "New" badge until the player has seen the row or changed it (SettingsViewModel.Seen)
+        bool m_IsNew;
+        public bool IsNew
+        {
+            get { return m_IsNew; }
+            set { SetProperty(ref m_IsNew, value); }
+        }
         // Shown in the row's tooltip
         public string Description { get; }
         // Shown under the name: a current value like a folder path, not an explanation
@@ -61,6 +70,34 @@ namespace SmartHunter.Core
             Description = description;
             m_ActionLabel = actionLabel;
             TriggerAction = action;
+        }
+    }
+
+    // A tab in the settings window: one group of settings
+    public class SettingsCategory : Bindable
+    {
+        public string Name { get; }
+        public Command Select { get; }
+
+        bool m_IsSelected;
+        public bool IsSelected
+        {
+            get { return m_IsSelected; }
+            set { SetProperty(ref m_IsSelected, value); }
+        }
+
+        // Something in it is still marked new
+        bool m_HasNew;
+        public bool HasNew
+        {
+            get { return m_HasNew; }
+            set { SetProperty(ref m_HasNew, value); }
+        }
+
+        public SettingsCategory(string name, Command select)
+        {
+            Name = name;
+            Select = select;
         }
     }
 }

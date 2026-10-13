@@ -43,7 +43,7 @@ namespace SmartHunter.Game.Data.ViewModels
             set { SetProperty(ref m_RestartReason, value); }
         }
 
-        // Bumped by every search, so section headings re-check whether any of their rows is still shown
+        // Bumped by every search or category change, so section headings re-check whether any of their rows is still shown
         int m_SearchVersion;
         public int SearchVersion
         {
@@ -51,16 +51,65 @@ namespace SmartHunter.Game.Data.ViewModels
             set { SetProperty(ref m_SearchVersion, value); }
         }
 
-        // Matches a setting's name, its explanation or its section; empty shows everything
-        public void Search(string query)
+        public IList<SettingsCategory> Categories { get; } = new List<SettingsCategory>();
+
+        string m_Selected;
+
+        // Typing shows every matching setting, from any category; empty shows just the selected category
+        string m_Query = "";
+        public string Query
         {
-            query = query.Trim();
+            get { return m_Query; }
+            set
+            {
+                if (SetProperty(ref m_Query, value ?? ""))
+                {
+                    Refresh();
+                    NotifyPropertyChanged(nameof(IsSearching));
+                }
+            }
+        }
+
+        public bool IsSearching => m_Query.Trim().Length > 0;
+
+        void Select(string category)
+        {
+            m_Selected = category;
+            Query = "";
+            Refresh();
+        }
+
+        // Matches a setting's name, its explanation or its section
+        void Refresh()
+        {
+            string query = m_Query.Trim();
             bool Has(string text) => text != null && text.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
             foreach (var setting in Settings)
             {
-                setting.IsShown = query.Length == 0 || Has(setting.Name) || Has(setting.Description) || Has(setting.Group);
+                setting.IsShown = query.Length == 0 ? setting.Group == m_Selected : Has(setting.Name) || Has(setting.Description) || Has(setting.Group);
+            }
+            foreach (var category in Categories)
+            {
+                category.IsSelected = query.Length == 0 && category.Name == m_Selected;
+                category.HasNew = Settings.Any(s => s.Group == category.Name && s.IsNew);
             }
             SearchVersion++;
+        }
+
+        // The player has seen this row or used it: its "New" badge goes and doesn't come back
+        public void Seen(Setting setting)
+        {
+            if (!setting.IsNew)
+            {
+                return;
+            }
+            setting.IsNew = false;
+            if (!C.SeenSettings.Contains(setting.Key))
+            {
+                C.SeenSettings.Add(setting.Key);
+                ConfigHelper.Main.Save();
+            }
+            Refresh();
         }
 
         public Command RestartCommand { get; } = new Command(_ => Core.Helpers.AppUpdater.Restart());
@@ -68,7 +117,7 @@ namespace SmartHunter.Game.Data.ViewModels
         static MainConfig C => ConfigHelper.Main.Values;
 
         // Every toggle writes the config and saves; ConfigContainer.Save raises Loaded so widgets refresh immediately
-        void Toggle(string group, string name, string description, Func<bool> get, Action<bool> set, bool requiresRestart = false)
+        void Toggle(string group, string name, string description, Func<bool> get, Action<bool> set, bool requiresRestart = false, bool isNew = false)
         {
             Setting setting = null;
             setting = new Setting(group, name, description, get(), new Command(_ =>
@@ -76,16 +125,23 @@ namespace SmartHunter.Game.Data.ViewModels
                 set(!get());
                 ConfigHelper.Main.Save();
                 setting.Value = get();
+                Seen(setting);
                 if (requiresRestart)
                 {
                     NeedsRestart = true;
                 }
             }), requiresRestart);
+            Add(setting, isNew);
+        }
+
+        void Add(Setting setting, bool isNew)
+        {
+            setting.IsNew = isNew && !C.SeenSettings.Contains(setting.Key);
             Settings.Add(setting);
         }
 
         // A button row showing the current option; each click moves to the next one
-        void Choice(string group, string name, string description, (string Value, string Label)[] options, Func<string> get, Action<string> set)
+        void Choice(string group, string name, string description, (string Value, string Label)[] options, Func<string> get, Action<string> set, bool isNew = false)
         {
             string LabelOf(string value) => (options.FirstOrDefault(o => o.Value == value).Label) ?? options[0].Label;
             Setting setting = null;
@@ -95,8 +151,9 @@ namespace SmartHunter.Game.Data.ViewModels
                 set(options[next].Value);
                 ConfigHelper.Main.Save();
                 setting.ActionLabel = LabelOf(get());
+                Seen(setting);
             }));
-            Settings.Add(setting);
+            Add(setting, isNew);
         }
 
         // A button row showing a shortcut; click it, then press the new key (Esc keeps the old one)
@@ -122,7 +179,7 @@ namespace SmartHunter.Game.Data.ViewModels
 
         public SettingsViewModel()
         {
-            const string Monster = "Monster widget";
+            const string Monster = "Monster";
             Toggle(Monster, "Show widget", "Health, parts and status of large monsters.", () => C.Overlay.MonsterWidget.IsVisible, v => C.Overlay.MonsterWidget.IsVisible = v);
             Choice(Monster, "Which monsters", "Fighting: your map pin, else the last one you hit, plus a one-line bar for any other monster fought in the last minute (turf wars, double hunts). Pinned: only your map pin. All: every large monster, the others as one line each.",
                 new[] { ("Fighting", "Fighting"), ("Pinned", "Pinned only"), ("All", "All") },
@@ -143,7 +200,7 @@ namespace SmartHunter.Game.Data.ViewModels
             Toggle(Monster, "Always show status effects", "Off: a status shows while it's building up or active.", () => C.Overlay.MonsterWidget.ShowUnchangedStatusEffects, v => C.Overlay.MonsterWidget.ShowUnchangedStatusEffects = v);
             Toggle(Monster, "Pulse active statuses", "A status bar pulses while the ailment is in effect, so you notice the opening.", () => C.Overlay.MonsterWidget.UseAnimations, v => C.Overlay.MonsterWidget.UseAnimations = v);
 
-            const string Team = "Team damage widget";
+            const string Team = "Team";
             Toggle(Team, "Show widget", "Damage dealt by each hunter in the party.", () => C.Overlay.TeamWidget.IsVisible, v => C.Overlay.TeamWidget.IsVisible = v);
             Toggle(Team, "Hide when solo", "Only show the widget when someone else is in your quest.", () => C.Overlay.TeamWidget.DontShowIfAlone, v => C.Overlay.TeamWidget.DontShowIfAlone = v);
             Choice(Team, "Count damage to", "Quest targets: the game's own counter. Exact for every hunter, but ignores other large monsters (turf wars) and small monsters. "
@@ -152,19 +209,21 @@ namespace SmartHunter.Game.Data.ViewModels
                 () => C.Overlay.TeamWidget.CountAllMonsters ? "All" : "Targets", v => C.Overlay.TeamWidget.CountAllMonsters = v == "All");
             Toggle(Team, "Bars", "Each hunter's row fills with their colour as far as their damage reaches against the top hunter.", () => C.Overlay.TeamWidget.ShowBars, v => C.Overlay.TeamWidget.ShowBars = v);
             Toggle(Team, "Damage share", "Each hunter's percentage of the party's damage, with a green or red arrow while it's rising or falling.", () => C.Overlay.TeamWidget.ShowPercents, v => C.Overlay.TeamWidget.ShowPercents = v);
-            Toggle(Team, "Damage numbers", "Each hunter's total damage, and damage per second of quest time under it.", () => C.Overlay.TeamWidget.ShowNumbers, v => C.Overlay.TeamWidget.ShowNumbers = v);
+            Toggle(Team, "Damage numbers", "Each hunter's total damage, with damage per second under it.", () => C.Overlay.TeamWidget.ShowNumbers, v => C.Overlay.TeamWidget.ShowNumbers = v);
+            Toggle(Team, "Live damage per second", "On: damage per second over the last 10 seconds, so it drops when a hunter stops hitting. Off: the average over the whole quest.",
+                () => C.Overlay.TeamWidget.LiveDps, v => C.Overlay.TeamWidget.LiveDps = v, isNew: true);
             Toggle(Team, "Damage chart", "Damage over time, above the list.", () => C.Overlay.TeamWidget.ShowChart, v => C.Overlay.TeamWidget.ShowChart = v);
 
-            const string Buffs = "Buffs widget";
-            Toggle(Buffs, "Show widget", "Your buffs and debuffs with time left, sharpness, the quest clock, and your mantles and boosters while they're on or recharging.", () => C.Overlay.PlayerWidget.IsVisible, v => C.Overlay.PlayerWidget.IsVisible = v);
+            const string Buffs = "Buffs & quest";
+            Toggle(Buffs, "Buffs widget", "Your buffs and debuffs with time left, sharpness, the quest clock, and your mantles and boosters while they're on or recharging.", () => C.Overlay.PlayerWidget.IsVisible, v => C.Overlay.PlayerWidget.IsVisible = v);
 
-            const string Quest = "Quest";
+            const string Quest = Buffs;
             Toggle(Quest, "Call-outs", "A tag at the top of the screen when a monster can be captured, is enraged, or is exhausted.",
                 () => C.Overlay.CalloutWidget.IsVisible, v => C.Overlay.CalloutWidget.IsVisible = v);
             Toggle(Quest, "Quest results", "When a quest ends: monsters, deaths and each hunter's damage.",
                 () => C.Overlay.RecapWidget.IsVisible, v => C.Overlay.RecapWidget.IsVisible = v);
 
-            const string Overlay = "Look and behavior";
+            const string Overlay = "Appearance";
             Toggle(Overlay, "Show widgets", "Off: nothing is drawn on screen, but Aether still reads the game and shares damage, parts and ailments with your party. "
                 + "For friends who only want to help with party sync. Turn it back on any time, everything is where you left it.",
                 () => C.Overlay.ShowWidgets, v => C.Overlay.ShowWidgets = v);
@@ -250,6 +309,14 @@ namespace SmartHunter.Game.Data.ViewModels
             Settings.Add(new Setting(About, "Report a bug", "Opens a new GitHub issue with your Aether and Windows versions filled in. Attaching Log.txt from the Aether folder helps a lot.", "Report…",
                 new Command(_ => Open($"{Repo}/issues/new?body=" + Uri.EscapeDataString($"**What happened:**\n\n**What you expected:**\n\n---\nAether {version}, {WindowsVersion()}"))))
                 { Detail = "Bugs, wrong numbers, widgets in the wrong place" });
+
+            foreach (var name in Settings.Select(x => x.Group).Distinct())
+            {
+                string category = name;
+                Categories.Add(new SettingsCategory(category, new Command(_ => Select(category))));
+            }
+            m_Selected = Categories.First().Name;
+            Refresh();
         }
 
         static void Open(string target)

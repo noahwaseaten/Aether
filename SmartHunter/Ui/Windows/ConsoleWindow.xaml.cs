@@ -39,7 +39,19 @@ namespace SmartHunter.Ui.Windows
 
         void ResetLayout_Click(object sender, RoutedEventArgs e) => OverlayViewModel.Instance.ResetLayout();
 
-        void SettingsSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) => SettingsViewModel.Instance.Search(SettingsSearch.Text);
+        // A row counts as seen once the mouse has rested on it for a moment (passing over it doesn't)
+        DateTime m_HoverStart;
+
+        void SettingRow_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e) => m_HoverStart = DateTime.Now;
+
+        void SettingRow_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if ((DateTime.Now - m_HoverStart).TotalMilliseconds >= 700 && ((FrameworkElement)sender).DataContext is Core.Setting setting)
+            {
+                SettingsViewModel.Instance.Seen(setting);
+            }
+        }
+
         void Close_Click(object sender, RoutedEventArgs e) => Close();
         void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
         void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;

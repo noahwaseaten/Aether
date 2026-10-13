@@ -143,6 +143,10 @@ namespace SmartHunter.Game.Data.WidgetContexts
             // Before the early return: with nobody hitting yet, IsSolo stayed at its default and a full lobby
             // drew the solo rows (icons and "0 damage", no names)
             UpdateStats();
+            var now = DateTime.Now;
+            bool live = ConfigHelper.Main.Values.Overlay.TeamWidget.LiveDps;
+            // Sampled every read, even before anyone hits, so the first hit counts
+            var liveDps = Players.ToDictionary(p => p, p => p.SampleLiveDps(now));
 
             var playersWithDamage = Players.Where(player => player.Damage > 0);
             if (!playersWithDamage.Any())
@@ -151,6 +155,7 @@ namespace SmartHunter.Game.Data.WidgetContexts
                 {
                     player.DamageFraction = 0;
                     player.BarFraction = 0;
+                    player.Dps = 0;
                 }
 
                 return;
@@ -163,12 +168,11 @@ namespace SmartHunter.Game.Data.WidgetContexts
             int totalDamage = Math.Max(1, Players.Where(p => !p.IsDamageUnknown).Sum(p => p.Damage));
             int highestDamage = Math.Max(1, Players.Max(p => p.Damage));
             float elapsed = OverlayViewModel.Instance.PlayerWidget.Context.Hunt.ElapsedSeconds;
-            var now = DateTime.Now;
             foreach (var player in Players)
             {
                 player.DamageFraction = player.IsDamageUnknown ? 0 : (float)player.Damage / totalDamage;
                 player.BarFraction = player.IsDamageUnknown ? 0 : (float)player.Damage / highestDamage;
-                player.Dps = elapsed >= 1 && !player.IsDamageUnknown ? player.Damage / elapsed : 0;
+                player.Dps = player.IsDamageUnknown ? 0 : live ? liveDps[player] : elapsed >= 1 ? player.Damage / elapsed : 0;
                 player.UpdateTrend(now);
             }
         }

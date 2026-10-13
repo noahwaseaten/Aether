@@ -280,6 +280,14 @@ namespace SmartHunter.Core
             Check(!team.IsSolo, "two hunters at 0 damage are not solo");
             team.ClearPlayers();
 
+            // Live damage per second: the last 10 seconds, and 0 again once a hunter stops hitting
+            var dpsPlayer = new Player();
+            var t0 = new DateTime(2026, 1, 1, 12, 0, 0);
+            dpsPlayer.Damage = 0; dpsPlayer.SampleLiveDps(t0);
+            dpsPlayer.Damage = 500; float dps = dpsPlayer.SampleLiveDps(t0.AddSeconds(5));
+            Check(Math.Abs(dps - 100) < 0.01f, "live dps: 500 damage in 5 s is 100/s");
+            Check(dpsPlayer.SampleLiveDps(t0.AddSeconds(30)) == 0, "live dps falls to 0 once they stop hitting");
+
             // Expedition: a teammate without Aether has no number, and doesn't count toward anyone's share
             var current = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
             current.CurrentPlayerName = "Me";

@@ -21,6 +21,7 @@ namespace SmartHunter.Game.Config
         public bool AutomaticallyCheckAndDownloadUpdates = true;
         public bool UseSoftwareRendering = false; // fallback for graphics drivers that draw transparent overlay windows wrong
         public bool StartMHWWhenSmartHunterStart = false;
+        public List<string> SeenSettings = new List<string>(); // settings marked new that the player has seen or changed
 
         public OverlayConfig Overlay = new OverlayConfig();
 

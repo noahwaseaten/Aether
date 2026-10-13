@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using SmartHunter.Core.Data;
 
@@ -100,13 +101,38 @@ namespace SmartHunter.Game.Data
 
         public DateTime LastHitTime { get; private set; }
 
-        // Damage per second of quest time; 0 outside a quest
+        // Damage per second: over the last few seconds (live) or over the whole quest, as Settings chooses; 0 outside a quest
         float m_Dps;
         public float Dps
         {
             get { return m_Dps; }
             set { SetProperty(ref m_Dps, value); }
         }
+
+        // Live damage per second: what this hunter dealt over the last DpsWindowSeconds, so it falls to 0 when they stop
+        // hitting. The damage readings are kept, newest last.
+        public const double DpsWindowSeconds = 10;
+        readonly Queue<KeyValuePair<DateTime, int>> m_DpsSamples = new Queue<KeyValuePair<DateTime, int>>();
+
+        public float SampleLiveDps(DateTime now)
+        {
+            // The counter went back down: a new quest, the old readings don't apply
+            if (m_DpsSamples.Count > 0 && Damage < m_LastDpsDamage)
+            {
+                m_DpsSamples.Clear();
+            }
+            m_LastDpsDamage = Damage;
+            m_DpsSamples.Enqueue(new KeyValuePair<DateTime, int>(now, Damage));
+            while (m_DpsSamples.Count > 1 && (now - m_DpsSamples.Peek().Key).TotalSeconds > DpsWindowSeconds)
+            {
+                m_DpsSamples.Dequeue();
+            }
+
+            var oldest = m_DpsSamples.Peek();
+            double span = (now - oldest.Key).TotalSeconds;
+            return span < 1 ? 0 : (float)((Damage - oldest.Value) / span);
+        }
+        int m_LastDpsDamage;
 
         // Is this hunter's share of the damage rising (1), falling (-1) or steady (0) over the last few seconds
         int m_Trend;
