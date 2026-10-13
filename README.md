@@ -85,9 +85,9 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 <img src="docs/sharpen-alert.png" alt="The sharpen reminder" width="560"/>
 
-A gag, hardcoded for one hunter: if your character is named Senji and the weapon is way too dull for a hunt, a huge hazard-taped bar
-takes over the top of the screen and roasts you, a bit meaner every 20 seconds, until you sharpen. It doesn't take the mouse, so the game
-stays playable underneath.
+A gag, hardcoded for one hunter, Simeon: when his weapon is way too dull for a hunt, a huge hazard-taped bar takes over the top of his
+screen and roasts him, a bit meaner every 20 seconds, until he sharpens. It doesn't take the mouse, so the game stays playable
+underneath.
 
 ### Hunt recap
 
