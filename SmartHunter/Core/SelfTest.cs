@@ -233,6 +233,23 @@ namespace SmartHunter.Core
             rathian.RankRows();
             Check(head.Wound == null, "a healed wound leaves the card");
 
+            // Tzitzi-Ya-Ku has a left and a right head, no plain one: a head wound shows on both, not on a card of its own
+            var tzitzi = new Monster(8, "em120_00", 1000, 1000, 1, 1);
+            var headL = tzitzi.UpdateAndGetPart(0x10000011, false, 300, 300, 0);
+            var headR = tzitzi.UpdateAndGetPart(0x10000012, false, 300, 300, 0);
+            var tzTail = tzitzi.UpdateAndGetPart(0x10000015, false, 300, 300, 0);
+            var tzWound = tzitzi.UpdateAndGetPartSoften(0x20000011, 90, 60, 1, 0);
+            tzitzi.RankRows();
+            Check(headL.Wound == tzWound && headR.Wound == tzWound && tzTail.Wound == null, "a head wound is on both of Tzitzi's heads");
+            Check(!tzWound.IsVisible, "no card of its own for a wound that has parts to show on");
+
+            // On-screen damage list: the first read after town, loading, or a moved list must not count the old entries
+            bool wasTown = true; ulong lastPtr = 0;
+            Check(MhwHelper.OnScreenSeed(true, ref wasTown, ref lastPtr, 0x100), "in town: only remember");
+            Check(MhwHelper.OnScreenSeed(false, ref wasTown, ref lastPtr, 0x100), "first read in the quest: only remember");
+            Check(!MhwHelper.OnScreenSeed(false, ref wasTown, ref lastPtr, 0x100), "later reads count hits");
+            Check(MhwHelper.OnScreenSeed(false, ref wasTown, ref lastPtr, 0x200), "the list moved: only remember");
+
             // Team damage: a hunter leaving must not shift the others into the wrong slot
             var team = OverlayViewModel.Instance.TeamWidget.Context;
             team.ClearPlayers();

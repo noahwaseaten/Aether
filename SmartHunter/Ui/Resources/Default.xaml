@@ -908,14 +908,14 @@
 
             <StackPanel x:Name="Numbers" Grid.Column="3" VerticalAlignment="Center" MinWidth="64" Margin="12 0 0 0">
                 <controls:SharpText x:Name="DamageBlock" Style="{StaticResource T_Value}" FontSize="15" HorizontalAlignment="Right" Text="{Binding Damage, StringFormat={}{0:N0}}" />
-                <controls:SharpText x:Name="DpsBlock" Style="{StaticResource T_Muted}" FontSize="12" HorizontalAlignment="Right" Text="{Binding Dps, StringFormat={}{0:N0}/s}" />
+                <controls:SharpText x:Name="DpsBlock" Style="{StaticResource T_Muted}" FontSize="12" HorizontalAlignment="Right" Text="{Binding Dps, StringFormat={}{0:N0} dmg/s}" />
             </StackPanel>
 
             <!--Solo: the share is always 100%, so show what matters instead-->
             <StackPanel x:Name="Solo" Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
                 <controls:SharpText Style="{StaticResource T_Big}" Text="{Binding Damage, StringFormat={}{0:N0}}" />
                 <controls:SharpText Style="{StaticResource T_Muted}" Margin="5 0 0 1" VerticalAlignment="Bottom" Text="damage" />
-                <controls:SharpText x:Name="SoloDps" Style="{StaticResource T_Muted}" Margin="10 0 0 1" VerticalAlignment="Bottom" Text="{Binding Dps, StringFormat={}{0:N0}/s}" />
+                <controls:SharpText x:Name="SoloDps" Style="{StaticResource T_Muted}" Margin="10 0 0 1" VerticalAlignment="Bottom" Text="{Binding Dps, StringFormat={}{0:N0} dmg/s}" />
             </StackPanel>
         </Grid>
 

@@ -59,7 +59,7 @@ namespace SmartHunter.Game.Data
                 // A wound whose part has a card shows on that card; only wounds with no part of their own get one here
                 string groupId = GroupId;
                 return IsIncluded(groupId) && IsTimeVisible(false, config.HideSoftenPartsAfterSeconds) && config.ShowSoftenParts
-                    && !(config.ShowParts && m_Owner.Parts.Any(part => part.StringId == groupId));
+                    && !(config.ShowParts && m_Owner.PartsForWound(groupId).Any());
             }
         }
 

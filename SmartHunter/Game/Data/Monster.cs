@@ -376,15 +376,33 @@ namespace SmartHunter.Game.Data
             return statusEffect;
         }
 
+        // The cards a wound shows on: the part with its id, else the parts it's split into (a head wound on Tzitzi-Ya-Ku's
+        // left and right head). Empty when the monster has no such part; the wound then gets a card of its own.
+        public List<MonsterPart> PartsForWound(string groupId)
+        {
+            var parts = new List<MonsterPart>();
+            if (string.IsNullOrEmpty(groupId)) return parts;
+            var ids = Parts.Select(p => new { Part = p, Id = p.StringId }).Where(p => p.Id.Length > 0).ToList();
+            parts.AddRange(ids.Where(p => p.Id == groupId).Select(p => p.Part));
+            if (parts.Count == 0) parts.AddRange(ids.Where(p => SameStem(p.Id, groupId)).Select(p => p.Part));
+            return parts;
+        }
+
+        // LOC_PART_HEAD ~ LOC_PART_HEAD_LEFT, LOC_PART_ARMS ~ LOC_PART_ARM_LEFT
+        static bool SameStem(string part, string group)
+        {
+            string stem(string id) => id.EndsWith("S") ? id.Substring(0, id.Length - 1) : id;
+            return part.StartsWith(stem(group) + "_") || group.StartsWith(stem(part) + "_");
+        }
+
         // A big fight can have 10+ parts and statuses moving at once. Show the ones hit most recently.
         public void RankRows()
         {
             bool wounds = ConfigHelper.Main.Values.Overlay.MonsterWidget.ShowSoftenParts;
             foreach (var part in Parts)
             {
-                string id = part.StringId;
-                part.Wound = wounds && id.Length > 0
-                    ? PartSoftens.Where(s => s.Time.Current > 0 && s.GroupId == id).OrderByDescending(s => s.Time.Current).FirstOrDefault()
+                part.Wound = wounds
+                    ? PartSoftens.Where(s => s.Time.Current > 0 && PartsForWound(s.GroupId).Contains(part)).OrderByDescending(s => s.Time.Current).FirstOrDefault()
                     : null;
             }
             Rank(Parts.Cast<TimedVisibility>().ToList(), p => ((MonsterPart)p).IsCandidate, (p, v) => ((MonsterPart)p).IsRanked = v, Data.WidgetContexts.MonsterWidgetContext.MaxPartRows);

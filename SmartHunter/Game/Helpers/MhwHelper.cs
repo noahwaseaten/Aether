@@ -149,6 +149,8 @@ namespace SmartHunter.Game.Helpers
         private static bool networkOperationDone = true;
         private static int lastNetworkOperationTimeD = 0;
         private static bool networkOperationDoneD = true;
+        private static ulong lastDamageOnScreenPtr;
+        private static bool damageOnScreenWasInTown = true;
         private static int[,] expeditionDamageChecker = new int[DataOffsets.PlayerDamage.MaxOnScreenDamages, 2];
         private static ulong[] monsterAddresses = new ulong[3];
         private static List<Monster> updatedMonsters = new List<Monster>();
@@ -580,6 +582,15 @@ namespace SmartHunter.Game.Helpers
             return player;
         }
 
+        // True when this read of the on-screen damage list must only be remembered, not counted
+        public static bool OnScreenSeed(bool inTown, ref bool wasInTown, ref ulong lastPtr, ulong ptr)
+        {
+            bool seed = inTown || wasInTown || ptr != lastPtr;
+            wasInTown = inTown;
+            lastPtr = ptr;
+            return seed;
+        }
+
         public static void UpdateDamageOnScreen(Process process, ulong damageOnScreenPtr)
         {
             var p = OverlayViewModel.Instance.TeamWidget.Context.Players.Where(p => p.Name.Equals(OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.CurrentPlayerName));
@@ -589,6 +600,9 @@ namespace SmartHunter.Game.Helpers
                 // In town the list holds leftovers and garbage that read as stray 2s and 5s. Still mark them as
                 // seen, so the leftovers aren't counted once the quest starts either.
                 bool inTown = DiscordPresence.IsInTown(process);
+                // Entering a quest or expedition the game rebuilds this list, and its first read holds every old entry as
+                // "new": summed, that was the random 16k or 61k in the Team widget. The first read there only takes note.
+                bool seed = OnScreenSeed(inTown, ref damageOnScreenWasInTown, ref lastDamageOnScreenPtr, damageOnScreenPtr);
                 ulong startOfList = damageOnScreenPtr + 0x2900;
                 ulong currentItem = startOfList;
                 for (int i = 0; i < DataOffsets.PlayerDamage.MaxOnScreenDamages; i++)
@@ -602,7 +616,7 @@ namespace SmartHunter.Game.Helpers
                         expeditionDamageChecker[i, 1] = id2;
 
                         int value = MemoryHelper.Read<int>(process, currentItem + 0x34);
-                        if (!inTown && value > 0 && value < 100000)
+                        if (!seed && value > 0 && value < 100000)
                         {
                             currentPlayer.Damage += value;
                         }
