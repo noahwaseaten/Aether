@@ -141,6 +141,7 @@
 
         <!--Animated switch-->
         <Style x:Key="Switch" TargetType="CheckBox">
+            <Setter Property="behaviors:SwitchAnimation.IsEnabled" Value="True" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Focusable" Value="False" />
             <Setter Property="Template">
@@ -155,26 +156,6 @@
                                 </Ellipse.RenderTransform>
                             </Ellipse>
                         </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard Timeline.DesiredFrameRate="{x:Static helpers:WindowHelper.PrimaryRefreshRate}">
-                                            <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="16" Duration="0:0:0.18" EasingFunction="{StaticResource Ease}" />
-                                            <DoubleAnimation Storyboard.TargetName="TrackOn" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.18" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                                <Trigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard Timeline.DesiredFrameRate="{x:Static helpers:WindowHelper.PrimaryRefreshRate}">
-                                            <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" To="0" Duration="0:0:0.18" EasingFunction="{StaticResource Ease}" />
-                                            <DoubleAnimation Storyboard.TargetName="TrackOn" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.18" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.ExitActions>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -533,8 +514,10 @@
 
                         <TextBlock Text="No settings match your search. Try a shorter word, or pick a page on the left." Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="2 4 0 0"
                                    Visibility="{Binding NoResults, Converter={StaticResource A_Converter_BoolToVisibility}}" />
-                        <Border x:Name="SettingsCard" RenderTransformOrigin="0.5,0" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1" ClipToBounds="True">
-                            <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
+                        <Grid x:Name="SettingsCard" RenderTransformOrigin="0.5,0">
+                            <Grid.RenderTransform><TranslateTransform /></Grid.RenderTransform>
+                            <Border CornerRadius="10" Background="{StaticResource Surface}" behaviors:RoundClip.Radius="10">
+                            
                         <ItemsControl ItemsSource="{Binding Settings}">
                             <ItemsControl.GroupStyle>
                                 <GroupStyle>
@@ -666,6 +649,8 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         </Border>
+                            <Border CornerRadius="10" BorderBrush="{StaticResource Stroke}" BorderThickness="1" IsHitTestVisible="False" />
+                        </Grid>
                     </StackPanel>
                 </ScrollViewer>
 
