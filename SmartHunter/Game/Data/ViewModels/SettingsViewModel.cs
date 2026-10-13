@@ -280,6 +280,8 @@ namespace SmartHunter.Game.Data.ViewModels
             Toggle(Team, "Damage numbers", "Each hunter's total damage, with damage per second under it.", () => C.Overlay.TeamWidget.ShowNumbers, v => C.Overlay.TeamWidget.ShowNumbers = v);
             Toggle(Team, "Live damage per second", "On: damage per second over the last 10 seconds, so it drops when a hunter stops hitting. Off: the average over the whole quest.",
                 () => C.Overlay.TeamWidget.LiveDps, v => C.Overlay.TeamWidget.LiveDps = v, isNew: true);
+            Toggle(Team, "Sharpness under names", "Each hunter's sharpness bar under their name, so you can see who should sharpen and remind them. It updates after a handful of hits and whenever the colour changes. Shares yours through party sync, so teammates need Aether with this on too.",
+                () => C.Overlay.TeamWidget.ShowSharpness, v => C.Overlay.TeamWidget.ShowSharpness = v, isNew: true);
             Toggle(Team, "Damage chart", "Damage over time, above the list.", () => C.Overlay.TeamWidget.ShowChart, v => C.Overlay.TeamWidget.ShowChart = v);
 
             const string Buffs = "Buffs & quest";

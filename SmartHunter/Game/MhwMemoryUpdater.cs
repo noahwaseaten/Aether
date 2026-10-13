@@ -1,3 +1,4 @@
+using SmartHunter.Game.Data;
 using System.Linq;
 using SmartHunter.Core;
 using SmartHunter.Core.Helpers;
@@ -223,6 +224,19 @@ namespace SmartHunter.Game
                     OverlayViewModel.Instance.PlayerWidget.Context.Tools.Clear();
                 }
 
+                // Sharpness under the Team widget's names needs it read even with the Buffs widget hidden
+                string myName = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.CurrentPlayerName;
+                bool showSharpness = ConfigHelper.Main.Values.Overlay.TeamWidget.ShowSharpness && (ConfigHelper.Main.Values.Overlay.TeamWidget.IsVisible || sharing);
+                if (!ConfigHelper.Main.Values.Overlay.PlayerWidget.IsVisible && (showSharpness || SharpenAlert.IsTarget(myName)))
+                {
+                    MhwHelper.UpdateSharpness(Process);
+                }
+                if (showSharpness)
+                {
+                    MhwHelper.ShareSharpness();
+                }
+                SharpenAlert.Instance.Update(myName, OverlayViewModel.Instance.PlayerWidget.Context.Sharpness);
+
                 // Both the Buffs and the Team widget show the quest clock and deaths
                 if (ConfigHelper.Main.Values.Overlay.PlayerWidget.IsVisible || ConfigHelper.Main.Values.Overlay.TeamWidget.IsVisible)
                 {
@@ -243,6 +257,7 @@ namespace SmartHunter.Game
                 OverlayViewModel.Instance.PlayerWidget.Context.Hunt.Clear();
                 // Back in Astera after a hunt nothing is read here, and the last hunt's sharpness stayed on screen
                 OverlayViewModel.Instance.PlayerWidget.Context.Sharpness.IsAvailable = false;
+                SharpenAlert.Instance.Reset();
             }
 
             HuntTracker.Update(Process);

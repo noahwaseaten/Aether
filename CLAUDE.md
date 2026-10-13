@@ -118,6 +118,15 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   Aether show "—" there (`Player.IsDamageUnknown`), and "~" when only their quest-target damage is known
   (`IsDamagePartial`). The sync server keeps a hunter's last total after their Aether stops; their game counter
   still moves, so Aether shows whichever is higher.
+- Sharpness under names (`Game/Data/PlayerSharpness.cs`, `MhwHelper.ShareSharpness`) needs no server change: the sync server
+  (PHP in `SmartHunter Share Data(Beta).zip`) stores any `name -> number` from a DAMAGE request and returns the whole table, so a
+  hunter's sharpness goes in as one packed number under `~sharp~<name>`. Older Aether versions only look up their teammates'
+  names, so they skip these. The number must be an int (`Dictionary<string,int>` on the reading side): one non-numeric value
+  would break damage sync for every version. Requests with no player name just read the table (that's how others' sharpness is polled).
+  A hunter's value is sent after about 8 sharpness points (`SharpnessPublisher.HitStep`) or a colour change, and the server keeps the last one.
+- The Senji gag (`Game/Data/SharpenAlert.cs`, `Ui/Windows/SharpenAlertWindow`) is hardcoded on the local player's own name and
+  is the one overlay element that animates endlessly, on purpose. Its static instance is created lazily: built before the joke
+  arrays it reads, its constructor threw and took the memory-reading loop down with it.
 - "Open with the game" (`Core/Helpers/AutoStart.cs`) is an HKCU Run entry that starts `Aether.exe --wait`: no window,
   checks for the game every 3 s, then starts normally and closes with the game. Each game start counts once, so closing
   Aether mid-hunt doesn't reopen it. Every copy re-arms the waiter when it exits (not only one the waiter opened), since

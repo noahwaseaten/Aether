@@ -297,6 +297,32 @@ namespace SmartHunter.Core
             Check(!Player.IsSyncedDamagePlausible(357888, 30000, false), "a synced total ten times the game's counter is dropped");
             Check(Player.IsSyncedDamagePlausible(357888, 0, true), "on expeditions there is no counter to compare with");
 
+            // Sharpness sharing: one packed number, shown only after a handful of hits or a new colour
+            int packed = SharpnessShare.Pack(true, 5, 3, 64, 120);
+            Check(packed > 0 && SharpnessShare.TryUnpack(packed, out bool avail, out int sTop, out int sLevel, out int sPct, out int sHits) && avail && sTop == 5 && sLevel == 3 && sPct == 64 && sHits == 120, "sharpness packs into one number and back");
+            Check(SharpnessShare.Unavailable > 0 && SharpnessShare.TryUnpack(SharpnessShare.Unavailable, out bool none, out _, out _, out _, out _) && !none, "'nothing to show' still packs to a non-zero number");
+            Check(!SharpnessShare.TryUnpack(357888, out _, out _, out _, out _, out _), "an ordinary damage number is not read as sharpness");
+            var publisher = new SharpnessPublisher();
+            Check(publisher.ShouldPublish(true, 5, 4, 300), "the first reading is published");
+            Check(!publisher.ShouldPublish(true, 5, 4, 296), "a few hits aren't");
+            Check(publisher.ShouldPublish(true, 5, 4, 290), "ten hits are");
+            Check(publisher.ShouldPublish(true, 5, 3, 288), "a new colour always is");
+            Check(!publisher.ShouldPublish(true, 5, 3, 288), "the same reading isn't repeated");
+            Check(publisher.ShouldPublish(false, 0, 0, 0) && !publisher.ShouldPublish(false, 0, 0, 0), "going away is published once");
+            Check(SharpenAlert.IsTarget("Senji") && SharpenAlert.IsTarget(" senji ") && !SharpenAlert.IsTarget("Senji2") && !SharpenAlert.IsTarget(""), "the alert is for the hunter named Senji only");
+            Check(!SharpenAlert.ShouldShow(false, true, 5, 3), "two colours under the best isn't alarming yet");
+            Check(SharpenAlert.ShouldShow(false, true, 5, 2), "three colours under the best starts the alert");
+            Check(SharpenAlert.ShouldShow(true, true, 5, 3), "once on, it stays while two colours are missing");
+            Check(!SharpenAlert.ShouldShow(true, true, 5, 4), "one colour under the best ends it");
+            Check(SharpenAlert.ShouldShow(false, true, 2, 0), "red on a weapon that reaches yellow starts it");
+            Check(!SharpenAlert.ShouldShow(true, false, 5, 0), "no sharpness reading, no alert");
+            Check(SharpenAlert.HeadlineFor(0, 3).Length > 0 && SharpenAlert.HeadlineFor(100, 7).Length > 0 && SharpenAlert.EscalationFor(100).Length > 0 && SharpenAlert.StageOf(System.TimeSpan.FromSeconds(45)) == 2, "the roast always has a line, and gets meaner every 20 seconds");
+            var shown = new PlayerSharpness();
+            shown.Apply(SharpnessShare.Pack(true, 4, 2, 50, 40));
+            Check(shown.IsAvailable && shown.NeedsSharpening && shown.Pips.Count == 5 && shown.Pips[1].Fill == 1 && shown.Pips[2].Fill == 0.5 && shown.Pips[3].Fill == 0, "the bar is full below the current colour, partly on it, empty above");
+            shown.Apply(SharpnessShare.Pack(true, 4, 4, 100, 90));
+            Check(!shown.NeedsSharpening, "at the best colour there's nothing to remind");
+
             // Live damage per second: the last 10 seconds, and 0 again once a hunter stops hitting
             var dpsPlayer = new Player();
             var t0 = new DateTime(2026, 1, 1, 12, 0, 0);

@@ -25,6 +25,16 @@ namespace SmartHunter.Game.Data
         };
         static readonly string[] Names = { "Red", "Orange", "Yellow", "Green", "Blue", "White", "Purple" };
 
+        // The raw reading behind the bar, for sharing it: the colour (0 red .. 6 purple), the best colour this weapon
+        // reaches, how full the current colour is, and the sharpness points
+        public int LevelIndex { get; private set; }
+        public int TopIndex { get; private set; }
+        public int Percent { get; private set; }
+        public int Current { get; private set; }
+
+        public static Brush BrushOf(int level) => Frozen(Colors[Math.Max(0, Math.Min(Colors.Length - 1, level))]);
+        public static string NameOf(int level) => Names[Math.Max(0, Math.Min(Names.Length - 1, level))];
+
         public ObservableCollection<SharpnessSegment> Segments { get; } = new ObservableCollection<SharpnessSegment>();
 
         bool m_IsAvailable;
@@ -111,6 +121,10 @@ namespace SmartHunter.Game.Data
                 }
             }
 
+            Current = current;
+            LevelIndex = level;
+            TopIndex = top;
+            Percent = end > start ? Math.Max(0, Math.Min(100, (current - start) * 100 / (end - start))) : 100;
             HitsLeft = Math.Max(0, current - start);
             LevelName = Names[level];
             LevelBrush = Frozen(Colors[level]);

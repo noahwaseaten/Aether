@@ -1,0 +1,65 @@
+<Window
+        x:Class="SmartHunter.Ui.Windows.SharpenAlertWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:SmartHunter.Ui.Controls"
+        xmlns:behaviors="clr-namespace:SmartHunter.Ui.Behaviors"
+        xmlns:data="clr-namespace:SmartHunter.Game.Data"
+
+        Title="Sharpen"
+        ShowActivated="False"
+        AllowsTransparency="True"
+        WindowStyle="None"
+        ShowInTaskbar="False"
+        Focusable="False"
+        Background="Transparent"
+        SizeToContent="WidthAndHeight">
+
+    <Window.Resources>
+        <!--Hazard tape-->
+        <LinearGradientBrush x:Key="B_Tape" MappingMode="Absolute" StartPoint="0,0" EndPoint="34,34" SpreadMethod="Repeat">
+            <GradientStop Color="#FFE24A" Offset="0" />
+            <GradientStop Color="#FFE24A" Offset="0.5" />
+            <GradientStop Color="#15110A" Offset="0.5" />
+            <GradientStop Color="#15110A" Offset="1" />
+        </LinearGradientBrush>
+    </Window.Resources>
+
+    <!--A banner at the top of the screen that can't be missed: hazard tape, a roast, and a huge sharpness bar. It wobbles
+        like it's personally upset. Click-through, so it never gets in the way of playing, only of ignoring it.-->
+    <Grid x:Name="Root" Margin="40" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="True">
+        <Grid.RenderTransform>
+            <TransformGroup>
+                <ScaleTransform />
+                <RotateTransform />
+            </TransformGroup>
+        </Grid.RenderTransform>
+
+        <Border x:Name="Card" CornerRadius="20" Background="#F2160709" BorderBrush="{StaticResource B_Danger}" BorderThickness="4" MinWidth="820" ClipToBounds="True" behaviors:RoundClip.Radius="20">
+            <StackPanel>
+                <Rectangle Height="16" Fill="{StaticResource B_Tape}" />
+                <StackPanel Margin="36 18 36 18">
+                    <controls:SharpText Text="{Binding Headline}" Style="{StaticResource T_Body}" FontSize="40" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" />
+
+                    <ItemsControl ItemsSource="{Binding Bar.Pips}" HorizontalAlignment="Center" Margin="0 16 0 0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Width="116" Height="44" Margin="0 0 8 0" behaviors:RoundClip.Radius="10">
+                                    <Rectangle Fill="{Binding Brush}" Opacity="0.18" />
+                                    <Rectangle Fill="{Binding Brush}" behaviors:SmoothBar.Fraction="{Binding Fill}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <controls:SharpText Text="{Binding Escalated}" Style="{StaticResource T_Body}" FontSize="24" FontWeight="SemiBold" Foreground="#FFE24A" HorizontalAlignment="Center" Margin="0 14 0 0" />
+                    <controls:SharpText Text="{Binding Detail}" Style="{StaticResource T_Muted}" FontSize="16" HorizontalAlignment="Center" Margin="0 4 0 0" />
+                </StackPanel>
+                <Rectangle Height="16" Fill="{StaticResource B_Tape}" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

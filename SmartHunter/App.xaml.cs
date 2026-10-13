@@ -131,6 +131,8 @@ namespace SmartHunter
 
             m_Overlay = new MhwOverlay(new ConsoleWindow(), new TeamWidgetWindow(), new MonsterWidgetWindow(), new PlayerWidgetWindow(), new DebugWidgetWindow(), new CalloutWidgetWindow(), new RecapWidgetWindow());
 
+            SharpenAlertWindow.Initialize();
+
             base.OnStartup(e);
         }
 

@@ -40,6 +40,13 @@ namespace SmartHunter.Game.Data.WidgetContexts
             set { SetProperty(ref m_ShowPercents, value); }
         }
 
+        bool m_ShowSharpness = true;
+        public bool ShowSharpness
+        {
+            get { return m_ShowSharpness; }
+            set { SetProperty(ref m_ShowSharpness, value); }
+        }
+
         bool m_ShowChart = false;
         public bool ShowChart
         {
@@ -285,6 +292,7 @@ namespace SmartHunter.Game.Data.WidgetContexts
             ShowNumbers = ConfigHelper.Main.Values.Overlay.TeamWidget.ShowNumbers;
             ShowPercents = ConfigHelper.Main.Values.Overlay.TeamWidget.ShowPercents;
             ShowChart = ConfigHelper.Main.Values.Overlay.TeamWidget.ShowChart;
+            ShowSharpness = ConfigHelper.Main.Values.Overlay.TeamWidget.ShowSharpness;
         }
     }
 }

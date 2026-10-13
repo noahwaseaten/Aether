@@ -170,6 +170,9 @@ namespace SmartHunter.Game.Data
             return change > 0.01f ? 1 : change < -0.01f ? -1 : 0;
         }
 
+        // Shown under the name when "Sharpness under names" is on
+        public PlayerSharpness Sharpness { get; } = new PlayerSharpness();
+
         // Icon key in Ui/Resources/Icons.xaml
         string m_WeaponIcon;
         public string WeaponIcon

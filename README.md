@@ -57,11 +57,13 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 ### Team damage
 
-<img src="docs/team-widget.png" alt="Team damage widget" align="right" width="340"/>
+<img src="docs/team-widget.png" alt="Team damage widget" align="right" width="360"/>
 
 - Quest clock with the quest's time limit (just the time elapsed on expeditions), and party deaths (`1/3`) at the top
 - For up to 4 hunters: weapon, damage, damage per second and share of the party's damage
 - A green or red arrow while a hunter's share is rising or falling; each row fills with their colour
+- **Sharpness under each name** (a pip per colour, full up to the current one), shared through party sync so you can see who should
+  sharpen. It updates after a handful of hits and on every change of colour, not on each swing, and has its own switch in Settings
 - Counts **every monster**, including expeditions, when your friends run Aether too
 - The Aether logo next to a name means that hunter runs Aether too. A `~` means only their quest-target damage is known, and `—` means
   the game keeps no number for them (see [Party sync][PartySync])
@@ -78,6 +80,14 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 - Buffs, debuffs and weapon timers (Charge Blade, Insect Glaive, Long Sword, Switch Axe) with time left
 
 <br clear="right"/>
+
+### Sharpen reminder
+
+<img src="docs/sharpen-alert.png" alt="The sharpen reminder" width="560"/>
+
+A gag, hardcoded for one hunter: if your character is named Senji and the weapon is way too dull for a hunt, a huge hazard-taped bar
+takes over the top of the screen and roasts you, a bit meaner every 20 seconds, until you sharpen. It doesn't take the mouse, so the game
+stays playable underneath.
 
 ### Hunt recap
 
@@ -102,7 +112,7 @@ and a resize handle, like Discord's overlay or Lunar Client's HUD editor.
 
 ### The Aether window
 
-<img src="docs/app.png" alt="Aether window" align="right" width="320"/>
+<img src="docs/app.png" alt="Aether window" align="right" width="460"/>
 
 Every setting is one click and applies instantly. Hover a setting to see what it does.
 

@@ -582,6 +582,89 @@ namespace SmartHunter.Game.Helpers
             return player;
         }
 
+        // ---- Sharpness under the Team widget's names ----
+        static readonly SharpnessPublisher s_SharpnessPublisher = new SharpnessPublisher();
+        static int s_PublishedSharpness = SharpnessShare.Unavailable;
+        static int s_SentSharpness;
+        static string s_SentSharpnessKey;
+        static bool s_SharpnessRequestDone = true;
+        static DateTime s_NextSharpnessSync = DateTime.MinValue;
+
+        // Called every read while the Team widget shows sharpness. Your own sharpness is published when it is worth it (a new
+        // colour, or a handful of hits), your row shows exactly what's published, and party sync carries it to the others.
+        public static void ShareSharpness()
+        {
+            var game = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
+            var local = OverlayViewModel.Instance.PlayerWidget.Context.Sharpness;
+            var team = OverlayViewModel.Instance.TeamWidget.Context;
+
+            if (s_SharpnessPublisher.ShouldPublish(local.IsAvailable, local.TopIndex, local.LevelIndex, local.Current))
+            {
+                s_PublishedSharpness = local.IsAvailable ? SharpnessShare.Pack(true, local.TopIndex, local.LevelIndex, local.Percent, local.HitsLeft) : SharpnessShare.Unavailable;
+            }
+            team.Players.FirstOrDefault(p => p.IsMe)?.Sharpness.Apply(s_PublishedSharpness);
+
+            if (!ConfigHelper.Main.Values.Overlay.MonsterWidget.UseNetworkServer || ServerManager.Instance.IsServerOline != 1
+                || !game.IsValid || !game.IsPlayerOnline() || game.IsPlayerAlone() || !game.playersCheckDone || !game.helloDone
+                || !s_SharpnessRequestDone || DateTime.Now < s_NextSharpnessSync || game.CurrentPlayerName.Length == 0)
+            {
+                return;
+            }
+
+            // Say it when it changed or the lobby is new, but never open a lobby with "nothing to show"
+            bool send = (s_SentSharpnessKey != game.key || s_SentSharpness != s_PublishedSharpness)
+                && !(s_PublishedSharpness == SharpnessShare.Unavailable && s_SentSharpnessKey != game.key);
+            int value = s_PublishedSharpness;
+            string key = game.key;
+            s_SharpnessRequestDone = false;
+            s_NextSharpnessSync = DateTime.Now.AddSeconds(3);
+            // Every request also brings back everyone's numbers, so asking with no name is how the others' are read
+            ServerManager.Instance.RequestCommadWithHandler(ServerManager.Command.DAMAGE, key, send ? SharpnessShare.KeyPrefix + game.CurrentPlayerName : null, game.IsCurrentPlayerLobbyHost(), send ? value : 0, null, (result, ping) =>
+            {
+                if (result != null && result["status"]?.ToString() == "ok")
+                {
+                    if (send)
+                    {
+                        s_SentSharpness = value;
+                        s_SentSharpnessKey = key;
+                    }
+                    ApplyTeammateSharpness(result["result"]?.ToString());
+                }
+                s_SharpnessRequestDone = true;
+            }, (error) =>
+            {
+                s_SharpnessRequestDone = true;
+            });
+        }
+
+        static void ApplyTeammateSharpness(string table)
+        {
+            if (string.IsNullOrEmpty(table))
+            {
+                return;
+            }
+            try
+            {
+                var entries = JsonConvert.DeserializeObject<Dictionary<string, int>>(table);
+                var team = OverlayViewModel.Instance.TeamWidget.Context;
+                string me = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.CurrentPlayerName;
+                foreach (var entry in entries)
+                {
+                    if (!entry.Key.StartsWith(SharpnessShare.KeyPrefix, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+                    string name = entry.Key.Substring(SharpnessShare.KeyPrefix.Length);
+                    var player = team.Players.FirstOrDefault(p => p.Name == name && name != me);
+                    player?.Sharpness.Apply(entry.Value);
+                }
+            }
+            catch (Exception)
+            {
+                // A table that doesn't read as numbers (another version's entry): skip it, damage sync has its own handling
+            }
+        }
+
         // True when this read of the on-screen damage list must only be remembered, not counted
         public static bool OnScreenSeed(bool inTown, ref bool wasInTown, ref ulong lastPtr, ulong ptr)
         {

@@ -851,9 +851,14 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
+            <!--Second line: the sharpness bar, only while it's on and known-->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
             <!--Damage against the top hunter, as a fill behind the row that fades to the right-->
-            <Grid Grid.ColumnSpan="4" Margin="-6 0 0 0" behaviors:RoundClip.Radius="5">
+            <Grid Grid.ColumnSpan="4" Grid.RowSpan="2" Margin="-6 0 0 0" behaviors:RoundClip.Radius="5">
             <Rectangle x:Name="Fill" behaviors:SmoothBar.Fraction="{Binding BarFraction}">
                 <Rectangle.OpacityMask>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -865,7 +870,7 @@
             </Grid>
 
             <!--Weapon silhouette in the hunter's colour; flashes when they land a hit-->
-            <Grid Width="26" Height="26" Margin="1 0 0 0" HorizontalAlignment="Left" VerticalAlignment="Center">
+            <Grid Grid.RowSpan="2" Width="26" Height="26" Margin="1 0 0 0" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <Ellipse x:Name="HitFlash" Width="26" Height="26" Opacity="0" RenderTransformOrigin="0.5,0.5">
                     <Ellipse.RenderTransform>
                         <ScaleTransform />
@@ -889,7 +894,25 @@
                        ToolTip="Also runs Aether" Visibility="{Binding UsesAether, Converter={StaticResource A_Converter_BoolToVisibility}}" />
             </StackPanel>
 
-            <StackPanel x:Name="Share" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="12 0 0 0">
+            <!--Sharpness: a pip per colour up to this weapon's best, full below the current colour. Updated after a handful of hits, not each one.-->
+            <StackPanel x:Name="SharpRow" Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0 0 0 6" Visibility="Collapsed" ToolTip="{Binding Sharpness.Tip}">
+                <ItemsControl ItemsSource="{Binding Sharpness.Pips}" VerticalAlignment="Center">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Width="14" Height="4" Margin="0 0 2 0" behaviors:RoundClip.Radius="-1">
+                                <Rectangle Fill="{Binding Brush}" Opacity="0.2" />
+                                <Rectangle Fill="{Binding Brush}" behaviors:SmoothBar.Fraction="{Binding Fill}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <controls:SharpText x:Name="Danger" Text="Sharpen" Style="{StaticResource T_Muted}" Foreground="{StaticResource B_Danger}" FontSize="11" Margin="6 -3 0 0" VerticalAlignment="Center" Visibility="Collapsed" />
+            </StackPanel>
+
+            <StackPanel x:Name="Share" Grid.Column="2" Grid.RowSpan="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="12 0 0 0">
                 <!--Up and down are separate so one can fade out while the other fades in, each moving its own way-->
                 <Grid Width="8" Height="6" Margin="0 0 5 0" VerticalAlignment="Center">
                     <Path x:Name="ArrowUp" Data="M0,6 L4,0 L8,6 Z" Fill="{StaticResource B_Up}" Stretch="Fill" Opacity="0">
@@ -906,13 +929,13 @@
                 <controls:SharpText Style="{StaticResource T_Value}" MinWidth="34" FontSize="15" Text="{Binding DamageFraction, Converter={StaticResource A_Converter_FractionToPercentage}}" />
             </StackPanel>
 
-            <StackPanel x:Name="Numbers" Grid.Column="3" VerticalAlignment="Center" MinWidth="64" Margin="12 0 0 0">
+            <StackPanel x:Name="Numbers" Grid.Column="3" Grid.RowSpan="2" VerticalAlignment="Center" MinWidth="64" Margin="12 0 0 0">
                 <controls:SharpText x:Name="DamageBlock" Style="{StaticResource T_Value}" FontSize="15" HorizontalAlignment="Right" Text="{Binding Damage, StringFormat={}{0:N0}}" />
                 <controls:SharpText x:Name="DpsBlock" Style="{StaticResource T_Muted}" FontSize="12" HorizontalAlignment="Right" Text="{Binding Dps, StringFormat={}{0:N0} dmg/s}" />
             </StackPanel>
 
             <!--Solo: the share is always 100%, so show what matters instead-->
-            <StackPanel x:Name="Solo" Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
+            <StackPanel x:Name="Solo" Grid.Column="1" Grid.ColumnSpan="3" Grid.RowSpan="2" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
                 <controls:SharpText Style="{StaticResource T_Big}" Text="{Binding Damage, StringFormat={}{0:N0}}" />
                 <controls:SharpText Style="{StaticResource T_Muted}" Margin="5 0 0 1" VerticalAlignment="Bottom" Text="damage" />
                 <controls:SharpText x:Name="SoloDps" Style="{StaticResource T_Muted}" Margin="10 0 0 1" VerticalAlignment="Bottom" Text="{Binding Dps, StringFormat={}{0:N0} dmg/s}" />
@@ -1001,6 +1024,30 @@
                 <Setter TargetName="Fill" Property="Visibility" Value="Collapsed" />
                 <Setter TargetName="Solo" Property="Visibility" Value="Visible" />
             </DataTrigger>
+            <!--Sharpness shows once it's known, the toggle is on, and there's someone else in the party-->
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Sharpness.IsAvailable}" Value="True" />
+                    <Condition Binding="{Binding DataContext.ShowSharpness, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="True" />
+                    <Condition Binding="{Binding DataContext.IsSolo, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="False" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="SharpRow" Property="Visibility" Value="Visible" />
+                <Setter TargetName="NameRow" Property="Margin" Value="0 6 0 1" />
+            </MultiDataTrigger>
+            <!--The cue is only for your own row; for the others the bar says it, and that's up to you to read-->
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Sharpness.NeedsSharpening}" Value="True" />
+                    <Condition Binding="{Binding IsMe}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="Danger" Property="Visibility" Value="Visible" />
+                <MultiDataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="SharpenCue" Storyboard="{StaticResource A_Storyboard_Danger}" />
+                </MultiDataTrigger.EnterActions>
+                <MultiDataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="SharpenCue" />
+                </MultiDataTrigger.ExitActions>
+            </MultiDataTrigger>
             <DataTrigger Binding="{Binding IsHitting}" Value="True">
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>

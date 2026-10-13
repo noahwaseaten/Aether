@@ -169,6 +169,13 @@ namespace SmartHunter.Game.Data.ViewModels
             PlayerWidget.Context.Hunt.ElapsedSeconds = 754;
             PlayerWidget.Context.Hunt.Deaths = "1/3";
             TeamWidget.Context.UpdateFractions();
+            // Sharpness under the names: you a colour short of the best, Kabuto at his best, mike two colours down
+            TeamWidget.Context.Players[0].Sharpness.Apply(SharpnessShare.Pack(true, 5, 4, 55, 80));
+            TeamWidget.Context.Players[1].Sharpness.Apply(SharpnessShare.Pack(true, 4, 4, 90, 100));
+            TeamWidget.Context.Players[2].Sharpness.Apply(SharpnessShare.Pack(true, 3, 1, 30, 20));
+            TeamWidget.Context.Players[0].Dps = 33; // fixed numbers, the live ones need a fight to measure
+            TeamWidget.Context.Players[1].Dps = 22;
+            TeamWidget.Context.Players[2].Dps = 6;
             TeamWidget.Context.Players[0].Trend = 1;
             TeamWidget.Context.Players[1].Trend = -1;
 
