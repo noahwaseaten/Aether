@@ -273,6 +273,13 @@ namespace SmartHunter.Core
             Check(d.Name == "D" && d.Damage == 0, "a new hunter in a slot doesn't inherit the last one's damage");
             team.ClearPlayers();
 
+            // A fresh lobby, nobody has hit yet: the widget must already know it isn't solo (solo rows hide the names)
+            team.UpdateAndGetPlayer(0, "A", 0);
+            team.UpdateAndGetPlayer(1, "B", 0);
+            team.UpdateFractions();
+            Check(!team.IsSolo, "two hunters at 0 damage are not solo");
+            team.ClearPlayers();
+
             // Expedition: a teammate without Aether has no number, and doesn't count toward anyone's share
             var current = OverlayViewModel.Instance.DebugWidget.Context.CurrentGame;
             current.CurrentPlayerName = "Me";

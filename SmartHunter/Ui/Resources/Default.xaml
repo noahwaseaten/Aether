@@ -927,8 +927,10 @@
             <DataTrigger Binding="{Binding IsMe}" Value="True">
                 <Setter TargetName="NameBlock" Property="Foreground" Value="{StaticResource B_Accent}" />
             </DataTrigger>
+            <!--Idle, nobody has hit yet: names stay, the dimmed rows drop the 0% (Hidden keeps the column so nothing jumps)-->
             <DataTrigger Binding="{Binding Damage}" Value="0">
                 <Setter TargetName="Root" Property="Opacity" Value="0.6" />
+                <Setter TargetName="Share" Property="Visibility" Value="Hidden" />
             </DataTrigger>
             <DataTrigger Binding="{Binding Dps}" Value="0">
                 <Setter TargetName="DpsBlock" Property="Visibility" Value="Collapsed" />

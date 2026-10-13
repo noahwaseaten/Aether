@@ -40,6 +40,13 @@ namespace SmartHunter.Core.Data
             set { SetProperty(ref m_IsRightAligned, value); }
         }
 
+        // Written with the next save, never triggers one: the width changes whenever the content does
+        public float SavedWidth
+        {
+            get { return m_WidgetConfig.Width; }
+            set { m_WidgetConfig.Width = value; }
+        }
+
         float m_Scale = 1;
         public float Scale
         {

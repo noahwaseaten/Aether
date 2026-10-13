@@ -140,6 +140,10 @@ namespace SmartHunter.Game.Data.WidgetContexts
 
         public void UpdateFractions()
         {
+            // Before the early return: with nobody hitting yet, IsSolo stayed at its default and a full lobby
+            // drew the solo rows (icons and "0 damage", no names)
+            UpdateStats();
+
             var playersWithDamage = Players.Where(player => player.Damage > 0);
             if (!playersWithDamage.Any())
             {
@@ -152,7 +156,6 @@ namespace SmartHunter.Game.Data.WidgetContexts
                 return;
             }
 
-            UpdateStats();
             NormalizeDamagePoints();
             PlayersDamageUpdated?.Invoke(this, EventArgs.Empty);
 

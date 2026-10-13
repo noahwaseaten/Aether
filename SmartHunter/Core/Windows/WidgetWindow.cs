@@ -38,11 +38,14 @@ namespace SmartHunter.Core.Windows
             LocationChanged += (s, e) => UpdateSide();
             SizeChanged += (s, e) =>
             {
-                // Right-side widgets grow to the left, so their outer edge stays where you put it
-                if (Widget.IsRightAligned && !m_IsDragging && e.WidthChanged && e.PreviousSize.Width > 0)
+                // Right-side widgets grow to the left, so their outer edge stays where you put it. On the first layout
+                // the saved Left belongs to the width the widget had when it was saved, not to the idle one it starts at
+                double before = e.PreviousSize.Width > 0 ? e.PreviousSize.Width : Widget.SavedWidth;
+                if (!m_IsDragging && e.WidthChanged && before > 0 && Left + before / 2 > SystemParameters.PrimaryScreenWidth / 2)
                 {
-                    Left -= e.NewSize.Width - e.PreviousSize.Width;
+                    Left -= e.NewSize.Width - before;
                 }
+                Widget.SavedWidth = (float)e.NewSize.Width;
                 UpdateSide();
 
                 // The widget's own size or the overlay size changed: draw the text again at the new pixel size
