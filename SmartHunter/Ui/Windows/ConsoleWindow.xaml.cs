@@ -15,6 +15,15 @@ namespace SmartHunter.Ui.Windows
         {
             InitializeComponent();
 
+            ChooseTextMode();
+            DpiChanged += (s, e) => ChooseTextMode();
+            LogPanel.IsVisibleChanged += (s, e) =>
+            {
+                if (LogPanel.IsVisible)
+                {
+                    LogBox.ScrollToEnd();
+                }
+            };
             Shell.DataContext = SettingsViewModel.Instance;
             LogPanel.DataContext = ConsoleViewModel.Instance;
             VersionText.Text = Core.Helpers.AppUpdater.CurrentVersion.ToString(3);
@@ -37,6 +46,12 @@ namespace SmartHunter.Ui.Windows
                 Shell.Margin = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
                 MaxButton.Content = WindowState == WindowState.Maximized ? "" : "";
             };
+        }
+
+        void ChooseTextMode()
+        {
+            bool wholePixels = Math.Abs(System.Windows.Media.VisualTreeHelper.GetDpi(this).DpiScaleX - 1) < 0.01;
+            System.Windows.Media.TextOptions.SetTextFormattingMode(this, wholePixels ? System.Windows.Media.TextFormattingMode.Display : System.Windows.Media.TextFormattingMode.Ideal);
         }
 
         void ResetLayout_Click(object sender, RoutedEventArgs e) => OverlayViewModel.Instance.ResetLayout();
@@ -71,8 +86,8 @@ namespace SmartHunter.Ui.Windows
                 return;
             }
             var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
-            var fade = new System.Windows.Media.Animation.DoubleAnimation(0.35, 1, TimeSpan.FromMilliseconds(160)) { EasingFunction = ease };
-            var slide = new System.Windows.Media.Animation.DoubleAnimation(6, 0, TimeSpan.FromMilliseconds(180)) { EasingFunction = ease };
+            var fade = new System.Windows.Media.Animation.DoubleAnimation(0.35, 1, TimeSpan.FromMilliseconds(160)) { EasingFunction = ease, FillBehavior = System.Windows.Media.Animation.FillBehavior.Stop };
+            var slide = new System.Windows.Media.Animation.DoubleAnimation(6, 0, TimeSpan.FromMilliseconds(180)) { EasingFunction = ease, FillBehavior = System.Windows.Media.Animation.FillBehavior.Stop };
             System.Windows.Media.Animation.Timeline.SetDesiredFrameRate(fade, Core.Helpers.WindowHelper.PrimaryRefreshRate);
             System.Windows.Media.Animation.Timeline.SetDesiredFrameRate(slide, Core.Helpers.WindowHelper.PrimaryRefreshRate);
             SettingsCard.BeginAnimation(OpacityProperty, fade);

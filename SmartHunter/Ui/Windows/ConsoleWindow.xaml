@@ -14,7 +14,7 @@
         Icon="/Ui/Aether.ico"
         Title="Aether" Height="640" Width="880" MinWidth="680" MinHeight="480"
         Background="#111214" Foreground="#F3EDE0" WindowStyle="SingleBorderWindow" ResizeMode="CanResize"
-        FontFamily="Segoe UI" FontSize="13"
+        FontFamily="Segoe UI" FontSize="14"
         TextOptions.TextFormattingMode="Display" UseLayoutRounding="True">
 
     <WindowChrome.WindowChrome>
@@ -65,7 +65,7 @@
         <SolidColorBrush x:Key="Surface" Color="#1A1B1E" />
         <SolidColorBrush x:Key="SurfaceHover" Color="#212226" />
         <SolidColorBrush x:Key="Stroke" Color="#2A2722" />
-        <SolidColorBrush x:Key="Muted" Color="#A39C8C" />
+        <SolidColorBrush x:Key="Muted" Color="#B0AA9A" />
         <SolidColorBrush x:Key="Accent" Color="#E2C27A" />
         <CubicEase x:Key="Ease" EasingMode="EaseOut" />
 
@@ -289,9 +289,9 @@
                                                     <Rectangle x:Name="Bar" Width="3" Height="14" RadiusX="1.5" RadiusY="1.5" Fill="{StaticResource Accent}" HorizontalAlignment="Left" Margin="-9 0 0 0" Visibility="Collapsed" />
                                                     <DockPanel>
                                                         <Border x:Name="Badge" DockPanel.Dock="Right" Padding="5 1" CornerRadius="4" Background="{StaticResource Accent}" Visibility="Collapsed" VerticalAlignment="Center">
-                                                            <TextBlock Text="NEW" FontSize="9" FontWeight="Bold" Foreground="#1C1400" />
+                                                            <TextBlock Text="NEW" FontSize="10" FontWeight="Bold" Foreground="#1C1400" />
                                                         </Border>
-                                                        <TextBlock x:Name="T" Text="{Binding Name}" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                        <TextBlock x:Name="T" Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                                     </DockPanel>
                                                 </Grid>
                                             </Border>
@@ -333,12 +333,12 @@
                 </Rectangle.OpacityMask>
             </Rectangle>
             <TextBlock x:Name="TitleText" Text="Aether" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold" Foreground="#D8D0BE" />
-            <TextBlock x:Name="VersionText" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource Muted}" Margin="8 1 0 0" />
+            <TextBlock x:Name="VersionText" VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource Muted}" Margin="8 1 0 0" />
         </DockPanel>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="196" />
+                <ColumnDefinition Width="208" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
@@ -389,7 +389,7 @@
 
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <TextBlock Text="Settings" FontSize="11.5" Foreground="{StaticResource Muted}" Margin="12 8 0 6" />
+                            <TextBlock Text="Settings" FontSize="12" Foreground="{StaticResource Muted}" Margin="12 8 0 6" />
                             <ItemsControl ItemsSource="{Binding Categories}" />
                             <Rectangle Height="1" Fill="{StaticResource Stroke}" Margin="8 8 8 8" />
                             <ContentControl Content="{Binding LogCategory}" />
@@ -409,7 +409,7 @@
                 <!--Header: the page's name, and search over every setting. Its edge line fades in only once the page is scrolled.-->
                 <Border Grid.Row="0" Padding="24 12 24 10">
                     <DockPanel>
-                        <TextBox x:Name="SettingsSearch" DockPanel.Dock="Right" Width="260" Height="30" VerticalAlignment="Center" FontSize="12.5"
+                        <TextBox x:Name="SettingsSearch" DockPanel.Dock="Right" Width="260" Height="30" VerticalAlignment="Center" FontSize="13"
                              Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" KeyDown="SettingsSearch_KeyDown"
                              Background="{StaticResource Surface}" Foreground="#F3EDE0" CaretBrush="{StaticResource Accent}" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
                         <TextBox.Template>
@@ -439,7 +439,7 @@
                             </ControlTemplate>
                         </TextBox.Template>
                     </TextBox>
-                        <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
                     </DockPanel>
                 </Border>
                 <Border x:Name="HeaderLine" Grid.Row="0" Height="1" VerticalAlignment="Bottom" Background="{StaticResource Stroke}" Opacity="0" IsHitTestVisible="False" />
@@ -496,7 +496,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="0 0 0 10">
-                                            <TextBlock x:Name="Heading" Text="{Binding Version}" FontWeight="SemiBold" FontSize="12.5" Margin="0 0 0 2" />
+                                            <TextBlock x:Name="Heading" Text="{Binding Version}" FontWeight="SemiBold" FontSize="13" Margin="0 0 0 2" />
                                             <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="12" LineHeight="18" Foreground="#D8D0BE" />
                                         </StackPanel>
                                         <DataTemplate.Triggers>
@@ -521,12 +521,12 @@
                             <DataTemplate>
                                 <DockPanel Margin="0 2">
                                     <Button DockPanel.Dock="Right" Content="Dismiss" Command="{Binding DismissCommand}" Style="{StaticResource PillButton}" Margin="12 0 0 0" VerticalAlignment="Top" />
-                                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="12.5" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="13" VerticalAlignment="Center" />
                                 </DockPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Text="The Log tab has the details." Foreground="{StaticResource Muted}" FontSize="11.5" Margin="0 4 0 0" />
+                    <TextBlock Text="The Log tab has the details." Foreground="{StaticResource Muted}" FontSize="12" Margin="0 4 0 0" />
                 </StackPanel>
             </Border>
 
@@ -540,7 +540,7 @@
                                 <GroupStyle>
                                     <GroupStyle.HeaderTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Name}" Foreground="{StaticResource Accent}" FontSize="11.5" FontWeight="SemiBold" Margin="14 12 0 4">
+                                            <TextBlock Text="{Binding Name}" Foreground="{StaticResource Accent}" FontSize="12" FontWeight="SemiBold" Margin="14 12 0 4">
                                                 <TextBlock.Visibility>
                                                     <MultiBinding Converter="{StaticResource AnyShown}">
                                                         <Binding Path="Items" />
@@ -555,7 +555,7 @@
                             </ItemsControl.GroupStyle>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type core:Setting}">
-                                    <Border x:Name="Row" Padding="14 9" MinHeight="40" MouseEnter="SettingRow_MouseEnter" MouseLeave="SettingRow_MouseLeave" Visibility="{Binding IsShown, Converter={StaticResource A_Converter_BoolToVisibility}}" Background="Transparent" BorderBrush="{StaticResource Stroke}" BorderThickness="0 0 0 1"
+                                    <Border x:Name="Row" Padding="16 11" MinHeight="48" MouseEnter="SettingRow_MouseEnter" MouseLeave="SettingRow_MouseLeave" Visibility="{Binding IsShown, Converter={StaticResource A_Converter_BoolToVisibility}}" Background="Transparent" BorderBrush="{StaticResource Stroke}" BorderThickness="0 0 0 1"
                                             IsEnabled="{Binding IsEnabled}" ToolTipService.ShowOnDisabled="True">
                                         <DockPanel>
                                             <!--A few choices side by side: the current one is gold-->
@@ -616,13 +616,13 @@
                                                     </Border>
                                                     <!--Until the row has been looked at or changed-->
                                                     <Border x:Name="NewBadge" Margin="6 0 0 0" Padding="6 1" CornerRadius="4" Background="{StaticResource Accent}" Visibility="Collapsed" VerticalAlignment="Center">
-                                                        <TextBlock Text="NEW" FontSize="9.5" FontWeight="Bold" Foreground="#1C1400" />
+                                                        <TextBlock Text="NEW" FontSize="10" FontWeight="Bold" Foreground="#1C1400" />
                                                     </Border>
                                                     <Border x:Name="RestartChip" Margin="8 0 0 0" Padding="6 1" CornerRadius="4" Background="#2A2B30" Visibility="Collapsed" VerticalAlignment="Center">
-                                                        <TextBlock Text="Restart" FontSize="10.5" Foreground="{StaticResource Muted}" />
+                                                        <TextBlock Text="Restart" FontSize="11" Foreground="{StaticResource Muted}" />
                                                     </Border>
                                                 </StackPanel>
-                                                <TextBlock x:Name="Detail" Text="{Binding Subtitle}" Foreground="{StaticResource Muted}" FontSize="11.5" TextWrapping="Wrap" Margin="0 2 0 0" />
+                                                <TextBlock x:Name="Detail" Text="{Binding Subtitle}" Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0 3 0 0" LineHeight="16" />
                                             </StackPanel>
                                         </DockPanel>
                                     </Border>
@@ -671,8 +671,8 @@
 
                 <!--Log-->
                 <Border x:Name="LogPanel" Grid.Row="1" Grid.RowSpan="2" Margin="24 4 24 20" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1" Padding="4"
-                        Visibility="Collapsed">
-                    <controls:ScrollingTextBox Text="{Binding Output}" AcceptsReturn="True" TextWrapping="Wrap" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                        Visibility="{Binding IsLogShown, Source={x:Static viewModels:SettingsViewModel.Instance}, Converter={StaticResource A_Converter_BoolToVisibility}}">
+                    <controls:ScrollingTextBox x:Name="LogBox" Text="{Binding Output}" AcceptsReturn="True" TextWrapping="Wrap" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
                                                Background="Transparent" Foreground="#D8D0BE" BorderThickness="0" Padding="8"
                                                FontFamily="Cascadia Mono, Consolas" FontSize="12" />
                 </Border>
