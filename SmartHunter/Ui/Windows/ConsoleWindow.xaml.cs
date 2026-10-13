@@ -39,6 +39,28 @@ namespace SmartHunter.Ui.Windows
 
         void ResetLayout_Click(object sender, RoutedEventArgs e) => OverlayViewModel.Instance.ResetLayout();
 
+        // Esc clears the search; Ctrl+F from anywhere in the window jumps to it
+        void SettingsSearch_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Escape && SettingsSearch.Text.Length > 0)
+            {
+                SettingsSearch.Clear();
+                e.Handled = true;
+            }
+        }
+
+        protected override void OnPreviewKeyDown(System.Windows.Input.KeyEventArgs e)
+        {
+            base.OnPreviewKeyDown(e);
+            if (e.Key == System.Windows.Input.Key.F && System.Windows.Input.Keyboard.Modifiers == System.Windows.Input.ModifierKeys.Control)
+            {
+                SettingsTab.IsSelected = true;
+                SettingsSearch.Focus();
+                SettingsSearch.SelectAll();
+                e.Handled = true;
+            }
+        }
+
         // A row counts as seen once the mouse has rested on it for a moment (passing over it doesn't)
         DateTime m_HoverStart;
 

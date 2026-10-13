@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using SmartHunter.Core.Data;
 
 namespace SmartHunter.Core
@@ -22,8 +24,51 @@ namespace SmartHunter.Core
         public string Detail
         {
             get { return m_Detail; }
-            set { SetProperty(ref m_Detail, value); }
+            set { if (SetProperty(ref m_Detail, value)) NotifyPropertyChanged(nameof(Subtitle)); }
         }
+
+        // The explanation's first sentence, shown under the name so nobody has to hover to learn what a row does
+        public string Summary
+        {
+            get
+            {
+                if (Description == null)
+                {
+                    return null;
+                }
+                int end = Description.IndexOf(". ", StringComparison.Ordinal);
+                return end > 0 ? Description.Substring(0, end + 1) : Description;
+            }
+        }
+
+        // The "i" tooltip only earns its place when it says more than the line under the name
+        public bool HasMore => Description != null && Description != Summary;
+
+        // Under the name: why the row is off, else its current value, else what it does
+        public string Subtitle => !IsEnabled ? "Turn on " + m_Parent.Name + " first." : Detail ?? Summary;
+
+        // A row that only means something while another toggle (in the same section) is on
+        Setting m_Parent;
+        public bool IsEnabled => m_Parent == null || m_Parent.Value;
+
+        public void DependsOn(Setting parent)
+        {
+            m_Parent = parent;
+            parent.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(Value))
+                {
+                    NotifyPropertyChanged(nameof(IsEnabled));
+                    NotifyPropertyChanged(nameof(Subtitle));
+                }
+            };
+            NotifyPropertyChanged(nameof(IsEnabled));
+            NotifyPropertyChanged(nameof(Subtitle));
+        }
+
+        // A few choices shown side by side, each one visible and one click away (null: a toggle or a button)
+        public IList<SettingOption> Options { get; set; }
+        public bool IsChoice => Options != null;
         public bool RequiresRestart { get; }
         public bool IsToggle { get; }
         string m_ActionLabel;
@@ -70,6 +115,25 @@ namespace SmartHunter.Core
             Description = description;
             m_ActionLabel = actionLabel;
             TriggerAction = action;
+        }
+    }
+
+    public class SettingOption : Bindable
+    {
+        public string Label { get; }
+        public Command Select { get; }
+
+        bool m_IsSelected;
+        public bool IsSelected
+        {
+            get { return m_IsSelected; }
+            set { SetProperty(ref m_IsSelected, value); }
+        }
+
+        public SettingOption(string label, Command select)
+        {
+            Label = label;
+            Select = select;
         }
     }
 

@@ -12,7 +12,7 @@
         d:DataContext="{x:Static viewModels:ConsoleViewModel.Instance}"
         mc:Ignorable="d"
         Icon="/Ui/Aether.ico"
-        Title="Aether" Height="760" Width="600" MinWidth="460" MinHeight="420"
+        Title="Aether" Height="760" Width="720" MinWidth="560" MinHeight="420"
         Background="#111214" Foreground="#F3EDE0" WindowStyle="SingleBorderWindow" ResizeMode="CanResize"
         FontFamily="Segoe UI" FontSize="13"
         TextOptions.TextFormattingMode="Display" UseLayoutRounding="True">
@@ -306,7 +306,7 @@
                                  Visibility="{Binding IsDownloading, Converter={StaticResource A_Converter_BoolToVisibility}}" />
                     <StackPanel Margin="0 10 0 0" Visibility="{Binding HasNotes, Converter={StaticResource A_Converter_BoolToVisibility}}">
                         <TextBlock Text="What's new" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Accent}" Margin="0 0 0 4" />
-                        <ScrollViewer MaxHeight="140" VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer MaxHeight="84" VerticalScrollBarVisibility="Auto">
                             <ItemsControl ItemsSource="{Binding NoteSections}" Margin="0 0 8 0">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -407,7 +407,7 @@
                     <!--Search: with this many settings, typing a word is faster than scrolling. The icon, placeholder and text share
                         one grid column, so the caret starts exactly where the placeholder does.-->
                     <TextBox x:Name="SettingsSearch" DockPanel.Dock="Top" Margin="20 0 20 8" Height="30" FontSize="12.5"
-                             Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}"
+                             Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" KeyDown="SettingsSearch_KeyDown"
                              Background="{StaticResource Surface}" Foreground="#F3EDE0" CaretBrush="{StaticResource Accent}" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
                         <TextBox.Template>
                             <ControlTemplate TargetType="TextBox">
@@ -437,33 +437,35 @@
                         </TextBox.Template>
                     </TextBox>
 
-                    <!--Categories: one group of settings at a time (a search looks through all of them). A gold dot marks one with something new in it.-->
-                    <ItemsControl DockPanel.Dock="Top" Margin="20 0 20 4" ItemsSource="{Binding Categories}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
+                    <!--Categories: one group of settings at a time; a search looks through all of them. NEW marks one with something new in it.-->
+                    <ItemsControl DockPanel.Dock="Left" Width="148" Margin="20 4 0 0" ItemsSource="{Binding Categories}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type core:SettingsCategory}">
-                                <Button Command="{Binding Select}" Margin="0 0 4 4" Cursor="Hand" Focusable="False">
+                                <Button Command="{Binding Select}" Margin="0 0 0 2" Cursor="Hand" Focusable="False">
                                     <Button.Template>
                                         <ControlTemplate TargetType="Button">
-                                            <Border x:Name="B" CornerRadius="14" Padding="11 4" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock x:Name="T" Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Muted}" />
-                                                    <Ellipse x:Name="Dot" Width="6" Height="6" Fill="{StaticResource Accent}" Margin="6 0 0 0" Visibility="Collapsed" />
-                                                </StackPanel>
+                                            <Border x:Name="B" CornerRadius="8" Padding="12 7 8 7" Background="Transparent">
+                                                <Grid>
+                                                    <Rectangle x:Name="Bar" Width="3" Height="14" RadiusX="1.5" RadiusY="1.5" Fill="{StaticResource Accent}" HorizontalAlignment="Left" Margin="-9 0 0 0" Visibility="Collapsed" />
+                                                    <DockPanel>
+                                                        <Border x:Name="Badge" DockPanel.Dock="Right" Padding="5 1" CornerRadius="4" Background="{StaticResource Accent}" Visibility="Collapsed" VerticalAlignment="Center">
+                                                            <TextBlock Text="NEW" FontSize="9" FontWeight="Bold" Foreground="#1C1400" />
+                                                        </Border>
+                                                        <TextBlock x:Name="T" Text="{Binding Name}" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                </Grid>
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="B" Property="Background" Value="{StaticResource SurfaceHover}" />
+                                                    <Setter TargetName="B" Property="Background" Value="{StaticResource Surface}" />
                                                     <Setter TargetName="T" Property="Foreground" Value="#F3EDE0" />
                                                 </Trigger>
                                                 <DataTrigger Binding="{Binding HasNew}" Value="True">
-                                                    <Setter TargetName="Dot" Property="Visibility" Value="Visible" />
+                                                    <Setter TargetName="Badge" Property="Visibility" Value="Visible" />
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
                                                     <Setter TargetName="B" Property="Background" Value="#2A2B30" />
-                                                    <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Accent}" />
+                                                    <Setter TargetName="Bar" Property="Visibility" Value="Visible" />
                                                     <Setter TargetName="T" Property="Foreground" Value="#F3EDE0" />
                                                 </DataTrigger>
                                             </ControlTemplate.Triggers>
@@ -474,13 +476,18 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20 0 14 20">
-                        <ItemsControl ItemsSource="{Binding Settings}" Margin="0 0 6 0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="14 0 14 20">
+                        <StackPanel>
+                        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" Margin="2 0 0 8" />
+                        <TextBlock Text="No settings match your search. Try a shorter word, or pick a category on the left." Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="2 4 0 0"
+                                   Visibility="{Binding NoResults, Converter={StaticResource A_Converter_BoolToVisibility}}" />
+                        <Border CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1" Margin="0 0 6 0" ClipToBounds="True">
+                        <ItemsControl ItemsSource="{Binding Settings}">
                             <ItemsControl.GroupStyle>
                                 <GroupStyle>
                                     <GroupStyle.HeaderTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Name}" Foreground="{StaticResource Muted}" FontSize="12" FontWeight="SemiBold" Margin="4 14 0 6">
+                                            <TextBlock Text="{Binding Name}" Foreground="{StaticResource Accent}" FontSize="11.5" FontWeight="SemiBold" Margin="14 12 0 4">
                                                 <TextBlock.Visibility>
                                                     <MultiBinding Converter="{StaticResource AnyShown}">
                                                         <Binding Path="Items" />
@@ -495,8 +502,39 @@
                             </ItemsControl.GroupStyle>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type core:Setting}">
-                                    <Border x:Name="Row" Margin="0 0 0 4" Padding="14 8" MinHeight="38" CornerRadius="8" MouseEnter="SettingRow_MouseEnter" MouseLeave="SettingRow_MouseLeave" Visibility="{Binding IsShown, Converter={StaticResource A_Converter_BoolToVisibility}}" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
+                                    <Border x:Name="Row" Padding="14 9" MinHeight="40" MouseEnter="SettingRow_MouseEnter" MouseLeave="SettingRow_MouseLeave" Visibility="{Binding IsShown, Converter={StaticResource A_Converter_BoolToVisibility}}" Background="Transparent" BorderBrush="{StaticResource Stroke}" BorderThickness="0 0 0 1"
+                                            IsEnabled="{Binding IsEnabled}" ToolTipService.ShowOnDisabled="True">
                                         <DockPanel>
+                                            <!--A few choices side by side: the current one is gold-->
+                                            <Border x:Name="Choices" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="16 0 0 0" Padding="2" CornerRadius="8" Background="#111214" Visibility="Collapsed">
+                                                <ItemsControl ItemsSource="{Binding Options}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate DataType="{x:Type core:SettingOption}">
+                                                            <Button Command="{Binding Select}" Cursor="Hand" Focusable="False">
+                                                                <Button.Template>
+                                                                    <ControlTemplate TargetType="Button">
+                                                                        <Border x:Name="B" CornerRadius="6" Padding="10 4" Background="Transparent">
+                                                                            <TextBlock x:Name="T" Text="{Binding Label}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Muted}" />
+                                                                        </Border>
+                                                                        <ControlTemplate.Triggers>
+                                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                                <Setter TargetName="T" Property="Foreground" Value="#F3EDE0" />
+                                                                            </Trigger>
+                                                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                                <Setter TargetName="B" Property="Background" Value="{StaticResource Accent}" />
+                                                                                <Setter TargetName="T" Property="Foreground" Value="#1C1400" />
+                                                                            </DataTrigger>
+                                                                        </ControlTemplate.Triggers>
+                                                                    </ControlTemplate>
+                                                                </Button.Template>
+                                                            </Button>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Border>
                                             <CheckBox x:Name="Switch" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="16 0 0 0" Style="{StaticResource Switch}"
                                                       IsChecked="{Binding Value, Mode=TwoWay}" Command="{Binding TriggerAction}" />
                                             <Button x:Name="Action" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="16 0 0 0" Visibility="Collapsed"
@@ -531,7 +569,7 @@
                                                         <TextBlock Text="Restart" FontSize="10.5" Foreground="{StaticResource Muted}" />
                                                     </Border>
                                                 </StackPanel>
-                                                <TextBlock x:Name="Detail" Text="{Binding Detail}" Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0 2 0 0" />
+                                                <TextBlock x:Name="Detail" Text="{Binding Subtitle}" Foreground="{StaticResource Muted}" FontSize="11.5" TextWrapping="Wrap" Margin="0 2 0 0" />
                                             </StackPanel>
                                         </DockPanel>
                                     </Border>
@@ -549,11 +587,19 @@
                                         <DataTrigger Binding="{Binding RequiresRestart}" Value="True">
                                             <Setter TargetName="RestartChip" Property="Visibility" Value="Visible" />
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding Detail}" Value="{x:Null}">
+                                        <DataTrigger Binding="{Binding Subtitle}" Value="{x:Null}">
                                             <Setter TargetName="Detail" Property="Visibility" Value="Collapsed" />
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                        <DataTrigger Binding="{Binding HasMore}" Value="False">
                                             <Setter TargetName="InfoMark" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsChoice}" Value="True">
+                                            <Setter TargetName="Action" Property="Visibility" Value="Collapsed" />
+                                            <Setter TargetName="Choices" Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                        <!--Needs another toggle first-->
+                                        <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                            <Setter TargetName="Row" Property="Opacity" Value="0.45" />
                                         </DataTrigger>
                                         <Trigger SourceName="Row" Property="IsMouseOver" Value="True">
                                             <Setter TargetName="InfoMark" Property="Opacity" Value="0.8" />
@@ -566,6 +612,8 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                        </Border>
+                        </StackPanel>
                     </ScrollViewer>
                 </DockPanel>
             </TabItem>

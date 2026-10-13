@@ -71,6 +71,15 @@ namespace SmartHunter.Game.Data.ViewModels
         }
 
         public bool IsSearching => m_Query.Trim().Length > 0;
+        // A search that finds nothing says so instead of leaving an empty page
+        bool m_NoResults;
+        public bool NoResults
+        {
+            get { return m_NoResults; }
+            set { SetProperty(ref m_NoResults, value); }
+        }
+
+        public string Title => IsSearching ? "Search results" : m_Selected;
 
         void Select(string category)
         {
@@ -93,6 +102,8 @@ namespace SmartHunter.Game.Data.ViewModels
                 category.IsSelected = query.Length == 0 && category.Name == m_Selected;
                 category.HasNew = Settings.Any(s => s.Group == category.Name && s.IsNew);
             }
+            NoResults = !Settings.Any(x => x.IsShown);
+            NotifyPropertyChanged(nameof(Title));
             SearchVersion++;
         }
 
@@ -140,11 +151,31 @@ namespace SmartHunter.Game.Data.ViewModels
             Settings.Add(setting);
         }
 
-        // A button row showing the current option; each click moves to the next one
+        // Up to four options show side by side so every one is visible; more than that is a button that moves to the next
         void Choice(string group, string name, string description, (string Value, string Label)[] options, Func<string> get, Action<string> set, bool isNew = false)
         {
             string LabelOf(string value) => (options.FirstOrDefault(o => o.Value == value).Label) ?? options[0].Label;
             Setting setting = null;
+            if (options.Length <= 4)
+            {
+                setting = new Setting(group, name, description, "", null);
+                var items = new List<SettingOption>();
+                foreach (var option in options)
+                {
+                    var item = new SettingOption(option.Label, new Command(_ =>
+                    {
+                        set(option.Value);
+                        ConfigHelper.Main.Save();
+                        foreach (var other in items) other.IsSelected = other.Label == LabelOf(get());
+                        Seen(setting);
+                    })) { IsSelected = option.Value == get() };
+                    items.Add(item);
+                }
+                setting.Options = items;
+                Add(setting, isNew);
+                return;
+            }
+
             setting = new Setting(group, name, description, LabelOf(get()), new Command(_ =>
             {
                 int next = (Array.FindIndex(options, o => o.Value == get()) + 1) % options.Length;
@@ -309,6 +340,12 @@ namespace SmartHunter.Game.Data.ViewModels
             Settings.Add(new Setting(About, "Report a bug", "Opens a new GitHub issue with your Aether and Windows versions filled in. Attaching Log.txt from the Aether folder helps a lot.", "Report…",
                 new Command(_ => Open($"{Repo}/issues/new?body=" + Uri.EscapeDataString($"**What happened:**\n\n**What you expected:**\n\n---\nAether {version}, {WindowsVersion()}"))))
                 { Detail = "Bugs, wrong numbers, widgets in the wrong place" });
+
+            void Depends(string group, string child, string parent) =>
+                Settings.First(x => x.Group == group && x.Name == child).DependsOn(Settings.First(x => x.Group == group && x.Name == parent));
+            Depends(Monster, "Always show parts", "Parts");
+            Depends(Monster, "Always show status effects", "Status effects");
+            Depends(Monster, "Pulse active statuses", "Status effects");
 
             foreach (var name in Settings.Select(x => x.Group).Distinct())
             {
