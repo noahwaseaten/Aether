@@ -46,6 +46,14 @@ namespace SmartHunter.Game.Data
             set { SetProperty(ref m_IsLeader, value); }
         }
 
+        // A teammate's all-monster total (sent by their Aether) is the game's counter plus damage to other monsters, so
+        // it can't sit far above it. On expeditions the game keeps no counter, so there is nothing to compare with.
+        // ponytail: a fixed 4x + 20,000 margin; a per-quest bound from the monsters' health if it ever drops a real total
+        public static bool IsSyncedDamagePlausible(int synced, int gameDamage, bool isExpedition)
+        {
+            return synced >= 0 && (isExpedition || gameDamage <= 0 || synced <= gameDamage * 4L + 20000);
+        }
+
         // The game's own counter (quest targets only), and whether party sync sent this hunter's all-monster total
         public int GameDamage;
         public bool HasSyncedDamage;

@@ -280,6 +280,23 @@ namespace SmartHunter.Core
             Check(!team.IsSolo, "two hunters at 0 damage are not solo");
             team.ClearPlayers();
 
+            // On-screen damage: a hit or two counts, the game rebuilding the whole list doesn't, and stale huge entries don't
+            var seen = new int[14, 2];
+            int[] ids1 = new int[14], ids2 = new int[14], vals = new int[14];
+            Check(MhwHelper.NewOnScreenDamage(ids1, ids2, vals, seen, false) == 0, "an unchanged list adds nothing");
+            ids1[3] = 7; vals[3] = 120;
+            Check(MhwHelper.NewOnScreenDamage(ids1, ids2, vals, seen, false) == 120, "a new entry in one slot is a hit");
+            Check(MhwHelper.NewOnScreenDamage(ids1, ids2, vals, seen, false) == 0, "the same entry isn't counted twice");
+            for (int i = 0; i < 14; i++) { ids1[i] = 100 + i; vals[i] = 5000; }
+            Check(MhwHelper.NewOnScreenDamage(ids1, ids2, vals, seen, false) == 0, "every slot changing at once is a rebuilt list, not 14 hits");
+            ids1[5] = 999; vals[5] = 61000;
+            Check(MhwHelper.NewOnScreenDamage(ids1, ids2, vals, seen, false) == 0, "a stale 61,000 entry isn't a hit");
+            ids1[6] = 998; ids1[7] = 997; vals[6] = 300; vals[7] = 250;
+            Check(MhwHelper.NewOnScreenDamage(ids1, ids2, vals, seen, false) == 550, "two hits in one read both count");
+            Check(Player.IsSyncedDamagePlausible(40000, 35000, false), "a synced total near the game's counter is believable");
+            Check(!Player.IsSyncedDamagePlausible(357888, 30000, false), "a synced total ten times the game's counter is dropped");
+            Check(Player.IsSyncedDamagePlausible(357888, 0, true), "on expeditions there is no counter to compare with");
+
             // Live damage per second: the last 10 seconds, and 0 again once a hunter stops hitting
             var dpsPlayer = new Player();
             var t0 = new DateTime(2026, 1, 1, 12, 0, 0);

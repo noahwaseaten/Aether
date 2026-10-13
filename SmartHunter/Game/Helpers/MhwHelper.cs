@@ -591,6 +591,43 @@ namespace SmartHunter.Game.Helpers
             return seed;
         }
 
+        // A hit lands a few slots per read at most (a bow's burst is the most); the game rebuilding the list (an area change, a cutscene) changes most of them
+        // at once, and counting those as hits was the 357,888 on a teammate's row. Past this many changes in one read it
+        // was a rebuild, which is only remembered.
+        public const int RebuildSlots = 9;
+        // The biggest single number the game shows is a few thousand; stale entries read as tens of thousands
+        public const int MaxSingleHit = 20000;
+
+        // The damage to add for one read of the on-screen list. `seen` holds each slot's ids from the read before, and is
+        // brought up to date; `seed` means this read is only to be remembered.
+        public static int NewOnScreenDamage(int[] id1s, int[] id2s, int[] values, int[,] seen, bool seed)
+        {
+            int changed = 0;
+            for (int i = 0; i < id1s.Length; i++)
+            {
+                if (seen[i, 0] != id1s[i] || seen[i, 1] != id2s[i])
+                {
+                    changed++;
+                }
+            }
+
+            int added = 0;
+            bool count = !seed && changed < RebuildSlots;
+            for (int i = 0; i < id1s.Length; i++)
+            {
+                if (seen[i, 0] != id1s[i] || seen[i, 1] != id2s[i])
+                {
+                    seen[i, 0] = id1s[i];
+                    seen[i, 1] = id2s[i];
+                    if (count && values[i] > 0 && values[i] < MaxSingleHit)
+                    {
+                        added += values[i];
+                    }
+                }
+            }
+            return added;
+        }
+
         public static void UpdateDamageOnScreen(Process process, ulong damageOnScreenPtr)
         {
             var p = OverlayViewModel.Instance.TeamWidget.Context.Players.Where(p => p.Name.Equals(OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.CurrentPlayerName));
@@ -605,24 +642,18 @@ namespace SmartHunter.Game.Helpers
                 bool seed = OnScreenSeed(inTown, ref damageOnScreenWasInTown, ref lastDamageOnScreenPtr, damageOnScreenPtr);
                 ulong startOfList = damageOnScreenPtr + 0x2900;
                 ulong currentItem = startOfList;
-                for (int i = 0; i < DataOffsets.PlayerDamage.MaxOnScreenDamages; i++)
+                int count = DataOffsets.PlayerDamage.MaxOnScreenDamages;
+                var id1s = new int[count];
+                var id2s = new int[count];
+                var values = new int[count];
+                for (int i = 0; i < count; i++)
                 {
-                    int id1 = MemoryHelper.Read<int>(process, currentItem + 0x20);
-                    int id2 = MemoryHelper.Read<int>(process, currentItem + 0x24);
-
-                    if (expeditionDamageChecker[i, 0] != id1 || expeditionDamageChecker[i, 1] != id2)
-                    {
-                        expeditionDamageChecker[i, 0] = id1;
-                        expeditionDamageChecker[i, 1] = id2;
-
-                        int value = MemoryHelper.Read<int>(process, currentItem + 0x34);
-                        if (!seed && value > 0 && value < 100000)
-                        {
-                            currentPlayer.Damage += value;
-                        }
-                    }
+                    id1s[i] = MemoryHelper.Read<int>(process, currentItem + 0x20);
+                    id2s[i] = MemoryHelper.Read<int>(process, currentItem + 0x24);
+                    values[i] = MemoryHelper.Read<int>(process, currentItem + 0x34);
                     currentItem += 0x90;
                 }
+                currentPlayer.Damage += NewOnScreenDamage(id1s, id2s, values, expeditionDamageChecker, seed);
                 if (!OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerAlone() && OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.playersCheckDone && OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.helloDone && networkOperationDoneD && DateTime.Now.Second != lastNetworkOperationTimeD)
                 {
                     networkOperationDoneD = false;
@@ -665,11 +696,20 @@ namespace SmartHunter.Game.Helpers
                                         {
                                             // The server keeps a hunter's last total after their Aether stops; the game's
                                             // own (quest target) counter still moves, and the all-monster total is never below it
-                                            p.First().Damage = Math.Max(damageData[id], p.First().GameDamage);
-                                            p.First().HasSyncedDamage = true;
-                                            p.First().IsDamageUnknown = false;
-                                            p.First().IsDamagePartial = false;
-                                            p.First().UsesAether = true;
+                                            var teammate = p.First();
+                                            teammate.UsesAether = true;
+                                            // Their Aether can send a bad total (an older version, or a rebuilt list): trust it only
+                                            // while it's believable next to the game's own counter for them
+                                            if (!Player.IsSyncedDamagePlausible(damageData[id], teammate.GameDamage, OverlayViewModel.Instance.DebugWidget.Context.CurrentGame.IsPlayerInExpedition))
+                                            {
+                                                teammate.Damage = teammate.GameDamage;
+                                                teammate.HasSyncedDamage = false;
+                                                continue;
+                                            }
+                                            teammate.Damage = Math.Max(damageData[id], teammate.GameDamage);
+                                            teammate.HasSyncedDamage = true;
+                                            teammate.IsDamageUnknown = false;
+                                            teammate.IsDamagePartial = false;
                                         }
                                     }
                                 }
