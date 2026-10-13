@@ -99,11 +99,16 @@ namespace SmartHunter.Ui.Behaviors
                     break;
             }
 
-            if (!CanScroll(scrollViewer, e.Delta))
+            var glide = (Glide)scrollViewer.GetValue(GlideProperty);
+
+            // While a glide is still moving, every notch is ours, even one that asks for more than is left. Leaving it
+            // to WPF's own wheel handling (a 48 px jump) made the page snap against the glide when spinning up
+            // from the middle to the top, or down to the bottom, without stopping.
+            bool gliding = glide != null && glide.IsRunning;
+            if (!gliding && !CanScroll(scrollViewer, e.Delta))
                 return;
 
             e.Handled = true;
-            var glide = (Glide)scrollViewer.GetValue(GlideProperty);
             if (glide == null)
             {
                 glide = new Glide(scrollViewer);
@@ -111,7 +116,7 @@ namespace SmartHunter.Ui.Behaviors
             }
             if (!glide.IsRunning)
                 glide.Target = scrollViewer.VerticalOffset; // the scrollbar may have been dragged since
-            glide.Target -= e.Delta / 120.0 * PixelsPerNotch;
+            glide.Target = Math.Max(0, Math.Min(scrollViewer.ScrollableHeight, glide.Target - e.Delta / 120.0 * PixelsPerNotch));
             glide.Start();
         }
     }

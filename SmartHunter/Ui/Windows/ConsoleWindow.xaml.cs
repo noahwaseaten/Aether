@@ -15,8 +15,10 @@ namespace SmartHunter.Ui.Windows
         {
             InitializeComponent();
 
-            LogsTab.DataContext = ConsoleViewModel.Instance;
-            SettingsTab.DataContext = SettingsViewModel.Instance;
+            Shell.DataContext = SettingsViewModel.Instance;
+            LogPanel.DataContext = ConsoleViewModel.Instance;
+            VersionText.Text = Core.Helpers.AppUpdater.CurrentVersion.ToString(3);
+            SettingsViewModel.Instance.PageChanged += OnPageChanged;
             System.Windows.Data.CollectionViewSource.GetDefaultView(SettingsViewModel.Instance.Settings)
                 .GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription("Group"));
 
@@ -54,11 +56,43 @@ namespace SmartHunter.Ui.Windows
             base.OnPreviewKeyDown(e);
             if (e.Key == System.Windows.Input.Key.F && System.Windows.Input.Keyboard.Modifiers == System.Windows.Input.ModifierKeys.Control)
             {
-                SettingsTab.IsSelected = true;
                 SettingsSearch.Focus();
                 SettingsSearch.SelectAll();
                 e.Handled = true;
             }
+        }
+
+        // The new page slides in 6 px and fades up, quickly (it's a click away, used all the time), and starts at the top
+        void OnPageChanged()
+        {
+            SettingsScroll.ScrollToTop();
+            if (!SystemParameters.ClientAreaAnimation)
+            {
+                return;
+            }
+            var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+            var fade = new System.Windows.Media.Animation.DoubleAnimation(0.35, 1, TimeSpan.FromMilliseconds(160)) { EasingFunction = ease };
+            var slide = new System.Windows.Media.Animation.DoubleAnimation(6, 0, TimeSpan.FromMilliseconds(180)) { EasingFunction = ease };
+            System.Windows.Media.Animation.Timeline.SetDesiredFrameRate(fade, Core.Helpers.WindowHelper.PrimaryRefreshRate);
+            System.Windows.Media.Animation.Timeline.SetDesiredFrameRate(slide, Core.Helpers.WindowHelper.PrimaryRefreshRate);
+            SettingsCard.BeginAnimation(OpacityProperty, fade);
+            ((System.Windows.Media.TranslateTransform)SettingsCard.RenderTransform).BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, slide);
+        }
+
+        // The header's edge line shows only while content is scrolled under it
+        bool m_HeaderLineOn;
+
+        void SettingsScroll_ScrollChanged(object sender, System.Windows.Controls.ScrollChangedEventArgs e)
+        {
+            bool on = e.VerticalOffset > 0;
+            if (on == m_HeaderLineOn)
+            {
+                return;
+            }
+            m_HeaderLineOn = on;
+            var fade = new System.Windows.Media.Animation.DoubleAnimation(on ? 1 : 0, TimeSpan.FromMilliseconds(120));
+            System.Windows.Media.Animation.Timeline.SetDesiredFrameRate(fade, Core.Helpers.WindowHelper.PrimaryRefreshRate);
+            HeaderLine.BeginAnimation(OpacityProperty, fade);
         }
 
         // A row counts as seen once the mouse has rested on it for a moment (passing over it doesn't)

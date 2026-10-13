@@ -64,6 +64,10 @@ namespace SmartHunter.Game.Data.ViewModels
             {
                 if (SetProperty(ref m_Query, value ?? ""))
                 {
+                    if (IsSearching)
+                    {
+                        IsLogShown = false;
+                    }
                     Refresh();
                     NotifyPropertyChanged(nameof(IsSearching));
                 }
@@ -79,13 +83,42 @@ namespace SmartHunter.Game.Data.ViewModels
             set { SetProperty(ref m_NoResults, value); }
         }
 
-        public string Title => IsSearching ? "Search results" : m_Selected;
+        public string Title => IsLogShown ? "Log" : IsSearching ? "Search results" : m_Selected;
+
+        // The Log is a page of its own, listed under the categories
+        bool m_IsLogShown;
+        public bool IsLogShown
+        {
+            get { return m_IsLogShown; }
+            private set
+            {
+                if (SetProperty(ref m_IsLogShown, value))
+                {
+                    NotifyPropertyChanged(nameof(IsSettingsShown));
+                }
+            }
+        }
+        public bool IsSettingsShown => !m_IsLogShown;
+        public SettingsCategory LogCategory { get; private set; }
+
+        // The window listens, to slide the new page in and scroll it back to the top
+        public event Action PageChanged;
 
         void Select(string category)
         {
             m_Selected = category;
+            IsLogShown = false;
             Query = "";
             Refresh();
+            PageChanged?.Invoke();
+        }
+
+        void ShowLog()
+        {
+            Query = "";
+            IsLogShown = true;
+            Refresh();
+            PageChanged?.Invoke();
         }
 
         // Matches a setting's name, its explanation or its section
@@ -99,10 +132,14 @@ namespace SmartHunter.Game.Data.ViewModels
             }
             foreach (var category in Categories)
             {
-                category.IsSelected = query.Length == 0 && category.Name == m_Selected;
+                category.IsSelected = !m_IsLogShown && query.Length == 0 && category.Name == m_Selected;
                 category.HasNew = Settings.Any(s => s.Group == category.Name && s.IsNew);
             }
-            NoResults = !Settings.Any(x => x.IsShown);
+            if (LogCategory != null)
+            {
+                LogCategory.IsSelected = m_IsLogShown;
+            }
+            NoResults = !m_IsLogShown && !Settings.Any(x => x.IsShown);
             NotifyPropertyChanged(nameof(Title));
             SearchVersion++;
         }
@@ -352,6 +389,7 @@ namespace SmartHunter.Game.Data.ViewModels
                 string category = name;
                 Categories.Add(new SettingsCategory(category, new Command(_ => Select(category))));
             }
+            LogCategory = new SettingsCategory("Log", new Command(_ => ShowLog()));
             m_Selected = Categories.First().Name;
             Refresh();
         }

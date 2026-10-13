@@ -12,13 +12,13 @@
         d:DataContext="{x:Static viewModels:ConsoleViewModel.Instance}"
         mc:Ignorable="d"
         Icon="/Ui/Aether.ico"
-        Title="Aether" Height="760" Width="720" MinWidth="560" MinHeight="420"
+        Title="Aether" Height="640" Width="880" MinWidth="680" MinHeight="480"
         Background="#111214" Foreground="#F3EDE0" WindowStyle="SingleBorderWindow" ResizeMode="CanResize"
         FontFamily="Segoe UI" FontSize="13"
         TextOptions.TextFormattingMode="Display" UseLayoutRounding="True">
 
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="40" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False" />
+        <WindowChrome CaptionHeight="36" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False" />
     </WindowChrome.WindowChrome>
 
     <Window.Resources>
@@ -27,7 +27,7 @@
             <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
             <Setter Property="Foreground" Value="#D8D0BE" />
             <Setter Property="Width" Value="46" />
-            <Setter Property="Height" Value="40" />
+            <Setter Property="Height" Value="36" />
             <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" />
             <Setter Property="FontSize" Value="10" />
             <Setter Property="Template">
@@ -180,6 +180,28 @@
             </Setter>
         </Style>
 
+
+        <!--Quiet text button: the secondary action under a primary one-->
+        <Style x:Key="LinkButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Foreground" Value="{StaticResource Muted}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Padding="4 6" Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" TextElement.FontSize="12" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#F3EDE0" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="PillButton" TargetType="Button">
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Foreground" Value="#F3EDE0" />
@@ -187,12 +209,18 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="B" CornerRadius="7" Padding="12 5" Background="{TemplateBinding Background}">
+                        <Border x:Name="B" CornerRadius="7" Padding="12 5" Background="{TemplateBinding Background}" RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform><ScaleTransform /></Border.RenderTransform>
                             <ContentPresenter HorizontalAlignment="Center" TextElement.FontWeight="SemiBold" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="B" Property="Opacity" Value="0.85" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="B" Property="RenderTransform">
+                                    <Setter.Value><ScaleTransform ScaleX="0.97" ScaleY="0.97" /></Setter.Value>
+                                </Setter>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -252,29 +280,186 @@
             </Setter>
         </Style>
 
+        <DataTemplate DataType="{x:Type core:SettingsCategory}">
+                                <Button Command="{Binding Select}" Margin="0 0 0 2" Cursor="Hand" Focusable="False">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="B" CornerRadius="8" Padding="12 7 8 7" Background="Transparent">
+                                                <Grid>
+                                                    <Rectangle x:Name="Bar" Width="3" Height="14" RadiusX="1.5" RadiusY="1.5" Fill="{StaticResource Accent}" HorizontalAlignment="Left" Margin="-9 0 0 0" Visibility="Collapsed" />
+                                                    <DockPanel>
+                                                        <Border x:Name="Badge" DockPanel.Dock="Right" Padding="5 1" CornerRadius="4" Background="{StaticResource Accent}" Visibility="Collapsed" VerticalAlignment="Center">
+                                                            <TextBlock Text="NEW" FontSize="9" FontWeight="Bold" Foreground="#1C1400" />
+                                                        </Border>
+                                                        <TextBlock x:Name="T" Text="{Binding Name}" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                </Grid>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="B" Property="Background" Value="{StaticResource Surface}" />
+                                                    <Setter TargetName="T" Property="Foreground" Value="#F3EDE0" />
+                                                </Trigger>
+                                                <DataTrigger Binding="{Binding HasNew}" Value="True">
+                                                    <Setter TargetName="Badge" Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter TargetName="B" Property="Background" Value="#2A2B30" />
+                                                    <Setter TargetName="Bar" Property="Visibility" Value="Visible" />
+                                                    <Setter TargetName="T" Property="Foreground" Value="#F3EDE0" />
+                                                </DataTrigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </DataTemplate>
+
     </Window.Resources>
 
-    <DockPanel x:Name="Shell">
+    <Grid x:Name="Shell">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="36" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
         <!--Title bar: same surface as the window, drag anywhere on it-->
-        <DockPanel DockPanel.Dock="Top" Height="40">
+        <DockPanel Grid.Row="0">
             <Button DockPanel.Dock="Right" Style="{StaticResource CloseCaption}" Content="&#xE8BB;" Click="Close_Click" ToolTip="Close" />
             <Button DockPanel.Dock="Right" Style="{StaticResource Caption}" x:Name="MaxButton" Content="&#xE922;" Click="Maximize_Click" ToolTip="Maximize" />
             <Button DockPanel.Dock="Right" Style="{StaticResource Caption}" Content="&#xE921;" Click="Minimize_Click" ToolTip="Minimize" />
-            <Rectangle Width="16" Height="16" Margin="14 0 10 0" Fill="{StaticResource Accent}" VerticalAlignment="Center">
+            <Rectangle Width="15" Height="15" Margin="14 0 9 0" Fill="{StaticResource Accent}" VerticalAlignment="Center">
                 <Rectangle.OpacityMask>
                     <ImageBrush ImageSource="{StaticResource ICON_GREATSWORD}" Stretch="Uniform" />
                 </Rectangle.OpacityMask>
             </Rectangle>
-            <TextBlock x:Name="TitleText" Text="Aether" VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource Muted}" />
+            <TextBlock x:Name="TitleText" Text="Aether" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold" Foreground="#D8D0BE" />
+            <TextBlock x:Name="VersionText" VerticalAlignment="Center" FontSize="11.5" Foreground="{StaticResource Muted}" Margin="8 1 0 0" />
         </DockPanel>
 
-        <!--Header-->
-        <StackPanel DockPanel.Dock="Top" Margin="22 2 22 10">
-            <TextBlock Text="Aether" FontSize="22" FontWeight="Bold" />
-            <TextBlock Text="Monster Hunter: World overlay. Settings apply instantly." Foreground="{StaticResource Muted}" Margin="0 3 0 0" TextWrapping="Wrap" />
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="196" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-            <!--Update card: downloading, ready, just updated, or failed-->
-            <Border x:Name="UpdateCard" Margin="0 10 0 0" Padding="14 9" CornerRadius="10" Background="#1FE2C27A" BorderBrush="#59E2C27A" BorderThickness="1"
+            <!--Navigation: every page of the window is one click away, and the layout button is always in reach-->
+            <Border Grid.Column="0" Background="#0D0E10" BorderBrush="{StaticResource Stroke}" BorderThickness="0 0 1 0">
+                <DockPanel Margin="10 6 10 12">
+                    <StackPanel DockPanel.Dock="Bottom" Margin="0 8 0 0" DataContext="{x:Static viewModels:OverlayViewModel.Instance}">
+                        <ToggleButton x:Name="EditButton" IsChecked="{Binding CanManipulateWindows, Mode=TwoWay}" Cursor="Hand" Focusable="False">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="B" CornerRadius="8" Padding="12 8" Background="{StaticResource Accent}" RenderTransformOrigin="0.5,0.5">
+                                        <Border.RenderTransform><ScaleTransform /></Border.RenderTransform>
+                                        <TextBlock x:Name="T" Text="Edit layout" FontWeight="SemiBold" Foreground="#1C1400" HorizontalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="T" Property="Text" Value="Done" />
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="B" Property="Opacity" Value="0.88" />
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="B" Property="RenderTransform">
+                                                <Setter.Value><ScaleTransform ScaleX="0.97" ScaleY="0.97" /></Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <TextBlock FontSize="11" TextWrapping="Wrap" Margin="2 8 2 0" LineHeight="15">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource Muted}" />
+                                    <Setter Property="Text" Value="{Binding EditKeyName, StringFormat='Or press {0} in game.'}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CanManipulateWindows}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource Accent}" />
+                                            <Setter Property="Text" Value="Drag to move. Drag the corner or scroll to resize, Ctrl+scroll for small steps. Double-click resets the size. Hold Shift to turn off snapping. Esc or Done when finished." />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <Button Content="Reset layout" Click="ResetLayout_Click" Style="{StaticResource LinkButton}" Margin="0 4 0 0"
+                                ToolTip="Put every widget back in its default spot and size" />
+                    </StackPanel>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="Settings" FontSize="11.5" Foreground="{StaticResource Muted}" Margin="12 8 0 6" />
+                            <ItemsControl ItemsSource="{Binding Categories}" />
+                            <Rectangle Height="1" Fill="{StaticResource Stroke}" Margin="8 8 8 8" />
+                            <ContentControl Content="{Binding LogCategory}" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <!--Page-->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!--Header: the page's name, and search over every setting. Its edge line fades in only once the page is scrolled.-->
+                <Border Grid.Row="0" Padding="24 12 24 10">
+                    <DockPanel>
+                        <TextBox x:Name="SettingsSearch" DockPanel.Dock="Right" Width="260" Height="30" VerticalAlignment="Center" FontSize="12.5"
+                             Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" KeyDown="SettingsSearch_KeyDown"
+                             Background="{StaticResource Surface}" Foreground="#F3EDE0" CaretBrush="{StaticResource Accent}" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
+                        <TextBox.Template>
+                            <ControlTemplate TargetType="TextBox">
+                                <Border x:Name="Box" CornerRadius="8" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                                    <Grid Margin="10 0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12" Foreground="{StaticResource Muted}"
+                                                   VerticalAlignment="Center" Margin="0 1 8 0" />
+                                        <!--2 px in: the text box starts its text (and caret) 2 px into its area-->
+                                        <TextBlock x:Name="Hint" Grid.Column="1" Text="Search settings" Foreground="{StaticResource Muted}" VerticalAlignment="Center"
+                                                   Margin="2 0 0 0" IsHitTestVisible="False" Visibility="Collapsed" />
+                                        <ScrollViewer x:Name="PART_ContentHost" Grid.Column="1" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="Text" Value="">
+                                        <Setter TargetName="Hint" Property="Visibility" Value="Visible" />
+                                    </Trigger>
+                                    <Trigger Property="IsKeyboardFocused" Value="True">
+                                        <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Accent}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </TextBox.Template>
+                    </TextBox>
+                        <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </DockPanel>
+                </Border>
+                <Border x:Name="HeaderLine" Grid.Row="0" Height="1" VerticalAlignment="Bottom" Background="{StaticResource Stroke}" Opacity="0" IsHitTestVisible="False" />
+
+                <!--Shows for the few options that need a restart; stays put while the page scrolls-->
+                    <Border Margin="24 0 24 10" Padding="14 8" CornerRadius="10" Background="#26E2C27A" BorderBrush="#66E2C27A" BorderThickness="1"
+                            Visibility="{Binding NeedsRestart, Converter={StaticResource A_Converter_BoolToVisibility}}">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Restart now" Command="{Binding RestartCommand}" Style="{StaticResource PillButton}" Background="{StaticResource Accent}" Foreground="#1C1400" />
+                            <TextBlock Text="{Binding RestartReason}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </DockPanel>
+                    </Border>
+
+
+
+                <!--Settings-->
+                <ScrollViewer x:Name="SettingsScroll" Grid.Row="2" VerticalScrollBarVisibility="Auto" ScrollChanged="SettingsScroll_ScrollChanged"
+                              Visibility="{Binding IsSettingsShown, Converter={StaticResource A_Converter_BoolToVisibility}}">
+                    <StackPanel Margin="24 4 18 24">
+            <Border x:Name="UpdateCard" Margin="0 0 0 12" Padding="14 9" CornerRadius="10" Background="#1FE2C27A" BorderBrush="#59E2C27A" BorderThickness="1"
                     DataContext="{x:Static viewModels:UpdateViewModel.Instance}"
                     Visibility="{Binding IsVisible, Converter={StaticResource A_Converter_BoolToVisibility}}">
                 <StackPanel>
@@ -327,8 +512,7 @@
                 </StackPanel>
             </Border>
 
-            <!--Problems: what's not working right now, in plain words. Details are in the Log tab.-->
-            <Border Margin="0 10 0 0" Padding="14 8" CornerRadius="10" Background="#1FE0705A" BorderBrush="#59E0705A" BorderThickness="1"
+            <Border Margin="0 0 0 12" Padding="14 8" CornerRadius="10" Background="#1FE0705A" BorderBrush="#59E0705A" BorderThickness="1"
                     DataContext="{x:Static core:Problems.Instance}"
                     Visibility="{Binding HasAny, Converter={StaticResource A_Converter_BoolToVisibility}}">
                 <StackPanel>
@@ -346,142 +530,11 @@
                 </StackPanel>
             </Border>
 
-            <!--Layout editing: the button and Scroll Lock in game do the same thing-->
-            <Border Margin="0 10 0 0" Padding="14 9" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1"
-                    DataContext="{x:Static viewModels:OverlayViewModel.Instance}">
-                <DockPanel>
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="12 0 0 0">
-                        <Button Content="Reset layout" Click="ResetLayout_Click" Style="{StaticResource PillButton}" Margin="0 0 8 0"
-                                ToolTip="Put every widget back in its default spot and size" />
-                        <ToggleButton x:Name="EditButton" IsChecked="{Binding CanManipulateWindows, Mode=TwoWay}" Cursor="Hand">
-                            <ToggleButton.Template>
-                                <ControlTemplate TargetType="ToggleButton">
-                                    <Border x:Name="B" CornerRadius="7" Padding="12 5" Background="{StaticResource Accent}">
-                                        <TextBlock x:Name="T" Text="Edit layout" FontWeight="SemiBold" Foreground="#1C1400" />
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="T" Property="Text" Value="Done" />
-                                        </Trigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="B" Property="Opacity" Value="0.85" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </ToggleButton.Template>
-                        </ToggleButton>
-                    </StackPanel>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="EditTitle" Text="Widget layout" FontWeight="SemiBold" />
-                        <TextBlock x:Name="EditHint" FontSize="12" TextWrapping="Wrap" Margin="0 2 0 0">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{StaticResource Muted}" />
-                                    <Setter Property="Text" Value="{Binding EditKeyName, StringFormat='Click Edit layout, or press {0} in game.'}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CanManipulateWindows}" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource Accent}" />
-                                            <Setter Property="Text" Value="Drag to move. Drag the corner or scroll to resize, Ctrl+scroll for small steps. Double-click resets the size. Hold Shift to turn off snapping. Esc or Done when finished." />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </StackPanel>
-                </DockPanel>
-            </Border>
-        </StackPanel>
 
-        <TabControl>
-            <TabItem Header="Settings" x:Name="SettingsTab">
-                <DockPanel>
-                    <!--Only shows for the few options that need a restart-->
-                    <Border DockPanel.Dock="Top" Margin="20 0 20 10" Padding="14 10" CornerRadius="10" Background="#26E2C27A" BorderBrush="#66E2C27A" BorderThickness="1"
-                            Visibility="{Binding NeedsRestart, Converter={StaticResource A_Converter_BoolToVisibility}}">
-                        <DockPanel>
-                            <Button DockPanel.Dock="Right" Content="Restart now" Command="{Binding RestartCommand}" Style="{StaticResource PillButton}" Background="{StaticResource Accent}" Foreground="#1C1400" />
-                            <TextBlock Text="{Binding RestartReason}" VerticalAlignment="Center" TextWrapping="Wrap" />
-                        </DockPanel>
-                    </Border>
-
-                    <!--Search: with this many settings, typing a word is faster than scrolling. The icon, placeholder and text share
-                        one grid column, so the caret starts exactly where the placeholder does.-->
-                    <TextBox x:Name="SettingsSearch" DockPanel.Dock="Top" Margin="20 0 20 8" Height="30" FontSize="12.5"
-                             Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" KeyDown="SettingsSearch_KeyDown"
-                             Background="{StaticResource Surface}" Foreground="#F3EDE0" CaretBrush="{StaticResource Accent}" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
-                        <TextBox.Template>
-                            <ControlTemplate TargetType="TextBox">
-                                <Border x:Name="Box" CornerRadius="8" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                                    <Grid Margin="10 0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12" Foreground="{StaticResource Muted}"
-                                                   VerticalAlignment="Center" Margin="0 1 8 0" />
-                                        <!--2 px in: the text box starts its text (and caret) 2 px into its area-->
-                                        <TextBlock x:Name="Hint" Grid.Column="1" Text="Search settings" Foreground="{StaticResource Muted}" VerticalAlignment="Center"
-                                                   Margin="2 0 0 0" IsHitTestVisible="False" Visibility="Collapsed" />
-                                        <ScrollViewer x:Name="PART_ContentHost" Grid.Column="1" VerticalAlignment="Center" />
-                                    </Grid>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="Text" Value="">
-                                        <Setter TargetName="Hint" Property="Visibility" Value="Visible" />
-                                    </Trigger>
-                                    <Trigger Property="IsKeyboardFocused" Value="True">
-                                        <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Accent}" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </TextBox.Template>
-                    </TextBox>
-
-                    <!--Categories: one group of settings at a time; a search looks through all of them. NEW marks one with something new in it.-->
-                    <ItemsControl DockPanel.Dock="Left" Width="148" Margin="20 4 0 0" ItemsSource="{Binding Categories}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type core:SettingsCategory}">
-                                <Button Command="{Binding Select}" Margin="0 0 0 2" Cursor="Hand" Focusable="False">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border x:Name="B" CornerRadius="8" Padding="12 7 8 7" Background="Transparent">
-                                                <Grid>
-                                                    <Rectangle x:Name="Bar" Width="3" Height="14" RadiusX="1.5" RadiusY="1.5" Fill="{StaticResource Accent}" HorizontalAlignment="Left" Margin="-9 0 0 0" Visibility="Collapsed" />
-                                                    <DockPanel>
-                                                        <Border x:Name="Badge" DockPanel.Dock="Right" Padding="5 1" CornerRadius="4" Background="{StaticResource Accent}" Visibility="Collapsed" VerticalAlignment="Center">
-                                                            <TextBlock Text="NEW" FontSize="9" FontWeight="Bold" Foreground="#1C1400" />
-                                                        </Border>
-                                                        <TextBlock x:Name="T" Text="{Binding Name}" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                                    </DockPanel>
-                                                </Grid>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="B" Property="Background" Value="{StaticResource Surface}" />
-                                                    <Setter TargetName="T" Property="Foreground" Value="#F3EDE0" />
-                                                </Trigger>
-                                                <DataTrigger Binding="{Binding HasNew}" Value="True">
-                                                    <Setter TargetName="Badge" Property="Visibility" Value="Visible" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                    <Setter TargetName="B" Property="Background" Value="#2A2B30" />
-                                                    <Setter TargetName="Bar" Property="Visibility" Value="Visible" />
-                                                    <Setter TargetName="T" Property="Foreground" Value="#F3EDE0" />
-                                                </DataTrigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                </Button>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="14 0 14 20">
-                        <StackPanel>
-                        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" Margin="2 0 0 8" />
-                        <TextBlock Text="No settings match your search. Try a shorter word, or pick a category on the left." Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="2 4 0 0"
+                        <TextBlock Text="No settings match your search. Try a shorter word, or pick a page on the left." Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="2 4 0 0"
                                    Visibility="{Binding NoResults, Converter={StaticResource A_Converter_BoolToVisibility}}" />
-                        <Border CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1" Margin="0 0 6 0" ClipToBounds="True">
+                        <Border x:Name="SettingsCard" RenderTransformOrigin="0.5,0" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1" ClipToBounds="True">
+                            <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
                         <ItemsControl ItemsSource="{Binding Settings}">
                             <ItemsControl.GroupStyle>
                                 <GroupStyle>
@@ -613,18 +666,17 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </DockPanel>
-            </TabItem>
+                    </StackPanel>
+                </ScrollViewer>
 
-            <TabItem Header="Log" x:Name="LogsTab">
-                <Border Margin="20 0 20 20" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1" Padding="4">
+                <!--Log-->
+                <Border x:Name="LogPanel" Grid.Row="1" Grid.RowSpan="2" Margin="24 4 24 20" CornerRadius="10" Background="{StaticResource Surface}" BorderBrush="{StaticResource Stroke}" BorderThickness="1" Padding="4"
+                        Visibility="Collapsed">
                     <controls:ScrollingTextBox Text="{Binding Output}" AcceptsReturn="True" TextWrapping="Wrap" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
                                                Background="Transparent" Foreground="#D8D0BE" BorderThickness="0" Padding="8"
                                                FontFamily="Cascadia Mono, Consolas" FontSize="12" />
                 </Border>
-            </TabItem>
-        </TabControl>
-    </DockPanel>
+            </Grid>
+        </Grid>
+    </Grid>
 </Window>
