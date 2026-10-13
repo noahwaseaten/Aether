@@ -55,6 +55,11 @@ namespace SmartHunter.Game.Data
 
         public static string HeadlineFor(int stage, int offset) => Headlines[(offset + Math.Max(0, stage)) % Headlines.Length];
         public static string EscalationFor(int stage) => Escalation[Math.Min(Math.Max(0, stage), Escalation.Length - 1)];
+        // Up at full size for the first few seconds so it lands, then it settles slightly smaller and stays until he sharpens
+        public const int CompactAfterSeconds = 5;
+        public const double CompactScale = 0.8;
+        public static bool ShouldCompact(TimeSpan elapsed) => elapsed.TotalSeconds >= CompactAfterSeconds;
+
         public static int StageOf(TimeSpan elapsed) => (int)(elapsed.TotalSeconds / SecondsPerStage);
 
         // The same pips as a teammate's row, drawn huge
@@ -65,6 +70,14 @@ namespace SmartHunter.Game.Data
         {
             get { return m_IsActive; }
             private set { SetProperty(ref m_IsActive, value); }
+        }
+
+        // Smaller after CompactAfterSeconds
+        bool m_IsCompact;
+        public bool IsCompact
+        {
+            get { return m_IsCompact; }
+            private set { SetProperty(ref m_IsCompact, value); }
         }
 
         string m_Headline = Headlines[0];
@@ -90,6 +103,7 @@ namespace SmartHunter.Game.Data
             if (!IsTarget(playerName))
             {
                 IsActive = false;
+                IsCompact = false;
                 return;
             }
 
@@ -104,11 +118,20 @@ namespace SmartHunter.Game.Data
                 int stage = StageOf(DateTime.Now - m_StartedAt);
                 Headline = HeadlineFor(stage, m_Offset);
                 Escalated = EscalationFor(stage);
+                IsCompact = ShouldCompact(DateTime.Now - m_StartedAt);
                 Bar.Apply(SharpnessShare.Pack(true, local.TopIndex, local.LevelIndex, local.Percent, local.HitsLeft));
+            }
+            if (!show)
+            {
+                IsCompact = false;
             }
             IsActive = show;
         }
 
-        public void Reset() => IsActive = false;
+        public void Reset()
+        {
+            IsActive = false;
+            IsCompact = false;
+        }
     }
 }

@@ -125,7 +125,7 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   would break damage sync for every version. Requests with no player name just read the table (that's how others' sharpness is polled).
   A hunter's value is sent after about 8 sharpness points (`SharpnessPublisher.HitStep`) or a colour change, and the server keeps the last one.
 - The Senji gag (`Game/Data/SharpenAlert.cs`, `Ui/Windows/SharpenAlertWindow`) is hardcoded on the local player's own name and
-  is the one overlay element that animates endlessly, on purpose. Its static instance is created lazily: built before the joke
+  is a fixed banner: no animation or transparency changes, on purpose (it only has to stay there). Its static instance is created lazily: built before the joke
   arrays it reads, its constructor threw and took the memory-reading loop down with it.
 - "Open with the game" (`Core/Helpers/AutoStart.cs`) is an HKCU Run entry that starts `Aether.exe --wait`: no window,
   checks for the game every 3 s, then starts normally and closes with the game. Each game start counts once, so closing

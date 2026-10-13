@@ -316,6 +316,7 @@ namespace SmartHunter.Core
             Check(!SharpenAlert.ShouldShow(true, true, 5, 4), "one colour under the best ends it");
             Check(SharpenAlert.ShouldShow(false, true, 2, 0), "red on a weapon that reaches yellow starts it");
             Check(!SharpenAlert.ShouldShow(true, false, 5, 0), "no sharpness reading, no alert");
+            Check(!SharpenAlert.ShouldCompact(System.TimeSpan.FromSeconds(4.9)) && SharpenAlert.ShouldCompact(System.TimeSpan.FromSeconds(5)), "the banner gets smaller after 5 seconds, not before");
             Check(SharpenAlert.HeadlineFor(0, 3).Length > 0 && SharpenAlert.HeadlineFor(100, 7).Length > 0 && SharpenAlert.EscalationFor(100).Length > 0 && SharpenAlert.StageOf(System.TimeSpan.FromSeconds(45)) == 2, "the roast always has a line, and gets meaner every 20 seconds");
             var shown = new PlayerSharpness();
             shown.Apply(SharpnessShare.Pack(true, 4, 2, 50, 40));

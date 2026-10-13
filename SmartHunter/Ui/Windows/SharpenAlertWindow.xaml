@@ -25,15 +25,9 @@
         </LinearGradientBrush>
     </Window.Resources>
 
-    <!--A banner at the top of the screen that can't be missed: hazard tape, a roast, and a huge sharpness bar. It wobbles
-        like it's personally upset. Click-through, so it never gets in the way of playing, only of ignoring it.-->
-    <Grid x:Name="Root" Margin="40" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="True">
-        <Grid.RenderTransform>
-            <TransformGroup>
-                <ScaleTransform />
-                <RotateTransform />
-            </TransformGroup>
-        </Grid.RenderTransform>
+    <!--A banner at the top of the screen that can't be missed: hazard tape, a roast, and a huge sharpness bar. It stays put,
+        fully opaque, and doesn't move. Click-through, so it never gets in the way of playing, only of ignoring it.-->
+    <Grid x:Name="Root" Margin="40" UseLayoutRounding="True">
 
         <Grid x:Name="Card" MinWidth="820">
             <!--The tape runs to the card's edge under a rounded clip, and the red outline is drawn on top of it: a border

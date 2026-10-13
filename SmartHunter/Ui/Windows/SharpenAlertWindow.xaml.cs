@@ -1,8 +1,5 @@
 using System;
-using System.ComponentModel;
 using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
 using SmartHunter.Core.Helpers;
 using SmartHunter.Game.Data;
 using SmartHunter.Game.Data.ViewModels;
@@ -34,7 +31,18 @@ namespace SmartHunter.Ui.Windows
             InitializeComponent();
             DataContext = SharpenAlert.Instance;
 
-            SharpenAlert.Instance.PropertyChanged += (s, e) => Sync();
+            SharpenAlert.Instance.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(SharpenAlert.IsCompact))
+                {
+                    // One step to the smaller size, no animation; the text is drawn again at its new size so it stays sharp
+                    double scale = SharpenAlert.Instance.IsCompact ? SharpenAlert.CompactScale : 1;
+                    Root.LayoutTransform = new System.Windows.Media.ScaleTransform(scale, scale);
+                    Dispatcher.BeginInvoke(new Action(() => SmartHunter.Ui.Controls.SharpText.Refresh(this)), System.Windows.Threading.DispatcherPriority.Loaded);
+                    return;
+                }
+                Sync();
+            };
             OverlayViewModel.Instance.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(OverlayViewModel.IsVisible))
@@ -51,6 +59,7 @@ namespace SmartHunter.Ui.Windows
             };
         }
 
+        // It just appears and stays: no entrance, no pulse, no wobble
         void Sync()
         {
             bool want = SharpenAlert.Instance.IsActive && OverlayViewModel.Instance.IsVisible;
@@ -60,41 +69,14 @@ namespace SmartHunter.Ui.Windows
             }
             m_IsShown = want;
 
-            var group = (TransformGroup)Root.RenderTransform;
-            var scale = (ScaleTransform)group.Children[0];
-            var tilt = (RotateTransform)group.Children[1];
             if (!want)
             {
-                Card.BeginAnimation(OpacityProperty, null);
-                tilt.BeginAnimation(RotateTransform.AngleProperty, null);
                 Hide();
                 return;
             }
 
             Show();
             WindowHelper.SetTopMostTransparent(this);
-
-            // Arrives quickly (a 6% grow and fade, 180 ms), then breathes for as long as it's needed. This is the one overlay
-            // element that is meant to keep moving: it is only ever up while something needs fixing.
-            var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-            var grow = new DoubleAnimation(0.94, 1, TimeSpan.FromMilliseconds(180)) { EasingFunction = ease };
-            scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
-            scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
-            var breathe = new DoubleAnimation(1, 0.78, TimeSpan.FromMilliseconds(700))
-            {
-                AutoReverse = true,
-                RepeatBehavior = RepeatBehavior.Forever,
-                EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut },
-            };
-            Card.BeginAnimation(OpacityProperty, breathe);
-            // ...and shakes its head, a degree and a bit either way, like it's very disappointed
-            var wobble = new DoubleAnimation(-1.1, 1.1, TimeSpan.FromMilliseconds(520))
-            {
-                AutoReverse = true,
-                RepeatBehavior = RepeatBehavior.Forever,
-                EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut },
-            };
-            tilt.BeginAnimation(RotateTransform.AngleProperty, wobble);
         }
     }
 }
