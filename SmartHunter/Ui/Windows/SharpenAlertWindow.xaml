@@ -30,7 +30,7 @@
     <Grid x:Name="Root" Margin="40" UseLayoutRounding="True">
 
         <Grid x:Name="Card" MinWidth="820">
-            <!--The tape runs to the card's edge under a rounded clip, and the red outline is drawn on top of it: a border
+            <!--The tape runs to the card's edge under a rounded clip, and the orange outline is drawn on top of it: a border
                 around the clipped content left the tape's square corners poking out past the border's inner curve-->
             <Border CornerRadius="20" Background="#F2160709" behaviors:RoundClip.Radius="20">
                 <StackPanel>
@@ -57,7 +57,7 @@
                     <Rectangle Height="18" Fill="{StaticResource B_Tape}" />
                 </StackPanel>
             </Border>
-            <Border CornerRadius="20" BorderBrush="{StaticResource B_Danger}" BorderThickness="4" IsHitTestVisible="False" />
+            <Border CornerRadius="20" BorderBrush="#FF8A1F" BorderThickness="4" IsHitTestVisible="False" />
         </Grid>
     </Grid>
 </Window>
