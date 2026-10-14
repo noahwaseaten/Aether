@@ -19,6 +19,8 @@
 A clean, fast overlay for **Monster Hunter: World** on PC. 
 Aether only **reads** the game. It never changes it, injects into it or hooks it, so it can't break your game or your save.
 
+<img src="docs/overlay.jpg" alt="Aether in game: monster, buffs, team damage and the hunt recap"/>
+
 ## Requirements
 
 - Monster Hunter: World with Iceborne on Steam (Windows 10 or 11)
