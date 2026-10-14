@@ -54,6 +54,9 @@ namespace SmartHunter.Core.Windows
                 {
                     m_TextScale = scale;
                     SmartHunter.Ui.Controls.SharpText.Refresh(this);
+                    // The size transform isn't applied yet on the very first layout, so text already on screen (the Team
+                    // rows, unlike widgets that fade in) was drawn at 1x and stretched: once more when idle
+                    Dispatcher.BeginInvoke(new Action(() => SmartHunter.Ui.Controls.SharpText.Refresh(this)), System.Windows.Threading.DispatcherPriority.ContextIdle);
                 }
             };
         }
