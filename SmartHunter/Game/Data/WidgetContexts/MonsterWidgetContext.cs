@@ -75,11 +75,19 @@ namespace SmartHunter.Game.Data.WidgetContexts
             get { return m_Notice; }
             private set { SetProperty(ref m_Notice, value); }
         }
-        // Its own timer, so the banner always goes away even when nothing else updates the widget
+        // The data is only your game's estimate: the pill turns amber instead of green
+        bool m_IsNoticeWarning;
+        public bool IsNoticeWarning
+        {
+            get { return m_IsNoticeWarning; }
+            private set { SetProperty(ref m_IsNoticeWarning, value); }
+        }
+        // Its own timer, so the notice always goes away even when nothing else updates the widget
         System.Windows.Threading.DispatcherTimer m_NoticeTimer;
 
-        public void ShowNotice(string text, double seconds)
+        public void ShowNotice(string text, double seconds, bool isWarning = false)
         {
+            IsNoticeWarning = isWarning;
             Notice = text;
             if (m_NoticeTimer == null)
             {

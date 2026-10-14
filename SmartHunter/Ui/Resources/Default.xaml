@@ -834,6 +834,9 @@
     <!--Team Widget: one row per hunter, drawn straight onto the game. After HunterPie's damage meter: weapon, name, the share with an arrow for where it's heading, damage and damage per second. The row fills with the
         hunter's colour as far as their damage reaches against the top hunter.-->
 
+    <!--Two arrows chasing each other (synced) and an exclamation mark (estimate), drawn as strokes in a 14px box-->
+    <Geometry x:Key="G_Sync">M2.2,6 A5,5 0 0 1 11.3,4.2 M11.8,1.6 L11.5,4.5 L8.6,4.2 M11.8,8 A5,5 0 0 1 2.7,9.8 M2.2,12.4 L2.5,9.5 L5.4,9.8</Geometry>
+    <Geometry x:Key="G_Alert">M7,3 L7,8 M7,10.9 L7,11</Geometry>
     <Geometry x:Key="G_Stopwatch">M6.5,0.5 L9.5,0.5 L9.5,2 L6.5,2 Z M8,3 A6,6 0 1 1 7.99,3 Z M8,4.6 A4.4,4.4 0 1 0 8.01,4.6 Z M7.3,6 L8.7,6 L8.7,9.6 L7.3,9.6 Z</Geometry>
     <GeometryGroup x:Key="G_Skull" FillRule="EvenOdd">
         <PathGeometry Figures="M8,1 C4.2,1 1.6,3.6 1.6,7 C1.6,9.1 2.6,10.6 4.2,11.5 L4.2,13.8 C4.2,14.5 4.7,15 5.4,15 L10.6,15 C11.3,15 11.8,14.5 11.8,13.8 L11.8,11.5 C13.4,10.6 14.4,9.1 14.4,7 C14.4,3.6 11.8,1 8,1 Z" />
@@ -1194,25 +1197,20 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
-    <!--Sharpness: the game's colour bands, hits left in the current colour-->
+    <!--Sharpness as one pill, the size of the mantle rings: a blade in the current colour, the game's colour bands, and
+        hits left in this colour. The number turns amber while the colour runs out and the pill red once you've dropped
+        below this weapon's best colour.-->
+    <Geometry x:Key="G_Blade">M14.5,1.5 L13.7,4.1 L6.9,10.9 L5.1,9.1 L11.9,2.3 Z M3.85,7.63 L8.37,12.15 L7.31,13.21 L2.79,8.69 Z M5.58,11.48 L3.13,13.93 L2.07,12.87 L4.52,10.42 Z M1,13.9 A1.1,1.1 0 1 1 3.2,13.9 A1.1,1.1 0 1 1 1,13.9 Z</Geometry>
     <DataTemplate DataType="{x:Type data:Sharpness}">
-        <StackPanel x:Name="Root" Margin="0 0 0 8">
-            <DockPanel LastChildFill="False">
-                <controls:SharpText x:Name="Label" Text="Sharpness" Style="{StaticResource T_Label}" />
-                <controls:SharpText DockPanel.Dock="Right" Style="{StaticResource T_Value}" MinWidth="0" Text="{Binding HitsLeft}" />
-                <controls:SharpText DockPanel.Dock="Right" Style="{StaticResource T_Muted}" Foreground="{Binding LevelBrush}" Margin="0 0 6 0" Text="{Binding LevelName}" />
-            </DockPanel>
-            <Grid x:Name="Bar" Width="150" Height="6" Margin="0 5 0 0" HorizontalAlignment="Left" behaviors:RoundClip.Radius="-1">
-                <ItemsControl ItemsSource="{Binding Segments}" Opacity="0.22">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate><Rectangle Width="{Binding Width}" Height="6" Fill="{Binding Brush}" /></DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <Canvas Width="{Binding FilledWidth}" HorizontalAlignment="Left" ClipToBounds="True">
-                    <ItemsControl ItemsSource="{Binding Segments}">
+        <Border x:Name="Root" HorizontalAlignment="Left" Margin="0 0 0 8" Padding="3 3 11 3" CornerRadius="16"
+                Background="#CC101114" BorderBrush="{StaticResource B_GaugeBorder}" BorderThickness="1">
+            <StackPanel Orientation="Horizontal">
+                <Grid Width="24" Height="24">
+                    <Ellipse x:Name="Disc" Fill="{Binding LevelBrush}" Opacity="0.2" />
+                    <Path x:Name="Blade" Data="{StaticResource G_Blade}" Fill="{Binding LevelBrush}" Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Grid>
+                <Grid x:Name="Bar" Width="{x:Static data:Sharpness.BarWidth}" Height="6" Margin="9 0 0 0" VerticalAlignment="Center" behaviors:RoundClip.Radius="-1">
+                    <ItemsControl ItemsSource="{Binding Segments}" Opacity="0.22">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
@@ -1220,15 +1218,31 @@
                             <DataTemplate><Rectangle Width="{Binding Width}" Height="6" Fill="{Binding Brush}" /></DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </Canvas>
-            </Grid>
-            <controls:SharpText x:Name="Danger" Text="Sharpen" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Danger}" Margin="0 4 0 0" Visibility="Collapsed" />
-        </StackPanel>
+                    <Canvas Width="{Binding FilledWidth}" HorizontalAlignment="Left" ClipToBounds="True">
+                        <ItemsControl ItemsSource="{Binding Segments}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate><Rectangle Width="{Binding Width}" Height="6" Fill="{Binding Brush}" /></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Canvas>
+                </Grid>
+                <controls:SharpText x:Name="Hits" Style="{StaticResource T_Value}" MinWidth="0" Margin="9 0 0 0" Text="{Binding HitsLeft}" />
+                <controls:SharpText x:Name="Danger" Text="Sharpen" Style="{StaticResource T_Value}" MinWidth="0" Foreground="{StaticResource B_Danger}" Margin="8 0 0 0" Visibility="Collapsed" />
+            </StackPanel>
+        </Border>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding IsAvailable}" Value="False">
                 <Setter TargetName="Root" Property="Visibility" Value="Collapsed" />
             </DataTrigger>
+            <DataTrigger Binding="{Binding IsLow}" Value="True">
+                <Setter TargetName="Hits" Property="Foreground" Value="{StaticResource B_Warn}" />
+            </DataTrigger>
             <DataTrigger Binding="{Binding NeedsSharpening}" Value="True">
+                <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource B_Danger}" />
+                <Setter TargetName="Hits" Property="Foreground" Value="{StaticResource B_Danger}" />
                 <Setter TargetName="Danger" Property="Visibility" Value="Visible" />
                 <DataTrigger.EnterActions>
                     <BeginStoryboard x:Name="Sharpen" Storyboard="{StaticResource A_Storyboard_Danger}" />
@@ -1236,9 +1250,6 @@
                 <DataTrigger.ExitActions>
                     <StopStoryboard BeginStoryboardName="Sharpen" />
                 </DataTrigger.ExitActions>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding IsLow}" Value="True">
-                <Setter TargetName="Label" Property="Foreground" Value="{StaticResource B_Warn}" />
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
@@ -1261,11 +1272,20 @@
             </Grid.Resources>
             <Border x:Name="Scrim" Background="{StaticResource B_Scrim}" Opacity="{Binding ShadeOpacity, Source={x:Static viewModels:OverlayViewModel.Instance}}" OpacityMask="{StaticResource B_ScrimFeather}" Margin="-24 -12 -24 -12" />
             <StackPanel>
-                <Border x:Name="Notice" Width="462" HorizontalAlignment="Left" Margin="0 0 0 10" Padding="12 8 12 8" CornerRadius="8"
-                        Background="#EB101114" BorderBrush="{StaticResource B_Accent}" BorderThickness="1" Visibility="Collapsed">
+                <!--Where the monster numbers come from: a small pill like the mantle rings, green while they come from the
+                    host's game (or you're the host), amber while they're only your game's estimate-->
+                <Border x:Name="Notice" HorizontalAlignment="Left" MaxWidth="462" Margin="0 0 0 10" Padding="3 3 12 3" CornerRadius="15"
+                        Background="#CC101114" BorderBrush="{StaticResource B_GaugeBorder}" BorderThickness="1" Visibility="Collapsed">
+                    <Border.RenderTransform>
+                        <TranslateTransform />
+                    </Border.RenderTransform>
                     <DockPanel>
-                        <controls:SharpText Text="Sync" Style="{StaticResource T_Label}" Foreground="{StaticResource B_Accent}" DockPanel.Dock="Left" VerticalAlignment="Top" Margin="0 1 10 0" />
-                        <controls:SharpText Text="{Binding Notice}" Style="{StaticResource T_Body}" TextWrapping="Wrap" />
+                        <Grid DockPanel.Dock="Left" Width="22" Height="22" VerticalAlignment="Top" Margin="0 0 8 0">
+                            <Ellipse x:Name="NoticeDisc" Fill="{StaticResource B_Up}" Opacity="0.2" />
+                            <Path x:Name="NoticeIcon" Data="{StaticResource G_Sync}" Stroke="{StaticResource B_Up}" StrokeThickness="1.5" Width="14" Height="14"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                        <controls:SharpText Text="{Binding Notice}" Style="{StaticResource T_Body}" FontSize="13" TextWrapping="Wrap" Margin="0 3 0 3" />
                     </DockPanel>
                 </Border>
                 <ItemsControl x:Name="MonstersControl" ItemsSource="{Binding Source={StaticResource CollectionViewSource}}" />
@@ -1277,6 +1297,20 @@
             </Trigger>
             <DataTrigger Binding="{Binding Notice, Converter={StaticResource A_Converter_IsNotNull}}" Value="True">
                 <Setter TargetName="Notice" Property="Visibility" Value="Visible" />
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="Notice" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.22" EasingFunction="{StaticResource E_Out}" />
+                            <DoubleAnimation Storyboard.TargetName="Notice" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="-4" To="0" Duration="0:0:0.26" EasingFunction="{StaticResource E_Out}" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsNoticeWarning}" Value="True">
+                <Setter TargetName="NoticeDisc" Property="Fill" Value="{StaticResource B_Warn}" />
+                <Setter TargetName="NoticeIcon" Property="Data" Value="{StaticResource G_Alert}" />
+                <Setter TargetName="NoticeIcon" Property="Stroke" Value="{StaticResource B_Warn}" />
+                <Setter TargetName="NoticeIcon" Property="StrokeThickness" Value="1.8" />
             </DataTrigger>
             <!--Nothing to show: no shade either-->
             <DataTrigger Binding="{Binding HasVisibleMonsters}" Value="False">

@@ -1149,7 +1149,7 @@ namespace SmartHunter.Game.Helpers
                 if (sync && game.playersCheckDone)
                 {
                     kind = "host";
-                    text = "You're the host. Sharing monster data with your party.";
+                    text = "You're the host, sharing monster data with your party";
                 }
             }
             else
@@ -1168,7 +1168,7 @@ namespace SmartHunter.Game.Helpers
                         leader.UsesAether = true;
                     }
                     kind = "synced";
-                    text = $"Getting parts and ailments from {host}'s game.";
+                    text = $"Parts and ailments from {host}'s game";
                     s_SyncedKey = game.key;
                 }
                 // Once the host's data came through in this lobby, stay quiet: a calm minute with no part changes
@@ -1181,8 +1181,8 @@ namespace SmartHunter.Game.Helpers
                     kind = "estimate";
                     seconds = 12;
                     text = sync
-                        ? $"{host} isn't sharing data (they need Aether with party sync on). Parts and ailments are your game's estimate and can be off."
-                        : "Party sync is off, so parts and ailments are your game's estimate and can be off. Turn it on in Settings > Party sync.";
+                        ? $"{host} isn't syncing, so parts and ailments are estimates. They need Aether with party sync on."
+                        : "Party sync is off, so parts and ailments are estimates. Turn it on in Settings > Party sync.";
                 }
             }
 
@@ -1190,7 +1190,7 @@ namespace SmartHunter.Game.Helpers
             if (kind != null && key != s_NoticeKey)
             {
                 s_NoticeKey = key;
-                context.ShowNotice(text, seconds);
+                context.ShowNotice(text, seconds, kind == "estimate");
                 Log.WriteLine(text);
             }
         }

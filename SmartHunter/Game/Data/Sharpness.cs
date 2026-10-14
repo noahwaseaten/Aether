@@ -16,7 +16,7 @@ namespace SmartHunter.Game.Data
     // Thresholds are cumulative upper bounds per colour (red..purple), as in HunterPie's MHWGameUtils.
     public class Sharpness : Bindable
     {
-        public const double BarWidth = 150;
+        public const double BarWidth = 96;
 
         static readonly Color[] Colors =
         {

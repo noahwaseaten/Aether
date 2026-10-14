@@ -52,6 +52,8 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 - Weaknesses, crowns, tenderized parts, and a gold marker on the health bar where the monster can be captured
 - Follows the monster you **lock onto**, or the one you pin on the map
 - Turf wars and double hunts get a compact line for the other monster
+- In a party, a small pill on top says where the part and ailment numbers come from: green when they're synced from the host's
+  game, amber when they're only your game's estimate
 
 <br clear="right"/>
 
@@ -75,7 +77,8 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 <img src="docs/buffs-widget.png" alt="Buffs widget" align="right" width="280"/>
 
 - Quest clock, when the team damage widget isn't showing it (hidden, or hunting solo)
-- Sharpness with hits left until the next level
+- **Sharpness** in one compact pill: a blade in your current colour, the game's colour bands, and hits left in that colour. The number
+  turns amber as the colour runs out, and the pill turns red with "Sharpen" once you drop below your weapon's best colour
 - **Mantles and boosters** with time left and a bar: gold and draining while on, grey and filling back up while they recharge
 - Buffs, debuffs and weapon timers (Charge Blade, Insect Glaive, Long Sword, Switch Axe) with time left
 
@@ -85,7 +88,7 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 <img src="docs/sharpen-alert.png" alt="The sharpen reminder" width="560"/>
 
-A gag, hardcoded for one hunter, Simeon: when his weapon is way too dull for a hunt, a huge hazard-taped bar takes over the top of his
+A gag, hardcoded for one hunter, Senji: when his weapon is way too dull for a hunt, a huge hazard-taped bar takes over the top of his
 screen and roasts him, a bit meaner every 20 seconds, until he sharpens. It doesn't take the mouse, so the game stays playable
 underneath.
 

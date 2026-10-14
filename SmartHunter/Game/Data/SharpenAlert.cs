@@ -4,7 +4,7 @@ using SmartHunter.Core.Data;
 namespace SmartHunter.Game.Data
 {
     // A friend's weapon kept running at red and orange mid-hunt, and the small bar was never enough. For the hunter whose
-    // character is named Senji (the roasts call him Simeon, his real name), sharpness that is far below what the weapon reaches puts a huge bar and a roast at the top of the screen
+    // character is named Senji, sharpness that is far below what the weapon reaches puts a huge bar and a roast at the top of the screen
     // (SharpenAlertWindow) until he sharpens. It's a gag: impossible to miss, impossible to sit through, and it gets
     // meaner the longer he ignores it, while the click-through window leaves the game playable underneath.
     // Hardcoded on purpose; it only ever looks at the local player's own name.
@@ -34,14 +34,14 @@ namespace SmartHunter.Game.Data
         public const int SecondsPerStage = 20;
         static readonly string[] Headlines =
         {
-            "SIMEON. YOUR WEAPON IS A SPOON.",
-            "THE MONSTER IS LAUGHING AT YOU, SIMEON.",
-            "SIMEON'S WEAPON HAS FILED A COMPLAINT.",
-            "THIS IS AN INTERVENTION, SIMEON.",
-            "THAT'S NOT A WEAPON, SIMEON, THAT'S A VIBE.",
-            "WE CAN HEAR THE BONK FROM HERE, SIMEON.",
-            "BREAKING NEWS: SIMEON FORGETS WHETSTONE (AGAIN).",
-            "SIMEON, YOU ARE HITTING IT WITH A BUTTER KNIFE.",
+            "SENJI. YOUR WEAPON IS A SPOON.",
+            "THE MONSTER IS LAUGHING AT YOU, SENJI.",
+            "SENJI'S WEAPON HAS FILED A COMPLAINT.",
+            "THIS IS AN INTERVENTION, SENJI.",
+            "THAT'S NOT A WEAPON, SENJI, THAT'S A VIBE.",
+            "WE CAN HEAR THE BONK FROM HERE, SENJI.",
+            "BREAKING NEWS: SENJI FORGETS WHETSTONE (AGAIN).",
+            "SENJI, YOU ARE HITTING IT WITH A BUTTER KNIFE.",
         };
         static readonly string[] Escalation =
         {
@@ -49,7 +49,7 @@ namespace SmartHunter.Game.Data
             "Still going? The bar says no.",
             "Your teammates can see this bar too, you know.",
             "The monster sent a thank-you note.",
-            "Simeon. Please. The bar is begging.",
+            "Senji. Please. The bar is begging.",
             "At this point it's a bit. Sharpen anyway.",
         };
 

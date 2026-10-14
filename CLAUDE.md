@@ -159,6 +159,9 @@ unreleased. Internal-only changes (docs, build scripts) don't need one.
   a bar animated through `Width` (a full widget-window layout every frame). Never use `LayoutUpdated` in overlay
   controls, and animate only render properties (opacity, render transforms, clips).
 - Overlay text has no eyebrows (small bold capitals): labels are sentence case in `T_Label`. Keep it that way.
+- Small status pieces in widgets are pills like the mantle rings: `#CC101114` fill, `B_GaugeBorder` edge, an icon in a tinted
+  circle, then terse text. The monster widget's sync notice (`MonsterWidgetContext.ShowNotice`, green, amber when `isWarning`) and the
+  Buffs sharpness are built that way; the old gold-bordered "Sync" box looked like leftover debug UI.
 - Shortcuts are rebound in Settings > Keyboard (`KeyBinder`): the next key from the global hook is taken, Esc cancels.
 - Each widget's "Show widget" switch also decides whether its data is read (`MhwMemoryUpdater.UpdateMemory`), and
   party sync sends what was read. Exception: with party sync on, damage and monsters are read even with their widgets
