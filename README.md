@@ -76,7 +76,7 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 ### Buffs and sharpness
 
-<img src="docs/buffs-widget.png" alt="Buffs widget" align="right" width="280"/>
+<img src="docs/buffs-widget.png" alt="Buffs widget" align="right" width="225"/>
 
 - Quest clock, when the team damage widget isn't showing it (hidden, or hunting solo)
 - **Sharpness** in one compact pill: a blade in your current colour, the game's colour bands, and hits left in that colour. The number
