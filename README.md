@@ -70,7 +70,7 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 ### Player Widget
 
-<img src="docs/buffs-widget.png" alt="Buffs widget" align="right" width="
+<img src="docs/buffs-widget.png" alt="Buffs widget" align="right" width="560"/>
 
 - **Sharpness** bar, with your possible sharpness levels, and hits left for that colour
 - Buffs, debuffs and weapon timers (Charge Blade, Insect Glaive, Long Sword, Switch Axe) with time left
