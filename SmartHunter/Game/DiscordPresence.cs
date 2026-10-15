@@ -46,6 +46,9 @@ namespace SmartHunter.Game
         object m_Activity;            // latest activity computed on the UI thread
         DateTime m_LastUpdate;        // last time the game fed us data
         DateTime m_LastBuilt;
+        // Discord ties an activity to the process in its pid. Sent with Aether's own pid, it was a second activity beside
+        // the game's, and Medal's presence showed instead of it. Sent with the game's pid, it is the game's activity.
+        volatile int m_GamePid;
 
         // Edge-detection state
         int m_LastZone = -1, m_LastQuestState = -1, m_LastSharpness = -1, m_LastWeaponId = -1;
@@ -87,6 +90,7 @@ namespace SmartHunter.Game
                 return;
             }
             m_LastBuilt = DateTime.UtcNow;
+            m_GamePid = process.Id;
 
             try
             {
@@ -334,7 +338,7 @@ namespace SmartHunter.Game
                         {
                             cmd = "SET_ACTIVITY",
                             nonce = Guid.NewGuid().ToString(),
-                            args = new { pid = Process.GetCurrentProcess().Id, activity },
+                            args = new { pid = m_GamePid != 0 ? m_GamePid : Process.GetCurrentProcess().Id, activity },
                         });
                         Receive(pipe);
                         sent = payload;
