@@ -5,10 +5,10 @@
 # Aether
 
 
-**[<kbd> <br> 🚀 Install <br> </kbd>][Installation]**
-**[<kbd> <br> 🕹 Features <br> </kbd>][Features]**
-**[<kbd> <br> 🤝 Party sync <br> </kbd>][PartySync]**
-**[<kbd> <br> ❓ FAQ <br> </kbd>][FAQ]**
+**[<kbd>🚀 Install</kbd>][Installation]**
+**[<kbd>🕹 Features</kbd>][Features]**
+**[<kbd>🤝 Party Sync</kbd>][PartySync]**
+**[<kbd>❓ FAQ</kbd>][FAQ]**
 
 [![Badge Version]][Releases]
 [![Badge Downloads]][Releases]
@@ -23,65 +23,56 @@ Aether only **reads** the game. It never changes it, injects into it or hooks it
 
 ## Requirements
 
-- Monster Hunter: World with Iceborne on Steam (Windows 10 or 11)
-- The game in **Borderless** or **Windowed** mode. Overlays can't draw over exclusive fullscreen.
+- Monster Hunter: World on Steam (Windows 10 or 11)
+- The game in **Borderless** or **Windowed** mode. 
 - [.NET Framework 4.8](https://dotnet.microsoft.com/download/dotnet-framework/net48). Windows 10 and 11 already have it.
 
 ## Installation
 
-1. Download **`Aether.exe`** from the [latest release][Releases] and run it. That's the whole app.
-2. It installs itself (no admin rights needed) and adds a Start Menu shortcut, so from then on you find it by searching
+1. Download **`Aether.exe`** from the [latest release][Releases] and run it.
+2. It installs itself (no admin rights needed), so from then on you find it by searching
    "Aether". You can delete the downloaded file.
 3. Start the game and Aether in any order. Aether finds the game on its own.
 
 > Windows may warn you because Aether isn't signed. Click **More info**, then **Run anyway**.
 
 **Prefer a folder instead?** Download `Aether-x.y.z-portable.zip`, extract it anywhere and run `Aether.exe` from it.
-Everything stays in that folder and nothing is installed; delete the folder to remove it.
+Everything stays in that folder and nothing is installed. delete the folder to uninstall Aether.
 
-Aether **updates itself**. When a new version is out it downloads it, checks it, and shows you what changed.
+Aether **updates itself**. When a new version is out it downloads it, checks it, and shows you the changelog.
 To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. Your save backups are kept.
 
 ## Features
 
-### Monster
+### Monster Widget
 
 <img src="docs/monster-widget.png" alt="Monster widget" align="right" width="420"/>
 
 - Health, enrage timer and stamina of the monster you're fighting
-- **Parts**: how close each one is to flinching or breaking, with a dot for each break
-- **Ailments**: poison, paralysis, sleep, stun and more, with buildup and how many times they've triggered
+- **Parts**: how close each one is to breaking
+- **Ailments**: poison, paralysis, sleep, stun and more
 - Weaknesses, crowns, tenderized parts, and a gold marker on the health bar where the monster can be captured
 - Follows the monster you **lock onto**, or the one you pin on the map
-- Turf wars and double hunts get a compact line for the other monster
-- In a party, a small pill on top says where the part and ailment numbers come from: green when they're synced from the host's
-  game, amber when they're only your game's estimate
 
 <br clear="right"/>
 
-### Team damage
+### Team Widget
 
 <img src="docs/team-widget.png" alt="Team damage widget" align="right" width="360"/>
 
-- Quest clock with the quest's time limit (just the time elapsed on expeditions), and party deaths (`1/3`) at the top
-- For up to 4 hunters: weapon, damage, damage per second and share of the party's damage
-- A green or red arrow while a hunter's share is rising or falling; each row fills with their colour
-- **Sharpness under each name** (a pip per colour, full up to the current one), shared through party sync so you can see who should
-  sharpen. It updates after a handful of hits and on every change of colour, not on each swing, and has its own switch in Settings
-- Counts **every monster**, including expeditions, when your friends run Aether too
+- Quest clock with the quest's time limit and party deaths
+- For up to 4 hunters: weapon, damage, damage per second and sharpness
+- Counts **every monster**, including expeditions, only when your friends run Aether too
 - The Aether logo next to a name means that hunter runs Aether too. A `~` means only their quest-target damage is known, and `—` means
   the game keeps no number for them (see [Party sync][PartySync])
 
 <br clear="right"/>
 
-### Buffs and sharpness
+### Player Widget
 
-<img src="docs/buffs-widget.png" alt="Buffs widget" align="right" width="225"/>
+<img src="docs/buffs-widget.png" alt="Buffs widget" align="right" width="
 
-- Quest clock, when the team damage widget isn't showing it (hidden, or hunting solo)
-- **Sharpness** in one compact pill: a blade in your current colour, the game's colour bands, and hits left in that colour. The number
-  turns amber as the colour runs out, and the pill turns red with "Sharpen" once you drop below your weapon's best colour
-- **Mantles and boosters** with time left and a bar: gold and draining while on, grey and filling back up while they recharge
+- **Sharpness** bar, with your possible sharpness levels, and hits left for that colour
 - Buffs, debuffs and weapon timers (Charge Blade, Insect Glaive, Long Sword, Switch Axe) with time left
 
 <br clear="right"/>
@@ -90,9 +81,8 @@ To remove it, uninstall it like any app: **Settings > Apps**, or Control Panel. 
 
 <img src="docs/sharpen-alert.png" alt="The sharpen reminder" width="560"/>
 
-A gag, hardcoded for one hunter, Senji: when his weapon is way too dull for a hunt, a huge hazard-taped bar takes over the top of his
-screen and roasts him, a bit meaner every 20 seconds, until he sharpens. It doesn't take the mouse, so the game stays playable
-underneath.
+A joke, hardcoded for my friend, Senji: when his weapon is way too dull for a hunt, a huge hazard container takes over the top of his
+screen and roasts him, a bit meaner every 20 seconds, until he sharpens it
 
 ### Hunt recap
 
@@ -105,25 +95,24 @@ underneath.
 
 ### Layout editor
 
-Press **Scroll Lock** in game, or click **Edit layout** in the Aether window. The game dims and every widget gets a tab
-and a resize handle, like Discord's overlay or Lunar Client's HUD editor.
+Press **Scroll Lock** in game, or click **Edit layout** in the Aether window. 
 
 <img src="docs/layout-editor.jpg" alt="Layout editor"/>
 
 - **Drag** a widget to move it. It snaps to the screen edges, the centre lines and the other widgets.
 - **Drag the corner** or **scroll** to resize. Double-click resets the size.
 - Show or hide widgets from the toolbar, or with the eye on a widget's tab.
-- Hold **Shift** to place freely. **Esc** or **Done** when you're finished. Everything is saved as you go.
+- Hold **Shift** to place freely. **Esc** or **Done** when you're finished. 
 
-### The Aether window
+### The Aether App
 
 <img src="docs/app.png" alt="Aether window" align="right" width="460"/>
 
-Every setting is one click and applies instantly. Hover a setting to see what it does.
+Every setting is one click and applies instantly.
 
-- **Open with the game**: Aether waits quietly after you sign in and opens when the game starts
-- **Hide while a game menu is open**, so widgets never cover the map
-- **Discord Rich Presence**: your area, the monster and its health, and how the quest ended
+- **Open with the game**: Aether waits quietly in the background and opens when the game starts
+- **Hide while a game menu is open**, so widgets wont cover the map
+- **Discord Rich Presence**: your area, the monster and its health, and how the quest ended all for discord 
 - **Save backups**: zips your saves when the game closes, in case one gets corrupted
 - A **Log** tab and a **Report a bug** button if something looks wrong
 
@@ -131,7 +120,7 @@ Every setting is one click and applies instantly. Hover a setting to see what it
 
 ### Keyboard
 
-The layout editor and hide keys can be changed in **Settings > Keyboard**: click the key and press a new one.
+The layout editor and hide keys can be changed in **Settings > Keyboard**.
 
 | Key | What it does |
 | --- | --- |
@@ -142,8 +131,8 @@ The layout editor and hide keys can be changed in **Settings > Keyboard**: click
 
 ## Party sync
 
-Monster Hunter: World only gives the **host's** game the exact part and ailment numbers, and it keeps **no damage
-numbers at all on expeditions**. Aether fills those gaps by sharing between everyone in the party who runs it, through
+Monster Hunter: World only gives the **host's** game the exact part and ailments, and it keeps **no damage
+numbers at all on expeditions**. Aether fills those gaps in by sharing between everyone in the party who runs it, through
 the SmartHunter sync server. It's on by default and only sends a hashed lobby ID, hunter names, damage and monster data.
 
 | Who runs Aether | Monster parts and ailments | Team damage in quests | Team damage on expeditions |
