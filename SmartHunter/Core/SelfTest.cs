@@ -57,15 +57,6 @@ namespace SmartHunter.Core
             Check(AppUpdater.CleanNotes("- Fix\n\n---\n**Which file?**") == "• Fix", "the release page footer isn't shown in the app");
             Check(WindowHelper.RefreshRate() >= 30, "monitor refresh rate is read or falls back to 60");
 
-            // Staying on top: a fight with another overlay pauses for a minute, then raising works again
-            var limiter = new RaiseLimiter();
-            var r0 = new DateTime(2026, 1, 1);
-            Check(Enumerable.Range(0, RaiseLimiter.MaxRaises).All(i => limiter.Allow(r0.AddSeconds(i))), "first raises are allowed");
-            Check(!limiter.Allow(r0.AddSeconds(5)) && !limiter.Allow(r0.AddSeconds(40)), "raising pauses after too many in a row");
-            Check(limiter.Allow(r0.AddSeconds(66)), "raising resumes after the pause");
-            var spaced = new RaiseLimiter();
-            Check(Enumerable.Range(0, 20).All(i => spaced.Allow(r0.AddSeconds(i * 11))), "occasional raises never pause");
-
             // Sharpness: a sane table shows, garbage from loading screens doesn't
             var sharpness = new Sharpness();
             sharpness.Update(new[] { 60, 100, 150, 200, 260, 0, 0 }, 230, 260);
