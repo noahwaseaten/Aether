@@ -186,6 +186,17 @@ namespace SmartHunter.Core.Helpers
             WindowsApi.SetWindowPos(handle, -1, 0, 0, 0, 0, TopMostWindowSizePositions);
         }
 
+        // Back to the top of the topmost windows. Other overlays (Medal, Discord) are topmost too and the last one
+        // raised wins, so the overlay re-raises itself now and then. No SWP_SHOWWINDOW: hidden widgets stay hidden.
+        public static void RaiseTopMost(Window window)
+        {
+            if (!TryGetHandle(window, out var handle))
+            {
+                return;
+            }
+            WindowsApi.SetWindowPos(handle, -1, 0, 0, 0, 0, TopMostWindowSizePositions & ~(uint)WindowsApi.WindowSizePositionFlag.SWP_SHOWWINDOW);
+        }
+
         // Experimental function to set the window background to use Windows 10 acrylic - this part of the win api is poorly documented
         public static void EnableAcrylic(Window window)
         {

@@ -29,7 +29,12 @@ namespace SmartHunter.Core
             m_KeyboardInput.InputReceived += KeyboardInput_InputReceived;
 
             m_MainWindow.Show();
+
+            // Not while editing: the editor stacks its backdrop, the widgets and its toolbar in a set order
+            m_StayOnTop = new StayOnTop(() => WidgetWindows, () => IsEditing);
         }
+
+        StayOnTop m_StayOnTop;
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
